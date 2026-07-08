@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SIGRA")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dc15ef2bb14983a7aa01899ab29557e754831f6e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+206e97db1bab96f3ffb14a41ddc8cb685502896f")]
 [assembly: System.Reflection.AssemblyProductAttribute("SIGRA")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SIGRA")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
