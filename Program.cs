@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SIGRA.Data;
 using SIGRA.Middleware;
+using SIGRA.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,9 +9,26 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+
+builder.Services.AddScoped<IUserAuthenticationService, UserAuthenticationService>();
+
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+var allowSpecificOrigins = "sigra-client";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: allowSpecificOrigins,
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5173")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        });
+});
 
 var app = builder.Build();
 
@@ -23,6 +41,8 @@ if (app.Environment.IsDevelopment())
         options.DocumentPath = "/openapi/v1.json";
     });
 }
+
+app.UseCors(allowSpecificOrigins);
 
 app.UseHttpsRedirection();
 

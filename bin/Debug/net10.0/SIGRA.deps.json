@@ -8,7 +8,11 @@
     ".NETCoreApp,Version=v10.0": {
       "SIGRA/1.0.0": {
         "dependencies": {
-          "Microsoft.AspNetCore.OpenApi": "10.0.9"
+          "Microsoft.AspNetCore.OpenApi": "10.0.9",
+          "Microsoft.EntityFrameworkCore": "10.0.9",
+          "NSwag.AspNetCore": "14.7.1",
+          "Npgsql.EntityFrameworkCore.PostgreSQL": "10.0.2",
+          "System.DirectoryServices.AccountManagement": "10.0.9"
         },
         "runtime": {
           "SIGRA.dll": {}
@@ -25,11 +29,299 @@
           }
         }
       },
+      "Microsoft.EntityFrameworkCore/10.0.9": {
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.Abstractions": "10.0.9"
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.EntityFrameworkCore.dll": {
+            "assemblyVersion": "10.0.9.0",
+            "fileVersion": "10.0.926.27113"
+          }
+        }
+      },
+      "Microsoft.EntityFrameworkCore.Abstractions/10.0.9": {
+        "runtime": {
+          "lib/net10.0/Microsoft.EntityFrameworkCore.Abstractions.dll": {
+            "assemblyVersion": "10.0.9.0",
+            "fileVersion": "10.0.926.27113"
+          }
+        }
+      },
+      "Microsoft.EntityFrameworkCore.Relational/10.0.4": {
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore": "10.0.9"
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.EntityFrameworkCore.Relational.dll": {
+            "assemblyVersion": "10.0.4.0",
+            "fileVersion": "10.0.426.12010"
+          }
+        }
+      },
       "Microsoft.OpenApi/2.0.0": {
         "runtime": {
           "lib/net8.0/Microsoft.OpenApi.dll": {
             "assemblyVersion": "2.0.0.0",
             "fileVersion": "2.0.0.0"
+          }
+        }
+      },
+      "Namotion.Reflection/3.5.0": {
+        "runtime": {
+          "lib/net8.0/Namotion.Reflection.dll": {
+            "assemblyVersion": "3.5.0.0",
+            "fileVersion": "3.5.0.0"
+          }
+        }
+      },
+      "Newtonsoft.Json/13.0.3": {
+        "runtime": {
+          "lib/net6.0/Newtonsoft.Json.dll": {
+            "assemblyVersion": "13.0.0.0",
+            "fileVersion": "13.0.3.27908"
+          }
+        }
+      },
+      "NJsonSchema/11.6.1": {
+        "dependencies": {
+          "NJsonSchema.Annotations": "11.6.1",
+          "Namotion.Reflection": "3.5.0",
+          "Newtonsoft.Json": "13.0.3"
+        },
+        "runtime": {
+          "lib/net8.0/NJsonSchema.dll": {
+            "assemblyVersion": "11.6.1.0",
+            "fileVersion": "11.6.1.0"
+          }
+        }
+      },
+      "NJsonSchema.Annotations/11.6.1": {
+        "runtime": {
+          "lib/netstandard2.0/NJsonSchema.Annotations.dll": {
+            "assemblyVersion": "11.6.1.0",
+            "fileVersion": "11.6.1.0"
+          }
+        }
+      },
+      "NJsonSchema.NewtonsoftJson/11.6.1": {
+        "dependencies": {
+          "NJsonSchema": "11.6.1",
+          "Newtonsoft.Json": "13.0.3"
+        },
+        "runtime": {
+          "lib/net8.0/NJsonSchema.NewtonsoftJson.dll": {
+            "assemblyVersion": "11.6.1.0",
+            "fileVersion": "11.6.1.0"
+          }
+        }
+      },
+      "NJsonSchema.Yaml/11.6.1": {
+        "dependencies": {
+          "NJsonSchema": "11.6.1",
+          "YamlDotNet": "16.3.0"
+        },
+        "runtime": {
+          "lib/net8.0/NJsonSchema.Yaml.dll": {
+            "assemblyVersion": "11.6.1.0",
+            "fileVersion": "11.6.1.0"
+          }
+        }
+      },
+      "Npgsql/10.0.3": {
+        "runtime": {
+          "lib/net10.0/Npgsql.dll": {
+            "assemblyVersion": "10.0.3.0",
+            "fileVersion": "10.0.3.0"
+          }
+        }
+      },
+      "Npgsql.EntityFrameworkCore.PostgreSQL/10.0.2": {
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore": "10.0.9",
+          "Microsoft.EntityFrameworkCore.Relational": "10.0.4",
+          "Npgsql": "10.0.3"
+        },
+        "runtime": {
+          "lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll": {
+            "assemblyVersion": "10.0.2.0",
+            "fileVersion": "10.0.2.0"
+          }
+        }
+      },
+      "NSwag.Annotations/14.7.1": {
+        "runtime": {
+          "lib/netstandard2.0/NSwag.Annotations.dll": {
+            "assemblyVersion": "14.7.1.0",
+            "fileVersion": "14.7.1.0"
+          }
+        }
+      },
+      "NSwag.AspNetCore/14.7.1": {
+        "dependencies": {
+          "NJsonSchema": "11.6.1",
+          "NJsonSchema.NewtonsoftJson": "11.6.1",
+          "NJsonSchema.Yaml": "11.6.1",
+          "NSwag.Annotations": "14.7.1",
+          "NSwag.Core.Yaml": "14.7.1",
+          "NSwag.Generation.AspNetCore": "14.7.1",
+          "Namotion.Reflection": "3.5.0",
+          "Newtonsoft.Json": "13.0.3"
+        },
+        "runtime": {
+          "lib/net10.0/NSwag.AspNetCore.dll": {
+            "assemblyVersion": "14.7.1.0",
+            "fileVersion": "14.7.1.0"
+          }
+        }
+      },
+      "NSwag.Core/14.7.1": {
+        "dependencies": {
+          "NJsonSchema": "11.6.1",
+          "Namotion.Reflection": "3.5.0",
+          "Newtonsoft.Json": "13.0.3"
+        },
+        "runtime": {
+          "lib/net8.0/NSwag.Core.dll": {
+            "assemblyVersion": "14.7.1.0",
+            "fileVersion": "14.7.1.0"
+          }
+        }
+      },
+      "NSwag.Core.Yaml/14.7.1": {
+        "dependencies": {
+          "NJsonSchema": "11.6.1",
+          "NJsonSchema.Yaml": "11.6.1",
+          "NSwag.Core": "14.7.1",
+          "Namotion.Reflection": "3.5.0",
+          "Newtonsoft.Json": "13.0.3"
+        },
+        "runtime": {
+          "lib/net8.0/NSwag.Core.Yaml.dll": {
+            "assemblyVersion": "14.7.1.0",
+            "fileVersion": "14.7.1.0"
+          }
+        }
+      },
+      "NSwag.Generation/14.7.1": {
+        "dependencies": {
+          "NJsonSchema": "11.6.1",
+          "NJsonSchema.NewtonsoftJson": "11.6.1",
+          "NSwag.Core": "14.7.1",
+          "Namotion.Reflection": "3.5.0",
+          "Newtonsoft.Json": "13.0.3"
+        },
+        "runtime": {
+          "lib/net8.0/NSwag.Generation.dll": {
+            "assemblyVersion": "14.7.1.0",
+            "fileVersion": "14.7.1.0"
+          }
+        }
+      },
+      "NSwag.Generation.AspNetCore/14.7.1": {
+        "dependencies": {
+          "NJsonSchema": "11.6.1",
+          "NJsonSchema.NewtonsoftJson": "11.6.1",
+          "NSwag.Generation": "14.7.1",
+          "Namotion.Reflection": "3.5.0",
+          "Newtonsoft.Json": "13.0.3"
+        },
+        "runtime": {
+          "lib/net10.0/NSwag.Generation.AspNetCore.dll": {
+            "assemblyVersion": "14.7.1.0",
+            "fileVersion": "14.7.1.0"
+          }
+        }
+      },
+      "System.Configuration.ConfigurationManager/10.0.9": {
+        "dependencies": {
+          "System.Security.Cryptography.ProtectedData": "10.0.9"
+        },
+        "runtime": {
+          "lib/net10.0/System.Configuration.ConfigurationManager.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.926.27113"
+          }
+        }
+      },
+      "System.DirectoryServices/10.0.9": {
+        "runtime": {
+          "lib/net10.0/System.DirectoryServices.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.926.27113"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/win/lib/net10.0/System.DirectoryServices.dll": {
+            "rid": "win",
+            "assetType": "runtime",
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.926.27113"
+          }
+        }
+      },
+      "System.DirectoryServices.AccountManagement/10.0.9": {
+        "dependencies": {
+          "System.Configuration.ConfigurationManager": "10.0.9",
+          "System.DirectoryServices": "10.0.9",
+          "System.DirectoryServices.Protocols": "10.0.9"
+        },
+        "runtime": {
+          "lib/net10.0/System.DirectoryServices.AccountManagement.dll": {
+            "assemblyVersion": "10.0.0.9",
+            "fileVersion": "10.0.926.27113"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/win/lib/net10.0/System.DirectoryServices.AccountManagement.dll": {
+            "rid": "win",
+            "assetType": "runtime",
+            "assemblyVersion": "10.0.0.9",
+            "fileVersion": "10.0.926.27113"
+          }
+        }
+      },
+      "System.DirectoryServices.Protocols/10.0.9": {
+        "runtime": {
+          "lib/net10.0/System.DirectoryServices.Protocols.dll": {
+            "assemblyVersion": "10.0.0.9",
+            "fileVersion": "10.0.926.27113"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/linux/lib/net10.0/System.DirectoryServices.Protocols.dll": {
+            "rid": "linux",
+            "assetType": "runtime",
+            "assemblyVersion": "10.0.0.9",
+            "fileVersion": "10.0.926.27113"
+          },
+          "runtimes/osx/lib/net10.0/System.DirectoryServices.Protocols.dll": {
+            "rid": "osx",
+            "assetType": "runtime",
+            "assemblyVersion": "10.0.0.9",
+            "fileVersion": "10.0.926.27113"
+          },
+          "runtimes/win/lib/net10.0/System.DirectoryServices.Protocols.dll": {
+            "rid": "win",
+            "assetType": "runtime",
+            "assemblyVersion": "10.0.0.9",
+            "fileVersion": "10.0.926.27113"
+          }
+        }
+      },
+      "System.Security.Cryptography.ProtectedData/10.0.9": {
+        "runtime": {
+          "lib/net10.0/System.Security.Cryptography.ProtectedData.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.926.27113"
+          }
+        }
+      },
+      "YamlDotNet/16.3.0": {
+        "runtime": {
+          "lib/net8.0/YamlDotNet.dll": {
+            "assemblyVersion": "16.0.0.0",
+            "fileVersion": "16.3.0.0"
           }
         }
       }
@@ -48,12 +340,173 @@
       "path": "microsoft.aspnetcore.openapi/10.0.9",
       "hashPath": "microsoft.aspnetcore.openapi.10.0.9.nupkg.sha512"
     },
+    "Microsoft.EntityFrameworkCore/10.0.9": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-tu85SRzOT021V7EQlViCiAE7TqldVn469Y6lt5TEn/+XC4/MeNCHgMRSxqYuWqvF4zAQZUhCmtNEZuM3ss4LeA==",
+      "path": "microsoft.entityframeworkcore/10.0.9",
+      "hashPath": "microsoft.entityframeworkcore.10.0.9.nupkg.sha512"
+    },
+    "Microsoft.EntityFrameworkCore.Abstractions/10.0.9": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-GRMaiPkqYna/gCsyDffYDWmefGPC3hDrdMw+2rrGcQwhs6uZOsaMQXMJnoXQ35tx9SkBV2ieRRU9N/jLOO6BZw==",
+      "path": "microsoft.entityframeworkcore.abstractions/10.0.9",
+      "hashPath": "microsoft.entityframeworkcore.abstractions.10.0.9.nupkg.sha512"
+    },
+    "Microsoft.EntityFrameworkCore.Relational/10.0.4": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-DOTjTHy93W3TwpMLM4SCm0n57Sc0Jj3+m2S6LSTstKyBB34eT1UouaMS19mpWwvtj42+sRiEjA3+rOTNoNzXFQ==",
+      "path": "microsoft.entityframeworkcore.relational/10.0.4",
+      "hashPath": "microsoft.entityframeworkcore.relational.10.0.4.nupkg.sha512"
+    },
     "Microsoft.OpenApi/2.0.0": {
       "type": "package",
       "serviceable": true,
       "sha512": "sha512-GGYLfzV/G/ct80OZ45JxnWP7NvMX1BCugn/lX7TH5o0lcVaviavsLMTxmFV2AybXWjbi3h6FF1vgZiTK6PXndw==",
       "path": "microsoft.openapi/2.0.0",
       "hashPath": "microsoft.openapi.2.0.0.nupkg.sha512"
+    },
+    "Namotion.Reflection/3.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-FnASiAaTGSmB4SaSroIwnK4ph9noFIXZpPOMezDqWw5S/TNakzSnawPeM7u0Auq1/EqJXeqG4s6UjfrGBH33Ow==",
+      "path": "namotion.reflection/3.5.0",
+      "hashPath": "namotion.reflection.3.5.0.nupkg.sha512"
+    },
+    "Newtonsoft.Json/13.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ==",
+      "path": "newtonsoft.json/13.0.3",
+      "hashPath": "newtonsoft.json.13.0.3.nupkg.sha512"
+    },
+    "NJsonSchema/11.6.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-miqvNY4OSXCWVqaMqt0A8VUkij0UH1oPosHMLP+t6/nWNSSzWDPmm7G2DjVW7M9evy0x5DE2pS/DDTtKCpbzSQ==",
+      "path": "njsonschema/11.6.1",
+      "hashPath": "njsonschema.11.6.1.nupkg.sha512"
+    },
+    "NJsonSchema.Annotations/11.6.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-WA4z8iK+0SOh2/qoo7rtEanj/LjJZ8oWWoXI8u1xcYMk6VzHONqpabJBYGrzqDO41ld+VQHOFL+B8MXncIVSSA==",
+      "path": "njsonschema.annotations/11.6.1",
+      "hashPath": "njsonschema.annotations.11.6.1.nupkg.sha512"
+    },
+    "NJsonSchema.NewtonsoftJson/11.6.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-yuGwViKjNT7BAosX1UAl2asAczupUS0v1IZ0/cO5UXonhjUgE1LmAjAMqHjpbaXiDM+HrQIkJh3bv/2faY2aJg==",
+      "path": "njsonschema.newtonsoftjson/11.6.1",
+      "hashPath": "njsonschema.newtonsoftjson.11.6.1.nupkg.sha512"
+    },
+    "NJsonSchema.Yaml/11.6.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-3jH3tupVurenoO+bnp9BWR5G46caNqXSWSMGuwb403F7a9vkO13LycuyjD9ohpZHI9crFY8EUWco+pL7eTUxdg==",
+      "path": "njsonschema.yaml/11.6.1",
+      "hashPath": "njsonschema.yaml.11.6.1.nupkg.sha512"
+    },
+    "Npgsql/10.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-7nb5YzXuvWWJxB0J8DiyL3we+X4FOctZrt0fIBnucOIaIevFEEwGQVZKtiu9olXdlNAK1eNgqSral6r/jlhI4w==",
+      "path": "npgsql/10.0.3",
+      "hashPath": "npgsql.10.0.3.nupkg.sha512"
+    },
+    "Npgsql.EntityFrameworkCore.PostgreSQL/10.0.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-PsNYgPOSW41Xx19gin7y4EdZAPteWr9Cb01XkdObxOsPzi+mgBupBEN7J7+erXFsROPOILM7MlIoO9QzL8+LGQ==",
+      "path": "npgsql.entityframeworkcore.postgresql/10.0.2",
+      "hashPath": "npgsql.entityframeworkcore.postgresql.10.0.2.nupkg.sha512"
+    },
+    "NSwag.Annotations/14.7.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-4McUe39+UXcJc0fk+ZfUy87cy3Myh89/EaGgQwnBKKUsNMc5WEbP+TVk0ByHKGQf9hoO9ouaOGCGeJD0EVQkjg==",
+      "path": "nswag.annotations/14.7.1",
+      "hashPath": "nswag.annotations.14.7.1.nupkg.sha512"
+    },
+    "NSwag.AspNetCore/14.7.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-dL25k8teUyyCDsfRRzezRE++yruSLmsPuGwyl6cHBJQa+ivp0MgQ20VONJ33wzHHLediMTW6X18hKu8qP2Vbmg==",
+      "path": "nswag.aspnetcore/14.7.1",
+      "hashPath": "nswag.aspnetcore.14.7.1.nupkg.sha512"
+    },
+    "NSwag.Core/14.7.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-iwwAeMZ3kugAKCokuOdHzKK/OHdp19vUP/B32CJO10HHzVgC+O4M7HXtHuDf9tloC3OEJ2wkUV4/cYrX4Mr98g==",
+      "path": "nswag.core/14.7.1",
+      "hashPath": "nswag.core.14.7.1.nupkg.sha512"
+    },
+    "NSwag.Core.Yaml/14.7.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-C6nkmDBI/Ps54kilnIgq3S9KQnj4IWvncD4xyYolukueqNSTH8gLgPleff0XAgVWZEvFSIKKSTD4q6rxrpkp2w==",
+      "path": "nswag.core.yaml/14.7.1",
+      "hashPath": "nswag.core.yaml.14.7.1.nupkg.sha512"
+    },
+    "NSwag.Generation/14.7.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-+c7KhqBYoDkuEwuzkTG2FYYX6IuBRsXhOVuzO4QcFCwLXqNIzN1v+zAAdNjpd751I8jurpIes4Y7FoFuei/Uag==",
+      "path": "nswag.generation/14.7.1",
+      "hashPath": "nswag.generation.14.7.1.nupkg.sha512"
+    },
+    "NSwag.Generation.AspNetCore/14.7.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-nd1DXN9SwnzdJKtR+EqXHGE6cbkbKjo3AViwpGIBurrLEnYevC8vqkRSKdfhuHViSsihqWXF+Q9rR19yyNFiOA==",
+      "path": "nswag.generation.aspnetcore/14.7.1",
+      "hashPath": "nswag.generation.aspnetcore.14.7.1.nupkg.sha512"
+    },
+    "System.Configuration.ConfigurationManager/10.0.9": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-k7kYSTmNjwFYKdUju+rjYyigbcUBj1sElR3ayqszcatPXL9YJoBANJN48xctdXTopYf3ceFX2T4m1xvJRM+CGA==",
+      "path": "system.configuration.configurationmanager/10.0.9",
+      "hashPath": "system.configuration.configurationmanager.10.0.9.nupkg.sha512"
+    },
+    "System.DirectoryServices/10.0.9": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-AF8OLvTKeJek89WVELaRB722RSnUodblZ6qRrathez99gk4J24h6Z8FlHrbN2xKFVkGC2fWlrvGegm9XHU5Bng==",
+      "path": "system.directoryservices/10.0.9",
+      "hashPath": "system.directoryservices.10.0.9.nupkg.sha512"
+    },
+    "System.DirectoryServices.AccountManagement/10.0.9": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ZxLhRINsDa0weCvBNA1mWeE8HHfqYx2Ase4r4Bc2oeGb9rgxrDZNGpkNp573P7LvqhRL4CAmabuARPjC3Kxr2A==",
+      "path": "system.directoryservices.accountmanagement/10.0.9",
+      "hashPath": "system.directoryservices.accountmanagement.10.0.9.nupkg.sha512"
+    },
+    "System.DirectoryServices.Protocols/10.0.9": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-MrXtP8ik1FZxjurEQLBS29oig3W8Am/0OOczx6sJJrrUkiuyAMcHVHZ6y0twc+3BQ31u5Zxa0Zlcac0rtnSOFA==",
+      "path": "system.directoryservices.protocols/10.0.9",
+      "hashPath": "system.directoryservices.protocols.10.0.9.nupkg.sha512"
+    },
+    "System.Security.Cryptography.ProtectedData/10.0.9": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-vXp+vBQbTkMrDzUiPCxo1KvzfaAvZWuSRS2P7e5orhtV7ZuePKAB3Cqc9dH2YHUavRJyA2uWd2yrL6hl2VoJ5g==",
+      "path": "system.security.cryptography.protecteddata/10.0.9",
+      "hashPath": "system.security.cryptography.protecteddata.10.0.9.nupkg.sha512"
+    },
+    "YamlDotNet/16.3.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-SgMOdxbz8X65z8hraIs6hOEdnkH6hESTAIUa7viEngHOYaH+6q5XJmwr1+yb9vJpNQ19hCQY69xbFsLtXpobQA==",
+      "path": "yamldotnet/16.3.0",
+      "hashPath": "yamldotnet.16.3.0.nupkg.sha512"
     }
   }
 }
