@@ -16,6 +16,12 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+builder.Services.AddSingleton<MailAuthService>();
+builder.Services.AddSingleton<GraphClientFactory>();
+builder.Services.AddSingleton<DeltaQueryService>();
+builder.Services.AddSingleton<WebhookService>();
+builder.Services.AddHostedService<SubscriptionRenewalService>();
+
 var allowSpecificOrigins = "sigra-client";
 
 builder.Services.AddCors(options =>
