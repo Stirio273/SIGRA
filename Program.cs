@@ -2,10 +2,12 @@ using Microsoft.EntityFrameworkCore;
 using SIGRA.Data;
 using SIGRA.Middleware;
 using SIGRA.Services;
+using Google.Apis.Auth.AspNetCore3;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Google.Apis.Auth.OAuth2;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -16,11 +18,13 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-builder.Services.AddSingleton<MailAuthService>();
-builder.Services.AddSingleton<GraphClientFactory>();
-builder.Services.AddSingleton<DeltaQueryService>();
-builder.Services.AddSingleton<WebhookService>();
-builder.Services.AddHostedService<SubscriptionRenewalService>();
+builder.Services.AddHttpClient();
+
+builder.Services.AddSingleton<ImapMailService>();
+builder.Services.AddSingleton<ImapSyncService>();
+builder.Services.AddSingleton<IImapIdentityProvider, GmailIdentityProvider>();
+builder.Services.AddHostedService<ImapPollingService>();
+
 
 var allowSpecificOrigins = "sigra-client";
 
