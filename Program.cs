@@ -1,12 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using SIGRA.Data;
+using SIGRA.Data.Enums;
+using SIGRA.Data.Repositories;
 using SIGRA.Middleware;
 using SIGRA.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration["ConnectionStrings:DefaultConnection"]));
+    options.UseNpgsql(builder.Configuration["ConnectionStrings:DefaultConnection"], o => o.MapEnum<OAuthProvider>("oauth_provider")));
 
 
 builder.Services.AddScoped<IUserAuthenticationService, UserAuthenticationService>();
@@ -17,6 +19,8 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddHttpClient();
 
+builder.Services.AddScoped<IServiceAccountTokenRepository, ServiceAccountTokenRepository>();
+builder.Services.AddScoped<ITokenEncryptionService, TokenEncryptionService>();
 builder.Services.AddSingleton<ImapMailService>();
 builder.Services.AddSingleton<ImapSyncService>();
 builder.Services.AddSingleton<IImapIdentityProvider, GmailIdentityProvider>();
@@ -36,6 +40,8 @@ builder.Services.AddCors(options =>
                   .AllowCredentials();
         });
 });
+
+builder.Services.AddDataProtection();
 
 var app = builder.Build();
 

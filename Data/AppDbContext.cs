@@ -65,8 +65,5 @@ public class AppDbContext : DbContext
                 .HasDefaultValueSql("NOW()");
         });
 
-        OnModelCreatingPartial(modelBuilder);
     }
-
-    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }

@@ -69,11 +69,6 @@ public class ImapSyncService
 
             foreach (var message in newMessages)
             {
-                _logger.LogInformation(
-                    "New message: {Subject} from {From}",
-                    message.Subject,
-                    message.From?.ToString());
-
                 await ProcessMessageAsync(message);
             }
 
@@ -92,7 +87,23 @@ public class ImapSyncService
 
     private async Task ProcessMessageAsync(MimeMessage message)
     {
-        var summary = ImapMailService.MapToMessageSummary(message);
+        var mailInfo = ImapMailService.MapToMailInfo(message);
+
+        _logger.LogInformation(
+            "New message: {Subject} from {Sender} <{SenderEmail}> on {SentDate:u}",
+            mailInfo.Subject,
+            mailInfo.Sender,
+            mailInfo.SenderEmail,
+            mailInfo.SentDate);
+
+        foreach (var attachment in mailInfo.Attachments)
+        {
+            _logger.LogInformation(
+                "Attachment: {FileName} ({ContentType}) - {Size} bytes",
+                attachment.FileName,
+                attachment.ContentType,
+                attachment.Size);
+        }
 
         await Task.CompletedTask;
     }

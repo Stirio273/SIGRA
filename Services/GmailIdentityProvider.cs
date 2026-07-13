@@ -1,9 +1,7 @@
-using Google.Apis.Auth;
-using Google.Apis.Auth.OAuth2;
-using Google.Apis.Auth.OAuth2.Responses;
-using Microsoft.Extensions.Configuration;
-using SIGRA.Services;
-using System.Net.Http.Headers;
+using SIGRA.Data.Enums;
+using SIGRA.Data.Models;
+using SIGRA.Data.Repositories;
+
 using System.Text.Json;
 
 namespace SIGRA.Services;
@@ -12,11 +10,13 @@ public class GmailIdentityProvider : IImapIdentityProvider
 {
     private readonly IConfiguration _config;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IServiceScopeFactory _scopeFactory;
 
-    public GmailIdentityProvider(IConfiguration config, IHttpClientFactory httpClientFactory)
+    public GmailIdentityProvider(IConfiguration config, IHttpClientFactory httpClientFactory, IServiceScopeFactory scopeFactory)
     {
         _config = config;
         _httpClientFactory = httpClientFactory;
+        _scopeFactory = scopeFactory;
     }
 
     public string GetMailboxIdentity() =>
@@ -76,37 +76,32 @@ public class GmailIdentityProvider : IImapIdentityProvider
             if (!root.TryGetProperty("access_token", out var accessTokenElement))
                 return false;
 
-            var tokenResponse = new TokenResponse
-            {
-                AccessToken = accessTokenElement.GetString() ?? string.Empty,
-                IssuedUtc = DateTime.UtcNow
-            };
+            var accessToken = accessTokenElement.GetString() ?? string.Empty;
+            var expiresIn = 3600L;
 
-            if (root.TryGetProperty("expires_in", out var expiresInElement) && expiresInElement.TryGetDouble(out var expiresIn))
+            if (root.TryGetProperty("expires_in", out var expiresInElement) && expiresInElement.TryGetDouble(out var expiresInDouble))
             {
-                tokenResponse.ExpiresInSeconds = (long)expiresIn;
-            }
-            else
-            {
-                tokenResponse.ExpiresInSeconds = 3600;
+                expiresIn = (long)expiresInDouble;
             }
 
-            if (root.TryGetProperty("refresh_token", out var refreshTokenElement))
-            {
-                tokenResponse.RefreshToken = refreshTokenElement.GetString();
-            }
+            var refreshToken = root.TryGetProperty("refresh_token", out var refreshTokenElement)
+                ? refreshTokenElement.GetString()
+                : null;
 
-            if (root.TryGetProperty("scope", out var scopeElement))
-            {
-                tokenResponse.Scope = scopeElement.GetString();
-            }
+            var scopeValue = root.TryGetProperty("scope", out var scopeElement)
+                ? scopeElement.GetString()
+                : null;
 
-            if (root.TryGetProperty("token_type", out var tokenTypeElement))
-            {
-                tokenResponse.TokenType = tokenTypeElement.GetString();
-            }
+            var email = GetMailboxIdentity();
+            if (string.IsNullOrEmpty(email))
+                return false;
 
-            File.WriteAllText("data/gmail-token.json", JsonSerializer.Serialize(tokenResponse));
+            using var scope = _scopeFactory.CreateScope();
+            var repo = scope.ServiceProvider.GetRequiredService<IServiceAccountTokenRepository>();
+
+            var expiresAt = DateTime.UtcNow.AddSeconds(expiresIn);
+            await repo.SaveAsync(email, OAuthProvider.Google, accessToken, refreshToken, expiresAt, scopeValue, cancellationToken);
+
             return true;
         }
         catch
@@ -117,46 +112,54 @@ public class GmailIdentityProvider : IImapIdentityProvider
 
     public async Task<string> GetAuthorizationMaterialAsync(CancellationToken cancellationToken = default)
     {
-        TokenResponse? token = null;
-
-        if (File.Exists("data/gmail-token.json"))
-        {
-            try
-            {
-                token = JsonSerializer.Deserialize<TokenResponse>(await File.ReadAllTextAsync("data/gmail-token.json", cancellationToken));
-            }
-            catch { }
-        }
-
-        if (token == null || string.IsNullOrEmpty(token.AccessToken))
+        var email = GetMailboxIdentity();
+        if (string.IsNullOrEmpty(email))
             throw new InvalidOperationException("No Gmail access token available. Please authenticate first.");
 
-        if (IsExpired(token))
+        using var scope = _scopeFactory.CreateScope();
+        var repo = scope.ServiceProvider.GetRequiredService<IServiceAccountTokenRepository>();
+        var encryption = scope.ServiceProvider.GetRequiredService<ITokenEncryptionService>();
+
+        var entity = await repo.GetAsync(email, OAuthProvider.Google, cancellationToken);
+        if (entity == null || string.IsNullOrEmpty(entity.EncryptedAccessToken))
+            throw new InvalidOperationException("No Gmail access token available. Please authenticate first.");
+
+        var accessToken = encryption.Decrypt(entity.EncryptedAccessToken);
+
+        if (IsExpired(entity))
         {
-            if (string.IsNullOrEmpty(token.RefreshToken))
+            var refreshToken = entity.EncryptedRefreshToken != null
+                ? encryption.Decrypt(entity.EncryptedRefreshToken)
+                : null;
+
+            if (string.IsNullOrEmpty(refreshToken))
                 throw new InvalidOperationException("Gmail access token is expired and no refresh token is available. Please re-authenticate.");
 
-            var refreshed = await RefreshAccessTokenAsync(token, cancellationToken).ConfigureAwait(false);
+            var refreshed = await RefreshAccessTokenAsync(refreshToken, cancellationToken).ConfigureAwait(false);
             if (!refreshed)
                 throw new InvalidOperationException("Unable to refresh Gmail access token. Please re-authenticate.");
 
-            token = JsonSerializer.Deserialize<TokenResponse>(await File.ReadAllTextAsync("data/gmail-token.json", cancellationToken));
+            entity = await repo.GetAsync(email, OAuthProvider.Google, cancellationToken);
+            if (entity == null || string.IsNullOrEmpty(entity.EncryptedAccessToken))
+                throw new InvalidOperationException("Gmail access token is empty. Please re-authenticate.");
+
+            accessToken = encryption.Decrypt(entity.EncryptedAccessToken);
         }
 
-        if (string.IsNullOrEmpty(token.AccessToken))
+        if (string.IsNullOrEmpty(accessToken))
             throw new InvalidOperationException("Gmail access token is empty. Please re-authenticate.");
 
-        return token.AccessToken;
+        return accessToken;
     }
 
-    private async Task<bool> RefreshAccessTokenAsync(TokenResponse token, CancellationToken cancellationToken)
+    private async Task<bool> RefreshAccessTokenAsync(string refreshToken, CancellationToken cancellationToken)
     {
         try
         {
             var clientId = _config["Imap:GmailOAuth2:ClientId"];
             var clientSecret = _config["Imap:GmailOAuth2:ClientSecret"];
 
-            if (string.IsNullOrEmpty(token.RefreshToken) || string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
+            if (string.IsNullOrEmpty(refreshToken) || string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
                 return false;
 
             var httpClient = _httpClientFactory.CreateClient();
@@ -164,7 +167,7 @@ public class GmailIdentityProvider : IImapIdentityProvider
             {
                 Content = new FormUrlEncodedContent(new Dictionary<string, string>
                 {
-                    ["refresh_token"] = token.RefreshToken,
+                    ["refresh_token"] = refreshToken,
                     ["client_id"] = clientId,
                     ["client_secret"] = clientSecret,
                     ["grant_type"] = "refresh_token"
@@ -183,33 +186,32 @@ public class GmailIdentityProvider : IImapIdentityProvider
             if (!root.TryGetProperty("access_token", out var accessTokenElement))
                 return false;
 
-            var newToken = new TokenResponse
-            {
-                AccessToken = accessTokenElement.GetString() ?? string.Empty,
-                RefreshToken = token.RefreshToken,
-                IssuedUtc = DateTime.UtcNow
-            };
+            var newAccessToken = accessTokenElement.GetString() ?? string.Empty;
+            var expiresIn = 3600L;
 
-            if (root.TryGetProperty("expires_in", out var expiresInElement) && expiresInElement.TryGetDouble(out var expiresIn))
+            if (root.TryGetProperty("expires_in", out var expiresInElement) && expiresInElement.TryGetDouble(out var expiresInDouble))
             {
-                newToken.ExpiresInSeconds = (long)expiresIn;
-            }
-            else
-            {
-                newToken.ExpiresInSeconds = 3600;
+                expiresIn = (long)expiresInDouble;
             }
 
-            if (root.TryGetProperty("scope", out var scopeElement))
-            {
-                newToken.Scope = scopeElement.GetString();
-            }
+            var newRefreshToken = root.TryGetProperty("refresh_token", out var refreshTokenElement)
+                ? refreshTokenElement.GetString()
+                : refreshToken;
 
-            if (root.TryGetProperty("token_type", out var tokenTypeElement))
-            {
-                newToken.TokenType = tokenTypeElement.GetString();
-            }
+            var scopeValue = root.TryGetProperty("scope", out var scopeElement)
+                ? scopeElement.GetString()
+                : null;
 
-            File.WriteAllText("data/gmail-token.json", JsonSerializer.Serialize(newToken));
+            var email = GetMailboxIdentity();
+            if (string.IsNullOrEmpty(email))
+                return false;
+
+            using var scope = _scopeFactory.CreateScope();
+            var repo = scope.ServiceProvider.GetRequiredService<IServiceAccountTokenRepository>();
+
+            var expiresAt = DateTime.UtcNow.AddSeconds(expiresIn);
+            await repo.SaveAsync(email, OAuthProvider.Google, newAccessToken, newRefreshToken, expiresAt, scopeValue, cancellationToken);
+
             return true;
         }
         catch
@@ -218,13 +220,11 @@ public class GmailIdentityProvider : IImapIdentityProvider
         }
     }
 
-    private static bool IsExpired(TokenResponse? token)
+    private static bool IsExpired(ServiceAccountToken entity)
     {
-        if (token == null || token.IssuedUtc == default)
+        if (entity.AccessTokenExpiresAt == null)
             return true;
 
-        var lifetime = token.ExpiresInSeconds > 0 ? token.ExpiresInSeconds : 3600;
-        var expiry = token.IssuedUtc.AddSeconds((double)lifetime);
-        return DateTime.UtcNow >= expiry;
+        return DateTime.UtcNow >= entity.AccessTokenExpiresAt.Value;
     }
 }

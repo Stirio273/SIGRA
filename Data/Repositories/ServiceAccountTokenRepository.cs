@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using SIGRA.Data.Enums;
 using SIGRA.Data.Models;
 using SIGRA.Services;
@@ -29,7 +30,7 @@ public sealed class ServiceAccountTokenRepository : IServiceAccountTokenReposito
             .AsNoTracking()
             .FirstOrDefaultAsync(x =>
                 x.Email == email &&
-                x.Provider == provider.ToString(), ct);
+                x.Provider == provider, ct);
     }
 
     public async Task SaveAsync(
@@ -49,7 +50,7 @@ public sealed class ServiceAccountTokenRepository : IServiceAccountTokenReposito
         var existing = await _context.ServiceAccountTokens
             .FirstOrDefaultAsync(x =>
                 x.Email == email &&
-                x.Provider == provider.ToString(), ct);
+                x.Provider == provider, ct);
 
         if (existing is null)
         {

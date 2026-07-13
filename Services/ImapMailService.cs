@@ -1,9 +1,6 @@
-using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Security;
 using MimeKit;
-using Microsoft.Extensions.Configuration;
-using SIGRA.Services;
 
 namespace SIGRA.Services;
 
@@ -76,6 +73,44 @@ public class ImapMailService
     }
 
     public string GetFolderName() => _config["Imap:Folder"] ?? "INBOX";
+
+    public record MailAttachmentInfo(string FileName, string ContentType, long Size);
+
+    public record MailInfo(
+        string Sender,
+        string SenderEmail,
+        DateTimeOffset SentDate,
+        string Subject,
+        string Body,
+        IReadOnlyList<MailAttachmentInfo> Attachments);
+
+    public static MailInfo MapToMailInfo(MimeMessage message)
+    {
+        var fromAddress = message.From?.OfType<MailboxAddress>().FirstOrDefault();
+        var sender = fromAddress?.Name ?? string.Empty;
+        var senderEmail = fromAddress?.Address ?? string.Empty;
+        var body = message.TextBody ?? message.HtmlBody ?? string.Empty;
+
+        var attachments = message.Attachments
+            .OfType<MimePart>()
+            .Select(part =>
+            {
+                var fileName = part.FileName;
+                var contentType = part.ContentType?.MimeType ?? "application/octet-stream";
+                var size = part.ContentDisposition?.Size ?? 0;
+                return new MailAttachmentInfo(fileName, contentType, size);
+            })
+            .ToList()
+            .AsReadOnly();
+
+        return new MailInfo(
+            Sender: sender,
+            SenderEmail: senderEmail,
+            SentDate: message.Date.UtcDateTime,
+            Subject: message.Subject ?? string.Empty,
+            Body: body,
+            Attachments: attachments);
+    }
 
     public static (string Subject, string From, DateTimeOffset Received, bool IsRead, string Body) MapToMessageSummary(MimeMessage message)
     {
