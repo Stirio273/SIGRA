@@ -2,14 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using SIGRA.Data;
 using SIGRA.Middleware;
 using SIGRA.Services;
-using Google.Apis.Auth.AspNetCore3;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Google.Apis.Auth.OAuth2;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration["ConnectionStrings:DefaultConnection"]));
 
 
 builder.Services.AddScoped<IUserAuthenticationService, UserAuthenticationService>();

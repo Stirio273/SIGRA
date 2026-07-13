@@ -286,6 +286,53 @@ CREATE INDEX idx_notification_destinataire_non_lues
 CREATE INDEX idx_notification_ticket ON notification(id_ticket);
 
 -- ============================================================================
+-- BLOC 9 : OAuth Token
+-- ============================================================================
+
+-- Création du type ENUM PostgreSQL pour les providers
+CREATE TYPE oauth_provider AS ENUM (
+    'Google',
+    'Microsoft'
+);
+
+CREATE TABLE service_account_tokens
+(
+    id                      SERIAL          NOT NULL,
+
+    email                   VARCHAR(256)    NOT NULL,
+    provider                oauth_provider  NOT NULL,
+
+    encrypted_access_token  TEXT            NOT NULL,
+    encrypted_refresh_token TEXT                NULL,
+    scopes                  TEXT                NULL,
+    access_token_expires_at TIMESTAMPTZ         NULL,
+    created_at              TIMESTAMPTZ     NOT NULL    DEFAULT NOW(),
+    updated_at              TIMESTAMPTZ     NOT NULL    DEFAULT NOW(),
+
+    CONSTRAINT pk_service_account_tokens
+        PRIMARY KEY (id),
+
+    CONSTRAINT uq_service_account_tokens_email_provider
+        UNIQUE (email, provider)
+);
+
+CREATE INDEX idx_service_account_tokens_email
+    ON service_account_tokens (email);
+
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER tr_service_account_tokens_updated_at
+    BEFORE UPDATE ON service_account_tokens
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================================================
 -- DONNÉES DE RÉFÉRENCE INITIALES
 -- ============================================================================
 
