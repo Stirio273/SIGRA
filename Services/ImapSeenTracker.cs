@@ -33,6 +33,15 @@ public class ImapSeenTracker
         }
     }
 
+    public void Reset()
+    {
+        lock (_lock)
+        {
+            _lastSeenUid = 0;
+            PersistLastSeenUidToFile();
+        }
+    }
+
     public IEnumerable<ulong> FilterSeen(IEnumerable<ulong> uids)
     {
         foreach (var uid in uids)

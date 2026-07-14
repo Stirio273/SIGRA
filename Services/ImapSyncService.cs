@@ -42,35 +42,67 @@ public class ImapSyncService
                 await folder.OpenAsync(FolderAccess.ReadOnly, cancellationToken);
             }
 
-            var uids = await folder.SearchAsync(SearchQuery.All, cancellationToken);
+            var allUids = await folder.SearchAsync(SearchQuery.All, cancellationToken);
 
-            var newMessages = new List<MimeMessage>();
-            ulong cycleMaxUid = 0;
+            if (allUids.Count == 0)
+            {
+                _logger.LogInformation("IMAP sync completed. No messages found.");
+                return;
+            }
 
-            foreach (var uid in uids)
+            var lastSeenUid = _seenTracker.LastSeenUid;
+
+            if (lastSeenUid == 0)
+            {
+                _logger.LogInformation("First sync detected. Processing all {Count} messages...", allUids.Count);
+            }
+            else
+            {
+                _logger.LogInformation(
+                    "Filtering {Total} messages. Last seen Uid: {LastSeenUid}",
+                    allUids.Count,
+                    lastSeenUid);
+            }
+
+            var newUids = _seenTracker.FilterSeen(allUids.Select(u => (ulong)u.Id)).ToList();
+
+            if (newUids.Count == 0)
+            {
+                _logger.LogInformation("IMAP sync completed. No new messages found.");
+                return;
+            }
+
+            _logger.LogInformation("Found {Count} new message(s). Fetching content...", newUids.Count);
+
+            var successfullyProcessedUids = new List<ulong>();
+
+            foreach (var uid in newUids)
             {
                 try
                 {
-                    var message = await folder.GetMessageAsync(uid, cancellationToken);
-                    newMessages.Add(message);
-
-                    cycleMaxUid = Math.Max(cycleMaxUid, uid.Id);
+                    var uniqueId = new UniqueId((uint)uid);
+                    var message = await folder.GetMessageAsync(uniqueId, cancellationToken);
+                    await ProcessMessageAsync(message);
+                    successfullyProcessedUids.Add(uid);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Failed to fetch message with Uid {Uid}", uid.Id);
+                    _logger.LogWarning(
+                        ex,
+                        "Failed to fetch/process message with Uid {Uid}. Will retry on next sync.",
+                        uid);
                 }
             }
 
-            if (cycleMaxUid > 0)
-                _seenTracker.MarkSeen(new[] { cycleMaxUid });
-
-            foreach (var message in newMessages)
+            if (successfullyProcessedUids.Count > 0)
             {
-                await ProcessMessageAsync(message);
+                _seenTracker.MarkSeen(successfullyProcessedUids);
             }
 
-            _logger.LogInformation("IMAP sync completed. {Count} new messages found.", newMessages.Count);
+            _logger.LogInformation(
+                "IMAP sync completed. {Processed} of {Total} new message(s) processed successfully.",
+                successfullyProcessedUids.Count,
+                newUids.Count);
         }
         catch (Exception ex)
         {

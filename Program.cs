@@ -20,7 +20,9 @@ builder.Services.AddOpenApi();
 builder.Services.AddHttpClient();
 
 builder.Services.AddScoped<IServiceAccountTokenRepository, ServiceAccountTokenRepository>();
+builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 builder.Services.AddScoped<ITokenEncryptionService, TokenEncryptionService>();
+builder.Services.AddScoped<TicketService>();
 builder.Services.AddSingleton<ImapMailService>();
 builder.Services.AddSingleton<ImapSyncService>();
 builder.Services.AddSingleton<IImapIdentityProvider, GmailIdentityProvider>();

@@ -26,7 +26,7 @@ public class AuthenticationController : ControllerBase
         {
             AdUsername = username,
             Email = user?.Email,
-            Role = user?.Role,
+            Role = user?.IdRole,
             Message = "Access granted"
         });
     }

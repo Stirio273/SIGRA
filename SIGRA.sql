@@ -30,7 +30,7 @@ CREATE TABLE utilisateurs (
         )
 );
 
-CREATE INDEX idx_utilisateur_role ON utilisateur(id_role);
+CREATE INDEX idx_utilisateur_role ON utilisateurs(id_role);
 CREATE INDEX idx_utilisateur_actif ON utilisateurs(actif);
 
 -- ============================================================================
@@ -47,7 +47,7 @@ CREATE TABLE applications (
     id_application  SERIAL PRIMARY KEY,
     libelle         VARCHAR(150) NOT NULL,
     actif           BOOLEAN NOT NULL DEFAULT TRUE,
-    id_cs           INTEGER NOT NULL REFERENCES classe_de_service(id_cs)
+    id_cs           INTEGER NOT NULL REFERENCES classes_service(id_cs)
 );
 
 CREATE INDEX idx_application_cs ON applications(id_cs);
@@ -145,7 +145,7 @@ CREATE INDEX idx_email_source_conversation ON emails_sources(conversation_id_gra
 
 -- Garantit qu'un seul email par ticket est marqué "initial"
 CREATE UNIQUE INDEX uq_email_source_initial
-    ON email_source(id_ticket)
+    ON emails_sources(id_ticket)
     WHERE est_email_initial = TRUE;
 
 -- ============================================================================
@@ -280,10 +280,10 @@ CREATE TABLE notifications (
 
 -- Index composite pour la requête la plus fréquente : notifications non lues d'un utilisateur
 CREATE INDEX idx_notification_destinataire_non_lues
-    ON notification(id_destinataire, est_lue)
+    ON notifications(id_destinataire, est_lue)
     WHERE est_lue = FALSE;
 
-CREATE INDEX idx_notification_ticket ON notification(id_ticket);
+CREATE INDEX idx_notification_ticket ON notifications(id_ticket);
 
 -- ============================================================================
 -- BLOC 9 : OAuth Token
@@ -336,18 +336,18 @@ CREATE OR REPLACE TRIGGER tr_service_account_tokens_updated_at
 -- DONNÉES DE RÉFÉRENCE INITIALES
 -- ============================================================================
 
-INSERT INTO role (libelle) VALUES ('Administrateur'), ('Technicien'), ('Manager');
+INSERT INTO roles (libelle) VALUES ('Administrateur'), ('Technicien'), ('Manager');
 
-INSERT INTO type_demande (libelle) VALUES ('Réclamation'), ('Demande');
+INSERT INTO types_demande (libelle) VALUES ('Réclamation'), ('Demande');
 
-INSERT INTO criticite (libelle, ordre) VALUES ('Critique', 1), ('Haute', 2), ('Normale', 3);
+INSERT INTO criticites (libelle, ordre) VALUES ('Critique', 1), ('Haute', 2), ('Normale', 3);
 
-INSERT INTO statut (libelle) VALUES
+INSERT INTO statuts (libelle) VALUES
     ('Nouveau'), ('En cours'), ('En attente'), ('Escaladé'),
     ('En attente de validation rejet'), ('Résolu'), ('Clôturé'), ('Rejeté');
 
 -- Transitions autorisées
-INSERT INTO transition_autorisee (id_statut_origine, id_statut_destination)
+INSERT INTO transitions_autorisees (id_statut_origine, id_statut_destination)
 SELECT s1.id_statut, s2.id_statut
 FROM statut s1, statut s2
 WHERE (s1.libelle, s2.libelle) IN (
@@ -364,7 +364,7 @@ WHERE (s1.libelle, s2.libelle) IN (
     ('Résolu', 'Clôturé')
 );
 
-INSERT INTO type_evenement_notification (libelle) VALUES
+INSERT INTO types_evenement_notification (libelle) VALUES
     ('Nouveau ticket créé'),
     ('Ticket en attente depuis plus de 48h'),
     ('Ticket escaladé depuis plus de 48h'),

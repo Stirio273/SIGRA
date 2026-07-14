@@ -29,7 +29,7 @@ public class UserAuthenticationService : IUserAuthenticationService
         }
         // Normalize username for comparison (case-insensitive)
         return await _dbContext.Utilisateurs
-            .Where(u => u.Email.ToLower() == email.ToLower() && u.EstActif)
+            .Where(u => u.Email.ToLower() == email.ToLower() && u.Actif)
             .FirstOrDefaultAsync();
     }
 
