@@ -498,6 +498,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Email)
                 .HasMaxLength(256)
                 .HasColumnName("email");
+                entity.Property(e => e.Provider).HasColumnName("provider");
             entity.Property(e => e.EncryptedAccessToken).HasColumnName("encrypted_access_token");
             entity.Property(e => e.EncryptedRefreshToken).HasColumnName("encrypted_refresh_token");
             entity.Property(e => e.Scopes).HasColumnName("scopes");

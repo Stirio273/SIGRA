@@ -9,7 +9,7 @@ public partial class ServiceAccountToken
     public int Id { get; set; }
 
     public string Email { get; set; } = null!;
-
+    
     public string EncryptedAccessToken { get; set; } = null!;
 
     public string? EncryptedRefreshToken { get; set; }
