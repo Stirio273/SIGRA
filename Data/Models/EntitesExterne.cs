@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SIGRA.Data.Models;
 
-public partial class EntiteExterne
+public partial class EntitesExterne
 {
     public int IdEntiteExterne { get; set; }
 

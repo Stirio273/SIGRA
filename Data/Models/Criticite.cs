@@ -11,7 +11,7 @@ public partial class Criticite
 
     public int Ordre { get; set; }
 
-    public virtual ICollection<RegleCriticite> RegleCriticites { get; set; } = new List<RegleCriticite>();
+    public virtual ICollection<ReglesCriticite> ReglesCriticites { get; set; } = new List<ReglesCriticite>();
 
     public virtual ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
 }

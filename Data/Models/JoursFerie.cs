@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SIGRA.Data.Models;
 
-public partial class JourFerie
+public partial class JoursFerie
 {
     public int IdJourFerie { get; set; }
 

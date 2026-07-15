@@ -13,7 +13,7 @@ public partial class Application
 
     public int IdCs { get; set; }
 
-    public virtual ClasseDeService IdCsNavigation { get; set; } = null!;
+    public virtual ClassesService IdCsNavigation { get; set; } = null!;
 
     public virtual ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
 }

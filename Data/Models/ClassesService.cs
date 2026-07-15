@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SIGRA.Data.Models;
 
-public partial class ClasseDeService
+public partial class ClassesService
 {
     public int IdCs { get; set; }
 
@@ -13,7 +13,7 @@ public partial class ClasseDeService
 
     public virtual ICollection<Application> Applications { get; set; } = new List<Application>();
 
-    public virtual ICollection<RegleCriticite> RegleCriticites { get; set; } = new List<RegleCriticite>();
+    public virtual ICollection<ReglesCriticite> ReglesCriticites { get; set; } = new List<ReglesCriticite>();
 
     public virtual ICollection<Sla> Slas { get; set; } = new List<Sla>();
 }

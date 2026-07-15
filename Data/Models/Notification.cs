@@ -23,5 +23,5 @@ public partial class Notification
 
     public virtual Ticket IdTicketNavigation { get; set; } = null!;
 
-    public virtual TypeEvenementNotification IdTypeEvenementNavigation { get; set; } = null!;
+    public virtual TypesEvenementNotification IdTypeEvenementNavigation { get; set; } = null!;
 }

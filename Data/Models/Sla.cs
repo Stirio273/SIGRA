@@ -13,7 +13,7 @@ public partial class Sla
 
     public decimal Duree { get; set; }
 
-    public virtual ClasseDeService IdCsNavigation { get; set; } = null!;
+    public virtual ClassesService IdCsNavigation { get; set; } = null!;
 
-    public virtual TypeDemande IdTypeDemandeNavigation { get; set; } = null!;
+    public virtual TypesDemande IdTypeDemandeNavigation { get; set; } = null!;
 }

@@ -78,8 +78,13 @@ CREATE TABLE regles_criticite (
 
 CREATE TABLE statuts (
     id_statut       SERIAL PRIMARY KEY,
-    libelle         VARCHAR(50) NOT NULL UNIQUE
+    libelle         VARCHAR(50) NOT NULL UNIQUE,
+    est_defaut      BOOLEAN NOT NULL DEFAULT FALSE
 );
+
+CREATE UNIQUE INDEX uq_statut_defaut
+    ON statuts(est_defaut)
+    WHERE est_defaut = TRUE;
 
 CREATE TABLE transitions_autorisees (
     id_statut_origine       INTEGER NOT NULL REFERENCES statuts(id_statut),
@@ -89,13 +94,15 @@ CREATE TABLE transitions_autorisees (
         CHECK (id_statut_origine <> id_statut_destination)
 );
 
+CREATE SEQUENCE seq_tickets_numero_ticket START 1 INCREMENT 1;
+
 CREATE TABLE tickets (
     id_ticket               SERIAL PRIMARY KEY,
     numero_ticket           VARCHAR(30) NOT NULL UNIQUE,
     date_creation            TIMESTAMPTZ NOT NULL DEFAULT now(),
-    id_application           INTEGER NOT NULL REFERENCES applications(id_application),
-    id_type_demande          INTEGER NOT NULL REFERENCES types_demande(id_type_demande),
-    id_criticite             INTEGER NOT NULL REFERENCES criticites(id_criticite),
+    id_application           INTEGER REFERENCES applications(id_application),
+    id_type_demande          INTEGER REFERENCES types_demande(id_type_demande),
+    id_criticite             INTEGER REFERENCES criticites(id_criticite),
     id_statut                INTEGER NOT NULL REFERENCES statuts(id_statut),
     id_technicien_assigne    INTEGER REFERENCES utilisateurs(id_utilisateur),
     demandeur_email          VARCHAR(255) NOT NULL,
@@ -342,9 +349,9 @@ INSERT INTO types_demande (libelle) VALUES ('Réclamation'), ('Demande');
 
 INSERT INTO criticites (libelle, ordre) VALUES ('Critique', 1), ('Haute', 2), ('Normale', 3);
 
-INSERT INTO statuts (libelle) VALUES
-    ('Nouveau'), ('En cours'), ('En attente'), ('Escaladé'),
-    ('En attente de validation rejet'), ('Résolu'), ('Clôturé'), ('Rejeté');
+INSERT INTO statuts (libelle, est_defaut) VALUES
+    ('Nouveau', true), ('En cours', false), ('En attente', false), ('Escaladé', false),
+    ('En attente de validation rejet', false), ('Résolu', false), ('Clôturé', false), ('Rejeté', false);
 
 -- Transitions autorisées
 INSERT INTO transitions_autorisees (id_statut_origine, id_statut_destination)

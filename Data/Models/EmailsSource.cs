@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SIGRA.Data.Models;
 
-public partial class EmailSource
+public partial class EmailsSource
 {
     public int IdEmailSource { get; set; }
 
@@ -25,5 +25,5 @@ public partial class EmailSource
 
     public virtual Ticket IdTicketNavigation { get; set; } = null!;
 
-    public virtual ICollection<PieceJointe> PieceJointes { get; set; } = new List<PieceJointe>();
+    public virtual ICollection<PiecesJointe> PiecesJointes { get; set; } = new List<PiecesJointe>();
 }

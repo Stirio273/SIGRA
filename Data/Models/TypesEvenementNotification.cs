@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SIGRA.Data.Models;
 
-public partial class TypeEvenementNotification
+public partial class TypesEvenementNotification
 {
     public int IdTypeEvenement { get; set; }
 

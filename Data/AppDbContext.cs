@@ -14,29 +14,29 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Application> Applications { get; set; }
 
-    public virtual DbSet<ClasseDeService> ClasseDeServices { get; set; }
+    public virtual DbSet<ClassesService> ClassesServices { get; set; }
 
     public virtual DbSet<Commentaire> Commentaires { get; set; }
 
     public virtual DbSet<Criticite> Criticites { get; set; }
 
-    public virtual DbSet<EmailSource> EmailSources { get; set; }
+    public virtual DbSet<EmailsSource> EmailsSources { get; set; }
 
-    public virtual DbSet<EntiteExterne> EntiteExternes { get; set; }
+    public virtual DbSet<EntitesExterne> EntitesExternes { get; set; }
 
     public virtual DbSet<Escalade> Escalades { get; set; }
 
     public virtual DbSet<HistoriqueStatut> HistoriqueStatuts { get; set; }
 
-    public virtual DbSet<JourFerie> JourFeries { get; set; }
+    public virtual DbSet<JoursFerie> JoursFeries { get; set; }
 
     public virtual DbSet<Notification> Notifications { get; set; }
 
-    public virtual DbSet<PieceJointe> PieceJointes { get; set; }
+    public virtual DbSet<PiecesJointe> PiecesJointes { get; set; }
 
     public virtual DbSet<Reassignation> Reassignations { get; set; }
 
-    public virtual DbSet<RegleCriticite> RegleCriticites { get; set; }
+    public virtual DbSet<ReglesCriticite> ReglesCriticites { get; set; }
 
     public virtual DbSet<Rejet> Rejets { get; set; }
 
@@ -50,9 +50,9 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Ticket> Tickets { get; set; }
 
-    public virtual DbSet<TypeDemande> TypeDemandes { get; set; }
+    public virtual DbSet<TypesDemande> TypesDemandes { get; set; }
 
-    public virtual DbSet<TypeEvenementNotification> TypeEvenementNotifications { get; set; }
+    public virtual DbSet<TypesEvenementNotification> TypesEvenementNotifications { get; set; }
 
     public virtual DbSet<Utilisateur> Utilisateurs { get; set; }
 
@@ -65,9 +65,9 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<Application>(entity =>
         {
-            entity.HasKey(e => e.IdApplication).HasName("application_pkey");
+            entity.HasKey(e => e.IdApplication).HasName("applications_pkey");
 
-            entity.ToTable("application");
+            entity.ToTable("applications");
 
             entity.HasIndex(e => e.Actif, "idx_application_actif");
 
@@ -85,16 +85,16 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.IdCsNavigation).WithMany(p => p.Applications)
                 .HasForeignKey(d => d.IdCs)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("application_id_cs_fkey");
+                .HasConstraintName("applications_id_cs_fkey");
         });
 
-        modelBuilder.Entity<ClasseDeService>(entity =>
+        modelBuilder.Entity<ClassesService>(entity =>
         {
-            entity.HasKey(e => e.IdCs).HasName("classe_de_service_pkey");
+            entity.HasKey(e => e.IdCs).HasName("classes_service_pkey");
 
-            entity.ToTable("classe_de_service");
+            entity.ToTable("classes_service");
 
-            entity.HasIndex(e => e.Code, "classe_de_service_code_key").IsUnique();
+            entity.HasIndex(e => e.Code, "classes_service_code_key").IsUnique();
 
             entity.Property(e => e.IdCs).HasColumnName("id_cs");
             entity.Property(e => e.Code)
@@ -107,9 +107,9 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<Commentaire>(entity =>
         {
-            entity.HasKey(e => e.IdCommentaire).HasName("commentaire_pkey");
+            entity.HasKey(e => e.IdCommentaire).HasName("commentaires_pkey");
 
-            entity.ToTable("commentaire");
+            entity.ToTable("commentaires");
 
             entity.HasIndex(e => e.ContenuTsv, "idx_commentaire_contenu_tsv").HasMethod("gin");
 
@@ -132,23 +132,23 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.IdAuteurNavigation).WithMany(p => p.Commentaires)
                 .HasForeignKey(d => d.IdAuteur)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("commentaire_id_auteur_fkey");
+                .HasConstraintName("commentaires_id_auteur_fkey");
 
             entity.HasOne(d => d.IdTicketNavigation).WithMany(p => p.Commentaires)
                 .HasForeignKey(d => d.IdTicket)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("commentaire_id_ticket_fkey");
+                .HasConstraintName("commentaires_id_ticket_fkey");
         });
 
         modelBuilder.Entity<Criticite>(entity =>
         {
-            entity.HasKey(e => e.IdCriticite).HasName("criticite_pkey");
+            entity.HasKey(e => e.IdCriticite).HasName("criticites_pkey");
 
-            entity.ToTable("criticite");
+            entity.ToTable("criticites");
 
-            entity.HasIndex(e => e.Libelle, "criticite_libelle_key").IsUnique();
+            entity.HasIndex(e => e.Libelle, "criticites_libelle_key").IsUnique();
 
-            entity.HasIndex(e => e.Ordre, "criticite_ordre_key").IsUnique();
+            entity.HasIndex(e => e.Ordre, "criticites_ordre_key").IsUnique();
 
             entity.Property(e => e.IdCriticite).HasColumnName("id_criticite");
             entity.Property(e => e.Libelle)
@@ -157,13 +157,13 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Ordre).HasColumnName("ordre");
         });
 
-        modelBuilder.Entity<EmailSource>(entity =>
+        modelBuilder.Entity<EmailsSource>(entity =>
         {
-            entity.HasKey(e => e.IdEmailSource).HasName("email_source_pkey");
+            entity.HasKey(e => e.IdEmailSource).HasName("emails_sources_pkey");
 
-            entity.ToTable("email_source");
+            entity.ToTable("emails_sources");
 
-            entity.HasIndex(e => e.MessageIdGraph, "email_source_message_id_graph_key").IsUnique();
+            entity.HasIndex(e => e.MessageIdGraph, "emails_sources_message_id_graph_key").IsUnique();
 
             entity.HasIndex(e => e.ConversationIdGraph, "idx_email_source_conversation");
 
@@ -191,17 +191,17 @@ public partial class AppDbContext : DbContext
                 .HasMaxLength(500)
                 .HasColumnName("objet");
 
-            entity.HasOne(d => d.IdTicketNavigation).WithOne(p => p.EmailSource)
-                .HasForeignKey<EmailSource>(d => d.IdTicket)
+            entity.HasOne(d => d.IdTicketNavigation).WithOne(p => p.EmailsSource)
+                .HasForeignKey<EmailsSource>(d => d.IdTicket)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("email_source_id_ticket_fkey");
+                .HasConstraintName("emails_sources_id_ticket_fkey");
         });
 
-        modelBuilder.Entity<EntiteExterne>(entity =>
+        modelBuilder.Entity<EntitesExterne>(entity =>
         {
-            entity.HasKey(e => e.IdEntiteExterne).HasName("entite_externe_pkey");
+            entity.HasKey(e => e.IdEntiteExterne).HasName("entites_externes_pkey");
 
-            entity.ToTable("entite_externe");
+            entity.ToTable("entites_externes");
 
             entity.Property(e => e.IdEntiteExterne).HasColumnName("id_entite_externe");
             entity.Property(e => e.Actif)
@@ -214,9 +214,9 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<Escalade>(entity =>
         {
-            entity.HasKey(e => e.IdEscalade).HasName("escalade_pkey");
+            entity.HasKey(e => e.IdEscalade).HasName("escalades_pkey");
 
-            entity.ToTable("escalade");
+            entity.ToTable("escalades");
 
             entity.HasIndex(e => e.IdEntiteExterne, "idx_escalade_entite");
 
@@ -235,17 +235,17 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.IdAuteurNavigation).WithMany(p => p.Escalades)
                 .HasForeignKey(d => d.IdAuteur)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("escalade_id_auteur_fkey");
+                .HasConstraintName("escalades_id_auteur_fkey");
 
             entity.HasOne(d => d.IdEntiteExterneNavigation).WithMany(p => p.Escalades)
                 .HasForeignKey(d => d.IdEntiteExterne)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("escalade_id_entite_externe_fkey");
+                .HasConstraintName("escalades_id_entite_externe_fkey");
 
             entity.HasOne(d => d.IdTicketNavigation).WithMany(p => p.Escalades)
                 .HasForeignKey(d => d.IdTicket)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("escalade_id_ticket_fkey");
+                .HasConstraintName("escalades_id_ticket_fkey");
         });
 
         modelBuilder.Entity<HistoriqueStatut>(entity =>
@@ -285,13 +285,13 @@ public partial class AppDbContext : DbContext
                 .HasConstraintName("historique_statut_id_ticket_fkey");
         });
 
-        modelBuilder.Entity<JourFerie>(entity =>
+        modelBuilder.Entity<JoursFerie>(entity =>
         {
-            entity.HasKey(e => e.IdJourFerie).HasName("jour_ferie_pkey");
+            entity.HasKey(e => e.IdJourFerie).HasName("jours_feries_pkey");
 
-            entity.ToTable("jour_ferie");
+            entity.ToTable("jours_feries");
 
-            entity.HasIndex(e => e.Date, "jour_ferie_date_key").IsUnique();
+            entity.HasIndex(e => e.Date, "jours_feries_date_key").IsUnique();
 
             entity.Property(e => e.IdJourFerie).HasColumnName("id_jour_ferie");
             entity.Property(e => e.Date).HasColumnName("date");
@@ -302,9 +302,9 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<Notification>(entity =>
         {
-            entity.HasKey(e => e.IdNotification).HasName("notification_pkey");
+            entity.HasKey(e => e.IdNotification).HasName("notifications_pkey");
 
-            entity.ToTable("notification");
+            entity.ToTable("notifications");
 
             entity.HasIndex(e => new { e.IdDestinataire, e.EstLue }, "idx_notification_destinataire_non_lues").HasFilter("(est_lue = false)");
 
@@ -323,24 +323,24 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.IdDestinataireNavigation).WithMany(p => p.Notifications)
                 .HasForeignKey(d => d.IdDestinataire)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("notification_id_destinataire_fkey");
+                .HasConstraintName("notifications_id_destinataire_fkey");
 
             entity.HasOne(d => d.IdTicketNavigation).WithMany(p => p.Notifications)
                 .HasForeignKey(d => d.IdTicket)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("notification_id_ticket_fkey");
+                .HasConstraintName("notifications_id_ticket_fkey");
 
             entity.HasOne(d => d.IdTypeEvenementNavigation).WithMany(p => p.Notifications)
                 .HasForeignKey(d => d.IdTypeEvenement)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("notification_id_type_evenement_fkey");
+                .HasConstraintName("notifications_id_type_evenement_fkey");
         });
 
-        modelBuilder.Entity<PieceJointe>(entity =>
+        modelBuilder.Entity<PiecesJointe>(entity =>
         {
-            entity.HasKey(e => e.IdPieceJointe).HasName("piece_jointe_pkey");
+            entity.HasKey(e => e.IdPieceJointe).HasName("pieces_jointes_pkey");
 
-            entity.ToTable("piece_jointe");
+            entity.ToTable("pieces_jointes");
 
             entity.HasIndex(e => e.IdEmailSource, "idx_piece_jointe_email");
 
@@ -357,17 +357,17 @@ public partial class AppDbContext : DbContext
                 .HasMaxLength(150)
                 .HasColumnName("type_mime");
 
-            entity.HasOne(d => d.IdEmailSourceNavigation).WithMany(p => p.PieceJointes)
+            entity.HasOne(d => d.IdEmailSourceNavigation).WithMany(p => p.PiecesJointes)
                 .HasForeignKey(d => d.IdEmailSource)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("piece_jointe_id_email_source_fkey");
+                .HasConstraintName("pieces_jointes_id_email_source_fkey");
         });
 
         modelBuilder.Entity<Reassignation>(entity =>
         {
-            entity.HasKey(e => e.IdReassignation).HasName("reassignation_pkey");
+            entity.HasKey(e => e.IdReassignation).HasName("reassignations_pkey");
 
-            entity.ToTable("reassignation");
+            entity.ToTable("reassignations");
 
             entity.HasIndex(e => e.IdTicket, "idx_reassignation_ticket");
 
@@ -383,58 +383,58 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.IdAncienAssigneNavigation).WithMany(p => p.ReassignationIdAncienAssigneNavigations)
                 .HasForeignKey(d => d.IdAncienAssigne)
-                .HasConstraintName("reassignation_id_ancien_assigne_fkey");
+                .HasConstraintName("reassignations_id_ancien_assigne_fkey");
 
             entity.HasOne(d => d.IdAuteurNavigation).WithMany(p => p.ReassignationIdAuteurNavigations)
                 .HasForeignKey(d => d.IdAuteur)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("reassignation_id_auteur_fkey");
+                .HasConstraintName("reassignations_id_auteur_fkey");
 
             entity.HasOne(d => d.IdNouvelAssigneNavigation).WithMany(p => p.ReassignationIdNouvelAssigneNavigations)
                 .HasForeignKey(d => d.IdNouvelAssigne)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("reassignation_id_nouvel_assigne_fkey");
+                .HasConstraintName("reassignations_id_nouvel_assigne_fkey");
 
             entity.HasOne(d => d.IdTicketNavigation).WithMany(p => p.Reassignations)
                 .HasForeignKey(d => d.IdTicket)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("reassignation_id_ticket_fkey");
+                .HasConstraintName("reassignations_id_ticket_fkey");
         });
 
-        modelBuilder.Entity<RegleCriticite>(entity =>
+        modelBuilder.Entity<ReglesCriticite>(entity =>
         {
-            entity.HasKey(e => e.IdRegleCriticite).HasName("regle_criticite_pkey");
+            entity.HasKey(e => e.IdRegleCriticite).HasName("regles_criticite_pkey");
 
-            entity.ToTable("regle_criticite");
+            entity.ToTable("regles_criticite");
 
-            entity.HasIndex(e => new { e.IdCs, e.IdTypeDemande }, "regle_criticite_id_cs_id_type_demande_key").IsUnique();
+            entity.HasIndex(e => new { e.IdCs, e.IdTypeDemande }, "regles_criticite_id_cs_id_type_demande_key").IsUnique();
 
             entity.Property(e => e.IdRegleCriticite).HasColumnName("id_regle_criticite");
             entity.Property(e => e.IdCriticite).HasColumnName("id_criticite");
             entity.Property(e => e.IdCs).HasColumnName("id_cs");
             entity.Property(e => e.IdTypeDemande).HasColumnName("id_type_demande");
 
-            entity.HasOne(d => d.IdCriticiteNavigation).WithMany(p => p.RegleCriticites)
+            entity.HasOne(d => d.IdCriticiteNavigation).WithMany(p => p.ReglesCriticites)
                 .HasForeignKey(d => d.IdCriticite)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("regle_criticite_id_criticite_fkey");
+                .HasConstraintName("regles_criticite_id_criticite_fkey");
 
-            entity.HasOne(d => d.IdCsNavigation).WithMany(p => p.RegleCriticites)
+            entity.HasOne(d => d.IdCsNavigation).WithMany(p => p.ReglesCriticites)
                 .HasForeignKey(d => d.IdCs)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("regle_criticite_id_cs_fkey");
+                .HasConstraintName("regles_criticite_id_cs_fkey");
 
-            entity.HasOne(d => d.IdTypeDemandeNavigation).WithMany(p => p.RegleCriticites)
+            entity.HasOne(d => d.IdTypeDemandeNavigation).WithMany(p => p.ReglesCriticites)
                 .HasForeignKey(d => d.IdTypeDemande)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("regle_criticite_id_type_demande_fkey");
+                .HasConstraintName("regles_criticite_id_type_demande_fkey");
         });
 
         modelBuilder.Entity<Rejet>(entity =>
         {
-            entity.HasKey(e => e.IdRejet).HasName("rejet_pkey");
+            entity.HasKey(e => e.IdRejet).HasName("rejets_pkey");
 
-            entity.ToTable("rejet");
+            entity.ToTable("rejets");
 
             entity.HasIndex(e => e.IdTicket, "idx_rejet_ticket");
 
@@ -456,25 +456,25 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.IdAuteurNavigation).WithMany(p => p.RejetIdAuteurNavigations)
                 .HasForeignKey(d => d.IdAuteur)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("rejet_id_auteur_fkey");
+                .HasConstraintName("rejets_id_auteur_fkey");
 
             entity.HasOne(d => d.IdTicketNavigation).WithOne(p => p.Rejet)
                 .HasForeignKey<Rejet>(d => d.IdTicket)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("rejet_id_ticket_fkey");
+                .HasConstraintName("rejets_id_ticket_fkey");
 
             entity.HasOne(d => d.IdValidateurNavigation).WithMany(p => p.RejetIdValidateurNavigations)
                 .HasForeignKey(d => d.IdValidateur)
-                .HasConstraintName("rejet_id_validateur_fkey");
+                .HasConstraintName("rejets_id_validateur_fkey");
         });
 
         modelBuilder.Entity<Role>(entity =>
         {
-            entity.HasKey(e => e.IdRole).HasName("role_pkey");
+            entity.HasKey(e => e.IdRole).HasName("roles_pkey");
 
-            entity.ToTable("role");
+            entity.ToTable("roles");
 
-            entity.HasIndex(e => e.Libelle, "role_libelle_key").IsUnique();
+            entity.HasIndex(e => e.Libelle, "roles_libelle_key").IsUnique();
 
             entity.Property(e => e.IdRole).HasColumnName("id_role");
             entity.Property(e => e.Libelle)
@@ -498,7 +498,6 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Email)
                 .HasMaxLength(256)
                 .HasColumnName("email");
-            entity.Property(e => e.Provider).HasColumnName("provider");
             entity.Property(e => e.EncryptedAccessToken).HasColumnName("encrypted_access_token");
             entity.Property(e => e.EncryptedRefreshToken).HasColumnName("encrypted_refresh_token");
             entity.Property(e => e.Scopes).HasColumnName("scopes");
@@ -535,51 +534,56 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<Statut>(entity =>
         {
-            entity.HasKey(e => e.IdStatut).HasName("statut_pkey");
+            entity.HasKey(e => e.IdStatut).HasName("statuts_pkey");
 
-            entity.ToTable("statut");
+            entity.ToTable("statuts");
 
-            entity.HasIndex(e => e.Libelle, "statut_libelle_key").IsUnique();
+            entity.HasIndex(e => e.Libelle, "statuts_libelle_key").IsUnique();
+
+            entity.HasIndex(e => e.EstDefaut, "uq_statut_defaut")
+                .IsUnique()
+                .HasFilter("(est_defaut = true)");
 
             entity.Property(e => e.IdStatut).HasColumnName("id_statut");
+            entity.Property(e => e.EstDefaut).HasColumnName("est_defaut");
             entity.Property(e => e.Libelle)
                 .HasMaxLength(50)
                 .HasColumnName("libelle");
 
             entity.HasMany(d => d.IdStatutDestinations).WithMany(p => p.IdStatutOrigines)
                 .UsingEntity<Dictionary<string, object>>(
-                    "TransitionAutorisee",
+                    "TransitionsAutorisee",
                     r => r.HasOne<Statut>().WithMany()
                         .HasForeignKey("IdStatutDestination")
                         .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("transition_autorisee_id_statut_destination_fkey"),
+                        .HasConstraintName("transitions_autorisees_id_statut_destination_fkey"),
                     l => l.HasOne<Statut>().WithMany()
                         .HasForeignKey("IdStatutOrigine")
                         .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("transition_autorisee_id_statut_origine_fkey"),
+                        .HasConstraintName("transitions_autorisees_id_statut_origine_fkey"),
                     j =>
                     {
-                        j.HasKey("IdStatutOrigine", "IdStatutDestination").HasName("transition_autorisee_pkey");
-                        j.ToTable("transition_autorisee");
+                        j.HasKey("IdStatutOrigine", "IdStatutDestination").HasName("transitions_autorisees_pkey");
+                        j.ToTable("transitions_autorisees");
                         j.IndexerProperty<int>("IdStatutOrigine").HasColumnName("id_statut_origine");
                         j.IndexerProperty<int>("IdStatutDestination").HasColumnName("id_statut_destination");
                     });
 
             entity.HasMany(d => d.IdStatutOrigines).WithMany(p => p.IdStatutDestinations)
                 .UsingEntity<Dictionary<string, object>>(
-                    "TransitionAutorisee",
+                    "TransitionsAutorisee",
                     r => r.HasOne<Statut>().WithMany()
                         .HasForeignKey("IdStatutOrigine")
                         .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("transition_autorisee_id_statut_origine_fkey"),
+                        .HasConstraintName("transitions_autorisees_id_statut_origine_fkey"),
                     l => l.HasOne<Statut>().WithMany()
                         .HasForeignKey("IdStatutDestination")
                         .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("transition_autorisee_id_statut_destination_fkey"),
+                        .HasConstraintName("transitions_autorisees_id_statut_destination_fkey"),
                     j =>
                     {
-                        j.HasKey("IdStatutOrigine", "IdStatutDestination").HasName("transition_autorisee_pkey");
-                        j.ToTable("transition_autorisee");
+                        j.HasKey("IdStatutOrigine", "IdStatutDestination").HasName("transitions_autorisees_pkey");
+                        j.ToTable("transitions_autorisees");
                         j.IndexerProperty<int>("IdStatutOrigine").HasColumnName("id_statut_origine");
                         j.IndexerProperty<int>("IdStatutDestination").HasColumnName("id_statut_destination");
                     });
@@ -587,9 +591,9 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<Ticket>(entity =>
         {
-            entity.HasKey(e => e.IdTicket).HasName("ticket_pkey");
+            entity.HasKey(e => e.IdTicket).HasName("tickets_pkey");
 
-            entity.ToTable("ticket");
+            entity.ToTable("tickets");
 
             entity.HasIndex(e => e.IdApplication, "idx_ticket_application");
 
@@ -601,7 +605,7 @@ public partial class AppDbContext : DbContext
 
             entity.HasIndex(e => e.IdTechnicienAssigne, "idx_ticket_technicien_assigne");
 
-            entity.HasIndex(e => e.NumeroTicket, "ticket_numero_ticket_key").IsUnique();
+            entity.HasIndex(e => e.NumeroTicket, "tickets_numero_ticket_key").IsUnique();
 
             entity.Property(e => e.IdTicket).HasColumnName("id_ticket");
             entity.Property(e => e.DateCloture).HasColumnName("date_cloture");
@@ -629,35 +633,35 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.IdApplicationNavigation).WithMany(p => p.Tickets)
                 .HasForeignKey(d => d.IdApplication)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("ticket_id_application_fkey");
+                .HasConstraintName("tickets_id_application_fkey");
 
             entity.HasOne(d => d.IdCriticiteNavigation).WithMany(p => p.Tickets)
                 .HasForeignKey(d => d.IdCriticite)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("ticket_id_criticite_fkey");
+                .HasConstraintName("tickets_id_criticite_fkey");
 
             entity.HasOne(d => d.IdStatutNavigation).WithMany(p => p.Tickets)
                 .HasForeignKey(d => d.IdStatut)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("ticket_id_statut_fkey");
+                .HasConstraintName("tickets_id_statut_fkey");
 
             entity.HasOne(d => d.IdTechnicienAssigneNavigation).WithMany(p => p.Tickets)
                 .HasForeignKey(d => d.IdTechnicienAssigne)
-                .HasConstraintName("ticket_id_technicien_assigne_fkey");
+                .HasConstraintName("tickets_id_technicien_assigne_fkey");
 
             entity.HasOne(d => d.IdTypeDemandeNavigation).WithMany(p => p.Tickets)
                 .HasForeignKey(d => d.IdTypeDemande)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("ticket_id_type_demande_fkey");
+                .HasConstraintName("tickets_id_type_demande_fkey");
         });
 
-        modelBuilder.Entity<TypeDemande>(entity =>
+        modelBuilder.Entity<TypesDemande>(entity =>
         {
-            entity.HasKey(e => e.IdTypeDemande).HasName("type_demande_pkey");
+            entity.HasKey(e => e.IdTypeDemande).HasName("types_demande_pkey");
 
-            entity.ToTable("type_demande");
+            entity.ToTable("types_demande");
 
-            entity.HasIndex(e => e.Libelle, "type_demande_libelle_key").IsUnique();
+            entity.HasIndex(e => e.Libelle, "types_demande_libelle_key").IsUnique();
 
             entity.Property(e => e.IdTypeDemande).HasColumnName("id_type_demande");
             entity.Property(e => e.Libelle)
@@ -665,13 +669,13 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("libelle");
         });
 
-        modelBuilder.Entity<TypeEvenementNotification>(entity =>
+        modelBuilder.Entity<TypesEvenementNotification>(entity =>
         {
-            entity.HasKey(e => e.IdTypeEvenement).HasName("type_evenement_notification_pkey");
+            entity.HasKey(e => e.IdTypeEvenement).HasName("types_evenement_notification_pkey");
 
-            entity.ToTable("type_evenement_notification");
+            entity.ToTable("types_evenement_notification");
 
-            entity.HasIndex(e => e.Libelle, "type_evenement_notification_libelle_key").IsUnique();
+            entity.HasIndex(e => e.Libelle, "types_evenement_notification_libelle_key").IsUnique();
 
             entity.Property(e => e.IdTypeEvenement).HasColumnName("id_type_evenement");
             entity.Property(e => e.Libelle)
@@ -681,7 +685,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<Utilisateur>(entity =>
         {
-            entity.HasKey(e => e.IdUtilisateur).HasName("utilisateur_pkey");
+            entity.HasKey(e => e.IdUtilisateur).HasName("utilisateurs_pkey");
 
             entity.ToTable("utilisateurs");
 
@@ -689,13 +693,11 @@ public partial class AppDbContext : DbContext
 
             entity.HasIndex(e => e.IdRole, "idx_utilisateur_role");
 
-            entity.HasIndex(e => e.Email, "utilisateur_email_key").IsUnique();
+            entity.HasIndex(e => e.Email, "utilisateurs_email_key").IsUnique();
 
-            entity.HasIndex(e => e.IdentifiantAd, "utilisateur_identifiant_ad_key").IsUnique();
+            entity.HasIndex(e => e.IdentifiantAd, "utilisateurs_identifiant_ad_key").IsUnique();
 
-            entity.Property(e => e.IdUtilisateur)
-                .HasDefaultValueSql("nextval('utilisateur_id_utilisateur_seq'::regclass)")
-                .HasColumnName("id_utilisateur");
+            entity.Property(e => e.IdUtilisateur).HasColumnName("id_utilisateur");
             entity.Property(e => e.Actif)
                 .HasDefaultValue(true)
                 .HasColumnName("actif");
@@ -720,7 +722,7 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.IdRoleNavigation).WithMany(p => p.Utilisateurs)
                 .HasForeignKey(d => d.IdRole)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("utilisateur_id_role_fkey");
+                .HasConstraintName("utilisateurs_id_role_fkey");
         });
 
         OnModelCreatingPartial(modelBuilder);

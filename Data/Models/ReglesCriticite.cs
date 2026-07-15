@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SIGRA.Data.Models;
 
-public partial class RegleCriticite
+public partial class ReglesCriticite
 {
     public int IdRegleCriticite { get; set; }
 
@@ -15,7 +15,7 @@ public partial class RegleCriticite
 
     public virtual Criticite IdCriticiteNavigation { get; set; } = null!;
 
-    public virtual ClasseDeService IdCsNavigation { get; set; } = null!;
+    public virtual ClassesService IdCsNavigation { get; set; } = null!;
 
-    public virtual TypeDemande IdTypeDemandeNavigation { get; set; } = null!;
+    public virtual TypesDemande IdTypeDemandeNavigation { get; set; } = null!;
 }

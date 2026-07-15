@@ -9,6 +9,8 @@ public partial class Statut
 
     public string Libelle { get; set; } = null!;
 
+    public bool EstDefaut { get; set; }
+
     public virtual ICollection<HistoriqueStatut> HistoriqueStatutIdStatutPrecedentNavigations { get; set; } = new List<HistoriqueStatut>();
 
     public virtual ICollection<HistoriqueStatut> HistoriqueStatutIdStatutSuivantNavigations { get; set; } = new List<HistoriqueStatut>();

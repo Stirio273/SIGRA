@@ -3,13 +3,13 @@ using System.Collections.Generic;
 
 namespace SIGRA.Data.Models;
 
-public partial class TypeDemande
+public partial class TypesDemande
 {
     public int IdTypeDemande { get; set; }
 
     public string Libelle { get; set; } = null!;
 
-    public virtual ICollection<RegleCriticite> RegleCriticites { get; set; } = new List<RegleCriticite>();
+    public virtual ICollection<ReglesCriticite> ReglesCriticites { get; set; } = new List<ReglesCriticite>();
 
     public virtual ICollection<Sla> Slas { get; set; } = new List<Sla>();
 

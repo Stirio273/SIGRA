@@ -21,7 +21,7 @@ public partial class Escalade
 
     public virtual Utilisateur IdAuteurNavigation { get; set; } = null!;
 
-    public virtual EntiteExterne IdEntiteExterneNavigation { get; set; } = null!;
+    public virtual EntitesExterne IdEntiteExterneNavigation { get; set; } = null!;
 
     public virtual Ticket IdTicketNavigation { get; set; } = null!;
 }

@@ -4,6 +4,8 @@ namespace SIGRA.Data.Models;
 
 public partial class ServiceAccountToken
 {
+    public OAuthProvider Provider { get; set; }
+
     public static ServiceAccountToken Create(
         string email,
         OAuthProvider provider,

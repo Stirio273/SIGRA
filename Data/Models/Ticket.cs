@@ -11,11 +11,11 @@ public partial class Ticket
 
     public DateTime DateCreation { get; set; }
 
-    public int IdApplication { get; set; }
+    public int? IdApplication { get; set; }
 
-    public int IdTypeDemande { get; set; }
+    public int? IdTypeDemande { get; set; }
 
-    public int IdCriticite { get; set; }
+    public int? IdCriticite { get; set; }
 
     public int IdStatut { get; set; }
 
@@ -31,7 +31,7 @@ public partial class Ticket
 
     public virtual ICollection<Commentaire> Commentaires { get; set; } = new List<Commentaire>();
 
-    public virtual EmailSource? EmailSource { get; set; }
+    public virtual EmailsSource? EmailsSource { get; set; }
 
     public virtual ICollection<Escalade> Escalades { get; set; } = new List<Escalade>();
 
@@ -45,7 +45,7 @@ public partial class Ticket
 
     public virtual Utilisateur? IdTechnicienAssigneNavigation { get; set; }
 
-    public virtual TypeDemande IdTypeDemandeNavigation { get; set; } = null!;
+    public virtual TypesDemande IdTypeDemandeNavigation { get; set; } = null!;
 
     public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 

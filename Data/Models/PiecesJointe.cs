@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SIGRA.Data.Models;
 
-public partial class PieceJointe
+public partial class PiecesJointe
 {
     public int IdPieceJointe { get; set; }
 
@@ -17,5 +17,5 @@ public partial class PieceJointe
 
     public string? TypeMime { get; set; }
 
-    public virtual EmailSource IdEmailSourceNavigation { get; set; } = null!;
+    public virtual EmailsSource IdEmailSourceNavigation { get; set; } = null!;
 }
