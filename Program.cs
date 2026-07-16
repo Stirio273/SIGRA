@@ -21,9 +21,10 @@ builder.Services.AddHttpClient();
 
 builder.Services.AddScoped<IServiceAccountTokenRepository, ServiceAccountTokenRepository>();
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
-builder.Services.AddScoped<ITokenEncryptionService, TokenEncryptionService>();
 builder.Services.AddScoped<IStatutRepository, StatutRepository>();
-builder.Services.AddSingleton<TicketService>();
+builder.Services.AddScoped<ITokenEncryptionService, TokenEncryptionService>();
+builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddScoped<IStorageService, FileSystemStorageService>();
 builder.Services.AddSingleton<ImapMailService>();
 builder.Services.AddSingleton<ImapSyncService>();
 builder.Services.AddSingleton<IImapIdentityProvider, GmailIdentityProvider>();
@@ -57,6 +58,8 @@ if (app.Environment.IsDevelopment())
         options.DocumentPath = "/openapi/v1.json";
     });
 }
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseCors(allowSpecificOrigins);
 

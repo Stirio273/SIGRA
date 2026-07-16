@@ -7,18 +7,18 @@ namespace SIGRA.Services;
 public class ImapSyncService
 {
     private readonly ImapMailService _imapMailService;
-    private readonly TicketService _ticketService;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly ImapSeenTracker _seenTracker;
     private readonly ILogger<ImapSyncService> _logger;
 
     public ImapSyncService(
         ImapMailService imapMailService,
-        TicketService ticketService,
+        IServiceScopeFactory scopeFactory,
         IConfiguration config,
         ILogger<ImapSyncService> logger)
     {
         _imapMailService = imapMailService;
-        _ticketService = ticketService;
+        _scopeFactory = scopeFactory;
         _logger = logger;
 
         var storagePath = config["Imap:SeenUidsStoragePath"] ?? "data/imap-seen-uids.txt";
@@ -142,10 +142,14 @@ public class ImapSyncService
 
         try
         {
-            await _ticketService.CreateTicketFromEmailAsync(
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var ticketService = scope.ServiceProvider.GetRequiredService<ITicketService>();
+                await ticketService.CreateTicketFromEmailAsync(
                 mailInfo,
                 messageId,
                 cancellationToken: default);
+            }
 
             _logger.LogInformation(
                 "Ticket successfully created for message: {Subject}",

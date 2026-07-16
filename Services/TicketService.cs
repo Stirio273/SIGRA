@@ -6,7 +6,7 @@ using SIGRA.Data.Repositories;
 
 namespace SIGRA.Services;
 
-public class TicketService
+public class TicketService : ITicketService
 {
     private readonly ITicketRepository _ticketRepository;
     private readonly IStatutRepository _statutRepository;
