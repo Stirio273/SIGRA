@@ -7,4 +7,5 @@ public interface ITicketRepository
     Task<long> GetNextSequenceValueAsync();
     Task<Ticket> CreateAsync(Ticket ticket, CancellationToken ct = default);
     Task UpdateAsync(Ticket ticket, CancellationToken ct = default);
+    Task<Ticket?> GetByIdAsync(int id, CancellationToken ct = default);
 }

@@ -9,6 +9,7 @@ public class ImapSyncService
     private readonly ImapMailService _imapMailService;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ImapSeenTracker _seenTracker;
+    private readonly ImapFailedUidsTracker _failedUidsTracker;
     private readonly ILogger<ImapSyncService> _logger;
 
     public ImapSyncService(
@@ -23,6 +24,9 @@ public class ImapSyncService
 
         var storagePath = config["Imap:SeenUidsStoragePath"] ?? "data/imap-seen-uids.txt";
         _seenTracker = new ImapSeenTracker(storagePath);
+
+        var failedUidsPath = config["Imap:FailedUidsStoragePath"] ?? "data/imap-failed-uids.txt";
+        _failedUidsTracker = new ImapFailedUidsTracker(failedUidsPath);
     }
 
     public async Task SyncMessagesAsync(CancellationToken cancellationToken = default)
@@ -72,12 +76,17 @@ public class ImapSyncService
             if (newUids.Count == 0)
             {
                 _logger.LogInformation("IMAP sync completed. No new messages found.");
+            }
+
+            if (newUids.Count == 0)
+            {
                 return;
             }
 
-            _logger.LogInformation("Found {Count} new message(s). Fetching content...", newUids.Count);
+            _logger.LogInformation("Found {Count} message(s) to process.", newUids.Count);
 
             var successfullyProcessedUids = new List<ulong>();
+            var permanentlyFailedUids = new List<ulong>();
 
             foreach (var uid in newUids)
             {
@@ -87,19 +96,36 @@ public class ImapSyncService
                     var message = await folder.GetMessageAsync(uniqueId, cancellationToken);
                     await ProcessMessageAsync(message);
                     successfullyProcessedUids.Add(uid);
+                    _failedUidsTracker.RecordSuccess(uid);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogWarning(
                         ex,
-                        "Failed to fetch/process message with Uid {Uid}. Will retry on next sync.",
+                        "Failed to process message with Uid {Uid}. Recording for retry on next sync.", 
                         uid);
+                    _failedUidsTracker.RecordFailure(uid);
+
+                    if (!_failedUidsTracker.IsRetriable(uid))
+                    {
+                        _logger.LogError("Message with Uid {Uid} exceeded maximum retry attempts. Marking as seen.", uid);
+                        permanentlyFailedUids.Add(uid);
+                    }
                 }
             }
 
             if (successfullyProcessedUids.Count > 0)
             {
                 _seenTracker.MarkSeen(successfullyProcessedUids);
+            }
+
+            if (permanentlyFailedUids.Count > 0)
+            {
+                _seenTracker.MarkSeen(permanentlyFailedUids);
+                foreach (var uid in permanentlyFailedUids)
+                {
+                    _failedUidsTracker.Remove(uid);
+                }
             }
 
             _logger.LogInformation(
@@ -139,21 +165,35 @@ public class ImapSyncService
         }
 
         var messageId = message.MessageId ?? Guid.NewGuid().ToString();
+        var inReplyTo = message.InReplyTo;
+        var references = message.References?.ToList() ?? new List<string>();
 
         try
         {
             using (var scope = _scopeFactory.CreateScope())
             {
                 var ticketService = scope.ServiceProvider.GetRequiredService<ITicketService>();
-                await ticketService.CreateTicketFromEmailAsync(
-                mailInfo,
-                messageId,
-                cancellationToken: default);
-            }
+                var ticket = await ticketService.CreateTicketFromEmailAsync(
+                    mailInfo,
+                    messageId,
+                    inReplyTo,
+                    references,
+                    cancellationToken: default);
 
-            _logger.LogInformation(
-                "Ticket successfully created for message: {Subject}",
-                mailInfo.Subject);
+                if (ticket != null)
+                {
+                    _logger.LogInformation(
+                        "Ticket {TicketNumber} created for message: {Subject}",
+                        ticket.NumeroTicket,
+                        mailInfo.Subject);
+                }
+                else
+                {
+                    _logger.LogInformation(
+                        "Email {MessageId} already processed. Skipping ticket creation.",
+                        messageId);
+                }
+            }
         }
         catch (Exception ex)
         {

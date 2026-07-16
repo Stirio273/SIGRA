@@ -18,80 +18,104 @@ public class TicketService : ITicketService
     public TicketService(
         ITicketRepository ticketRepository,
         IStatutRepository statutRepository,
+        IEmailsSourceRepository emailSourceRepository,
+        IPiecesJointeRepository pieceJointeRepository,
         IConfiguration config,
         ILogger<TicketService> logger)
     {
         _ticketRepository = ticketRepository;
         _statutRepository = statutRepository;
+        _emailSourceRepository = emailSourceRepository;
+        _pieceJointeRepository = pieceJointeRepository;
         _config = config;
         _logger = logger;
     }
 
-    public async Task<Ticket> CreateTicketFromEmailAsync(
+    public async Task<Ticket?> CreateTicketFromEmailAsync(
         ImapMailService.MailInfo mailInfo,
         string messageId,
+        string? inReplyTo = null,
+        IReadOnlyList<string>? references = null,
         string? conversationId = null,
         CancellationToken cancellationToken = default)
     {
-        // var defaultAppId = _config.GetValue<int?>("TicketDefaults:ApplicationId");
-        // if (!defaultAppId.HasValue)
-        // {
-        //     defaultAppId = await _ticketRepository.GetFirstActiveApplicationIdAsync(cancellationToken);
-        //     if (!defaultAppId.HasValue)
-        //         throw new InvalidOperationException("No active application configured for ticket creation.");
-        // }
-
-        // var typeDemandeId = _config.GetValue<int?>("TicketDefaults:TypeDemandeId");
-        // if (!typeDemandeId.HasValue)
-        // {
-        //     typeDemandeId = await _ticketRepository.GetTypeDemandeIdAsync("Demande", cancellationToken);
-        //     if (!typeDemandeId.HasValue)
-        //         throw new InvalidOperationException("Default TypeDemande 'Demande' not found.");
-        // }
-
-        // var criticiteId = _config.GetValue<int?>("TicketDefaults:CriticiteId");
-        // if (!criticiteId.HasValue)
-        // {
-        //     criticiteId = await _ticketRepository.GetCriticiteIdAsync("Normale", cancellationToken);
-        //     if (!criticiteId.HasValue)
-        //         throw new InvalidOperationException("Default Criticite 'Normale' not found.");
-        // }
-
-        var statutId = _config.GetValue<int?>("TicketDefaults:StatutId");
-        if (!statutId.HasValue)
+        var existingEmail = await _emailSourceRepository.GetByMessageIdAsync(messageId, cancellationToken);
+        if (existingEmail != null)
         {
-            statutId = await _statutRepository.GetIdStatutByDefaultAsync(cancellationToken);
-            if (!statutId.HasValue)
-                throw new InvalidOperationException("Default Statut not found.");
+            _logger.LogInformation("Email with MessageId {MessageId} already exists. Skipping.", messageId);
+            return null;
         }
 
-        var ticket = new Ticket
+        string? resolvedConversationId = null;
+        int? resolvedTicketId = null;
+        var parentMessageIds = new List<string>();
+
+        if (!string.IsNullOrEmpty(inReplyTo))
+            parentMessageIds.Add(inReplyTo);
+        if (references != null)
+            parentMessageIds.AddRange(references);
+
+        foreach (var parentMessageId in parentMessageIds)
         {
-            NumeroTicket = await GenerateTempTicketNumber(),
-            IdStatut = statutId.Value,
-            DemandeurEmail = mailInfo.SenderEmail,
-            DemandeurDirection = string.IsNullOrWhiteSpace(mailInfo.Sender) ? mailInfo.SenderEmail : mailInfo.Sender,
-            DateCreation = mailInfo.SentDate.UtcDateTime,
-            DureeSla = 0
-        };
+            var parentEmail = await _emailSourceRepository.GetByMessageIdAsync(parentMessageId, cancellationToken);
+            if (parentEmail != null)
+            {
+                resolvedConversationId = parentEmail.ConversationIdGraph;
+                resolvedTicketId = parentEmail.IdTicket;
+                break;
+            }
+        }
 
-        await _ticketRepository.CreateAsync(ticket, cancellationToken);
+        Ticket ticket;
+        bool isFirstEmail;
 
-        _logger.LogInformation(
-            "Ticket {TicketNumber} created from email: {Subject}",
-            ticket.NumeroTicket,
-            mailInfo.Subject);
+        if (resolvedTicketId.HasValue)
+        {
+            isFirstEmail = false;
+            ticket = await _ticketRepository.GetByIdAsync(resolvedTicketId.Value, cancellationToken)
+                ?? throw new InvalidOperationException($"Ticket {resolvedTicketId.Value} not found for conversation.");
+        }
+        else
+        {
+            isFirstEmail = true;
+            resolvedConversationId = conversationId ?? Guid.NewGuid().ToString();
+
+            var statutId = _config.GetValue<int?>("TicketDefaults:StatutId");
+            if (!statutId.HasValue)
+            {
+                statutId = await _statutRepository.GetIdStatutByDefaultAsync(cancellationToken);
+                if (!statutId.HasValue)
+                    throw new InvalidOperationException("Default Statut not found.");
+            }
+
+            ticket = new Ticket
+            {
+                NumeroTicket = await GenerateTempTicketNumber(),
+                IdStatut = statutId.Value,
+                DemandeurEmail = mailInfo.SenderEmail,
+                DemandeurDirection = string.IsNullOrWhiteSpace(mailInfo.Sender) ? mailInfo.SenderEmail : mailInfo.Sender,
+                DateCreation = mailInfo.SentDate.UtcDateTime,
+                DureeSla = 0
+            };
+
+            await _ticketRepository.CreateAsync(ticket, cancellationToken);
+
+            _logger.LogInformation(
+                "Ticket {TicketNumber} created from email: {Subject}",
+                ticket.NumeroTicket,
+                mailInfo.Subject);
+        }
 
         var emailSource = new EmailsSource
         {
             IdTicket = ticket.IdTicket,
             MessageIdGraph = messageId,
-            ConversationIdGraph = conversationId ?? Guid.NewGuid().ToString(),
+            ConversationIdGraph = resolvedConversationId!,
             Expediteur = mailInfo.SenderEmail,
             Objet = mailInfo.Subject,
             CorpsEmail = mailInfo.Body,
             DateReception = mailInfo.SentDate.UtcDateTime,
-            EstEmailInitial = true
+            EstEmailInitial = isFirstEmail
         };
 
         await _emailSourceRepository.CreateEmailSourceAsync(emailSource, cancellationToken);

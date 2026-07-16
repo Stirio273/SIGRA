@@ -24,6 +24,8 @@ builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 builder.Services.AddScoped<IStatutRepository, StatutRepository>();
 builder.Services.AddScoped<ITokenEncryptionService, TokenEncryptionService>();
 builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddScoped<IEmailsSourceRepository, EmailsSourceRepository>();
+builder.Services.AddScoped<IPiecesJointeRepository, PiecesJointeRepository>();
 builder.Services.AddScoped<IStorageService, FileSystemStorageService>();
 builder.Services.AddSingleton<ImapMailService>();
 builder.Services.AddSingleton<ImapSyncService>();

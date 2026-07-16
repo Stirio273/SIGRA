@@ -17,7 +17,7 @@ public sealed class TicketRepository : ITicketRepository
     public async Task<long> GetNextSequenceValueAsync()
     {
         var result = await _context.Database
-            .SqlQuery<long>($"SELECT NEXTVAL('seq_tickets_numero_ticket')")
+            .SqlQuery<long>($"SELECT NEXTVAL('seq_tickets_numero_ticket') \"Value\"")
             .FirstAsync();
         return result;
     }
@@ -33,5 +33,10 @@ public sealed class TicketRepository : ITicketRepository
     {
         _context.Tickets.Update(ticket);
         await _context.SaveChangesAsync(ct);
+    }
+
+    public async Task<Ticket?> GetByIdAsync(int id, CancellationToken ct = default)
+    {
+        return await _context.Tickets.FirstOrDefaultAsync(t => t.IdTicket == id, ct);
     }
 }
