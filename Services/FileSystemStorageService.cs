@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using MimeKit;
 using SIGRA.Domain.Exceptions;
 using SIGRA.Domain.Options;
 
@@ -17,8 +18,8 @@ public class FileSystemStorageService : IStorageService
         _logger = logger;
     }
 
-    public async Task<string> UploadAsync(
-            Stream fileStream,
+    public async Task<string> UploadFromEmailAsync(
+            MimeContent mimeContent,
             string fileName,
             string contentType,
             string folder)
@@ -31,7 +32,7 @@ public class FileSystemStorageService : IStorageService
 
         // Écriture du Stream peu importe sa source
         using var outputStream = File.Create(filePath);
-        await fileStream.CopyToAsync(outputStream);
+        mimeContent.DecodeTo(outputStream);
 
         _logger.LogInformation("Fichier uploadé : {FilePath}", filePath);
 

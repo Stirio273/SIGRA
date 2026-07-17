@@ -1,6 +1,7 @@
 using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using MimeKit;
 using SIGRA.Data.Models;
 using SIGRA.Data.Repositories;
 
@@ -12,6 +13,7 @@ public class TicketService : ITicketService
     private readonly IStatutRepository _statutRepository;
     private readonly IEmailsSourceRepository _emailSourceRepository;
     private readonly IPiecesJointeRepository _pieceJointeRepository;
+    private readonly IStorageService _storageService;
     private readonly IConfiguration _config;
     private readonly ILogger<TicketService> _logger;
 
@@ -32,13 +34,32 @@ public class TicketService : ITicketService
     }
 
     public async Task<Ticket?> CreateTicketFromEmailAsync(
-        ImapMailService.MailInfo mailInfo,
-        string messageId,
-        string? inReplyTo = null,
-        IReadOnlyList<string>? references = null,
+        MimeMessage message,
         string? conversationId = null,
         CancellationToken cancellationToken = default)
     {
+        var mailInfo = ImapMailService.MapToMailInfo(message);
+
+        _logger.LogInformation(
+            "New message: {Subject} from {Sender} <{SenderEmail}> on {SentDate:u}",
+            mailInfo.Subject,
+            mailInfo.Sender,
+            mailInfo.SenderEmail,
+            mailInfo.SentDate);
+
+        foreach (var attachment in mailInfo.Attachments)
+        {
+            _logger.LogInformation(
+                "Attachment: {FileName} ({ContentType}) - {Size} bytes",
+                attachment.FileName,
+                attachment.ContentType,
+                attachment.Size);
+        }
+
+        var messageId = message.MessageId ?? Guid.NewGuid().ToString();
+        var inReplyTo = message.InReplyTo;
+        var references = message.References?.ToList() ?? new List<string>();
+
         var existingEmail = await _emailSourceRepository.GetByMessageIdAsync(messageId, cancellationToken);
         if (existingEmail != null)
         {
@@ -120,25 +141,40 @@ public class TicketService : ITicketService
 
         await _emailSourceRepository.CreateEmailSourceAsync(emailSource, cancellationToken);
 
-        var attachmentsRoot = _config["Ticket:AttachmentsPath"] ?? "data/attachments";
-        var ticketDir = Path.Combine(attachmentsRoot, ticket.IdTicket.ToString());
-        Directory.CreateDirectory(ticketDir);
+        string? fileUrl = null;
+        var ticketDir = ticket.IdTicket.ToString();
 
-        foreach (var attachment in mailInfo.Attachments)
+        var attachmentParts = message.Attachments
+          .OfType<MimePart>()
+          .Select(part => part).ToList().AsReadOnly();
+
+        foreach (var (attachment, part) in mailInfo.Attachments.Zip(attachmentParts))
         {
-            var safeFileName = Path.GetFileName(attachment.FileName);
-            var relativePath = Path.Combine(ticket.IdTicket.ToString(), safeFileName);
-
-            var pieceJointe = new PiecesJointe
+            try
             {
-                IdEmailSource = emailSource.IdEmailSource,
-                NomFichier = safeFileName,
-                Chemin = relativePath,
-                TailleOctets = attachment.Size,
-                TypeMime = attachment.ContentType
-            };
+                fileUrl = await _storageService.UploadFromEmailAsync((MimeContent)part.Content, attachment.FileName, attachment.ContentType, ticketDir);
+                var pieceJointe = new PiecesJointe
+                {
+                    IdEmailSource = emailSource.IdEmailSource,
+                    NomFichier = Path.GetFileName(attachment.FileName),
+                    Chemin = fileUrl,
+                    TailleOctets = attachment.Size,
+                    TypeMime = attachment.ContentType
+                };
 
-            await _pieceJointeRepository.CreatePieceJointeAsync(pieceJointe, cancellationToken);
+                await _pieceJointeRepository.CreatePieceJointeAsync(pieceJointe, cancellationToken);
+            }
+            catch (Exception ex) when (fileUrl != null)
+            {
+                _logger.LogError(ex,
+                    "Échec de l'enregistrement en BDD. " +
+                    "Suppression du fichier uploadé : {FileUrl}", fileUrl);
+
+                await _storageService.DeleteAsync(fileUrl);
+
+                throw;
+            }
+
         }
 
         return ticket;

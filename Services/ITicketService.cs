@@ -1,3 +1,4 @@
+using MimeKit;
 using SIGRA.Data.Models;
 
 namespace SIGRA.Services;
@@ -5,10 +6,7 @@ namespace SIGRA.Services;
 public interface ITicketService
 {
     Task<Ticket?> CreateTicketFromEmailAsync(
-        ImapMailService.MailInfo mailInfo,
-        string messageId,
-        string? inReplyTo = null,
-        IReadOnlyList<string>? references = null,
+        MimeMessage message,
         string? conversationId = null,
         CancellationToken cancellationToken = default);
 }

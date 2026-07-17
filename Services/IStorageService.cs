@@ -1,9 +1,11 @@
+using MimeKit;
+
 namespace SIGRA.Services;
 
 public interface IStorageService
 {
-    Task<string> UploadAsync(
-        Stream fileStream,
+    Task<string> UploadFromEmailAsync(
+        MimeContent mimeContent,
         string fileName,
         string contentType,
         string folder);

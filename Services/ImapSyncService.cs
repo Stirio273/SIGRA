@@ -102,7 +102,7 @@ public class ImapSyncService
                 {
                     _logger.LogWarning(
                         ex,
-                        "Failed to process message with Uid {Uid}. Recording for retry on next sync.", 
+                        "Failed to process message with Uid {Uid}. Recording for retry on next sync.",
                         uid);
                     _failedUidsTracker.RecordFailure(uid);
 
@@ -146,38 +146,13 @@ public class ImapSyncService
 
     private async Task ProcessMessageAsync(MimeMessage message)
     {
-        var mailInfo = ImapMailService.MapToMailInfo(message);
-
-        _logger.LogInformation(
-            "New message: {Subject} from {Sender} <{SenderEmail}> on {SentDate:u}",
-            mailInfo.Subject,
-            mailInfo.Sender,
-            mailInfo.SenderEmail,
-            mailInfo.SentDate);
-
-        foreach (var attachment in mailInfo.Attachments)
-        {
-            _logger.LogInformation(
-                "Attachment: {FileName} ({ContentType}) - {Size} bytes",
-                attachment.FileName,
-                attachment.ContentType,
-                attachment.Size);
-        }
-
-        var messageId = message.MessageId ?? Guid.NewGuid().ToString();
-        var inReplyTo = message.InReplyTo;
-        var references = message.References?.ToList() ?? new List<string>();
-
         try
         {
             using (var scope = _scopeFactory.CreateScope())
             {
                 var ticketService = scope.ServiceProvider.GetRequiredService<ITicketService>();
                 var ticket = await ticketService.CreateTicketFromEmailAsync(
-                    mailInfo,
-                    messageId,
-                    inReplyTo,
-                    references,
+                    message,
                     cancellationToken: default);
 
                 if (ticket != null)
@@ -185,13 +160,13 @@ public class ImapSyncService
                     _logger.LogInformation(
                         "Ticket {TicketNumber} created for message: {Subject}",
                         ticket.NumeroTicket,
-                        mailInfo.Subject);
+                        message.Subject);
                 }
                 else
                 {
                     _logger.LogInformation(
                         "Email {MessageId} already processed. Skipping ticket creation.",
-                        messageId);
+                        message.MessageId);
                 }
             }
         }
@@ -200,8 +175,8 @@ public class ImapSyncService
             _logger.LogError(
                 ex,
                 "Failed to create ticket for message with MessageId {MessageId}: {Subject}",
-                messageId,
-                mailInfo.Subject);
+                message.MessageId,
+                message.Subject);
             throw;
         }
     }
