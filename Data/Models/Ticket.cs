@@ -31,21 +31,21 @@ public partial class Ticket
 
     public virtual ICollection<Commentaire> Commentaires { get; set; } = new List<Commentaire>();
 
-    public virtual EmailsSource? EmailsSource { get; set; }
+    public virtual ICollection<EmailsSource> EmailsSources { get; set; } = new List<EmailsSource>();
 
     public virtual ICollection<Escalade> Escalades { get; set; } = new List<Escalade>();
 
     public virtual ICollection<HistoriqueStatut> HistoriqueStatuts { get; set; } = new List<HistoriqueStatut>();
 
-    public virtual Application IdApplicationNavigation { get; set; } = null!;
+    public virtual Application? IdApplicationNavigation { get; set; }
 
-    public virtual Criticite IdCriticiteNavigation { get; set; } = null!;
+    public virtual Criticite? IdCriticiteNavigation { get; set; }
 
     public virtual Statut IdStatutNavigation { get; set; } = null!;
 
     public virtual Utilisateur? IdTechnicienAssigneNavigation { get; set; }
 
-    public virtual TypesDemande IdTypeDemandeNavigation { get; set; } = null!;
+    public virtual TypesDemande? IdTypeDemandeNavigation { get; set; }
 
     public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 

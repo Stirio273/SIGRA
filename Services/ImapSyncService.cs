@@ -46,12 +46,12 @@ public class ImapSyncService
 
             if (!folder.IsOpen)
             {
-                await folder.OpenAsync(FolderAccess.ReadOnly, cancellationToken);
+                await folder.OpenAsync(FolderAccess.ReadWrite, cancellationToken);
             }
 
-            var allUids = await folder.SearchAsync(SearchQuery.All, cancellationToken);
+            // var allUids = await folder.SearchAsync(SearchQuery.All, cancellationToken);
 
-            if (allUids.Count == 0)
+            if (folder.Count == 0)
             {
                 _logger.LogInformation("IMAP sync completed. No messages found.");
                 return;
@@ -61,17 +61,21 @@ public class ImapSyncService
 
             if (lastSeenUid == 0)
             {
-                _logger.LogInformation("First sync detected. Processing all {Count} messages...", allUids.Count);
+                _logger.LogInformation("First sync detected. Processing all {Count} messages...", folder.Count);
             }
             else
             {
                 _logger.LogInformation(
                     "Filtering {Total} messages. Last seen Uid: {LastSeenUid}",
-                    allUids.Count,
+                    folder.Count,
                     lastSeenUid);
             }
 
-            var newUids = _seenTracker.FilterSeen(allUids.Select(u => (ulong)u.Id)).ToList();
+            UniqueId startUid = new UniqueId((uint)lastSeenUid + 1);
+            var range = new UniqueIdRange(startUid, UniqueId.MaxValue);
+            // var newUids = _seenTracker.FilterSeen(range.Select(u => (ulong)u.Id)).ToList();
+            var summaries = await folder.FetchAsync(range, MessageSummaryItems.UniqueId);
+            var newUids = _seenTracker.FilterSeen(summaries.Select(u => (ulong)u.UniqueId.Id)).ToList();
 
             if (newUids.Count == 0)
             {

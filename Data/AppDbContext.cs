@@ -60,8 +60,7 @@ public partial class AppDbContext : DbContext
     {
         modelBuilder
             .HasPostgresEnum("oauth_provider", new[] { "google", "microsoft" })
-            .HasPostgresExtension("unaccent")
-            .HasPostgresExtension("vector");
+            .HasPostgresExtension("unaccent");
 
         modelBuilder.Entity<Application>(entity =>
         {
@@ -169,7 +168,7 @@ public partial class AppDbContext : DbContext
 
             entity.HasIndex(e => e.IdTicket, "idx_email_source_ticket");
 
-            entity.HasIndex(e => e.IdTicket, "uq_email_source_initial")
+            entity.HasIndex(e => new { e.IdTicket, e.EstEmailInitial }, "uq_email_source_initial")
                 .IsUnique()
                 .HasFilter("(est_email_initial = true)");
 
@@ -191,8 +190,8 @@ public partial class AppDbContext : DbContext
                 .HasMaxLength(500)
                 .HasColumnName("objet");
 
-            entity.HasOne(d => d.IdTicketNavigation).WithOne(p => p.EmailsSource)
-                .HasForeignKey<EmailsSource>(d => d.IdTicket)
+            entity.HasOne(d => d.IdTicketNavigation).WithMany(p => p.EmailsSources)
+                .HasForeignKey(d => d.IdTicket)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("emails_sources_id_ticket_fkey");
         });
@@ -498,7 +497,8 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Email)
                 .HasMaxLength(256)
                 .HasColumnName("email");
-                entity.Property(e => e.Provider).HasColumnName("provider");
+            entity.Property(e => e.Provider)
+                .HasColumnName("provider");
             entity.Property(e => e.EncryptedAccessToken).HasColumnName("encrypted_access_token");
             entity.Property(e => e.EncryptedRefreshToken).HasColumnName("encrypted_refresh_token");
             entity.Property(e => e.Scopes).HasColumnName("scopes");
@@ -633,12 +633,10 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.IdApplicationNavigation).WithMany(p => p.Tickets)
                 .HasForeignKey(d => d.IdApplication)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("tickets_id_application_fkey");
 
             entity.HasOne(d => d.IdCriticiteNavigation).WithMany(p => p.Tickets)
                 .HasForeignKey(d => d.IdCriticite)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("tickets_id_criticite_fkey");
 
             entity.HasOne(d => d.IdStatutNavigation).WithMany(p => p.Tickets)
@@ -652,7 +650,6 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.IdTypeDemandeNavigation).WithMany(p => p.Tickets)
                 .HasForeignKey(d => d.IdTypeDemande)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("tickets_id_type_demande_fkey");
         });
 
@@ -725,6 +722,7 @@ public partial class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("utilisateurs_id_role_fkey");
         });
+        modelBuilder.HasSequence("seq_tickets_numero_ticket");
 
         OnModelCreatingPartial(modelBuilder);
     }

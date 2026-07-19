@@ -152,7 +152,7 @@ CREATE INDEX idx_email_source_conversation ON emails_sources(conversation_id_gra
 
 -- Garantit qu'un seul email par ticket est marqué "initial"
 CREATE UNIQUE INDEX uq_email_source_initial
-    ON emails_sources(id_ticket)
+    ON emails_sources(id_ticket, est_email_initial)
     WHERE est_email_initial = TRUE;
 
 -- ============================================================================
