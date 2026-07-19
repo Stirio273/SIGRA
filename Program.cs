@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SIGRA.Data;
 using SIGRA.Data.Enums;
 using SIGRA.Data.Repositories;
+using SIGRA.Domain.Options;
 using SIGRA.Middleware;
 using SIGRA.Services;
 
@@ -18,6 +19,8 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 builder.Services.AddHttpClient();
+
+builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection("Storage"));
 
 builder.Services.AddScoped<IServiceAccountTokenRepository, ServiceAccountTokenRepository>();
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();

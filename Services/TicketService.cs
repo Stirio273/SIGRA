@@ -22,6 +22,7 @@ public class TicketService : ITicketService
         IStatutRepository statutRepository,
         IEmailsSourceRepository emailSourceRepository,
         IPiecesJointeRepository pieceJointeRepository,
+        IStorageService storageService,
         IConfiguration config,
         ILogger<TicketService> logger)
     {
@@ -29,6 +30,7 @@ public class TicketService : ITicketService
         _statutRepository = statutRepository;
         _emailSourceRepository = emailSourceRepository;
         _pieceJointeRepository = pieceJointeRepository;
+        _storageService = storageService;
         _config = config;
         _logger = logger;
     }
