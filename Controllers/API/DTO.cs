@@ -1,8 +1,59 @@
 namespace SIGRA.Controllers;
 
-public record CreateTicketRequest(string Name, decimal Price);
-public record UpdateTicketRequest(string Name, decimal Price);
-public record TicketResponse(int Id, string Name, decimal Price, DateTime CreatedAt);
+public record CreateApplicationRequest(string Libelle, bool Actif, int IdCs);
+public record UpdateApplicationRequest(string Libelle, bool Actif, int IdCs);
+public record ApplicationResponse(int IdApplication, string Libelle, bool Actif, int IdCs);
+
+public record CreateClassesServiceRequest(string Code, string? Libelle);
+public record UpdateClassesServiceRequest(string Code, string? Libelle);
+public record ClassesServiceResponse(int IdCs, string Code, string? Libelle);
+
+public record CreateCriticiteRequest(string Libelle, int Ordre);
+public record UpdateCriticiteRequest(string Libelle, int Ordre);
+public record CriticiteResponse(int IdCriticite, string Libelle, int Ordre);
+
+public record CreateEntitesExterneRequest(string Nom, bool Actif);
+public record UpdateEntitesExterneRequest(string Nom, bool Actif);
+public record EntitesExterneResponse(int IdEntiteExterne, string Nom, bool Actif);
+
+public record CreateJoursFerieRequest(DateOnly Date, string Libelle);
+public record UpdateJoursFerieRequest(DateOnly Date, string Libelle);
+public record JoursFerieResponse(int IdJourFerie, DateOnly Date, string Libelle);
+
+public record CreateTicketRequest(
+    int? IdApplication,
+    int? IdTypeDemande,
+    int? IdCriticite,
+    int IdStatut,
+    int? IdTechnicienAssigne,
+    string DemandeurEmail,
+    string DemandeurDirection,
+    decimal DureeSla);
+
+public record UpdateTicketRequest(
+    int? IdApplication,
+    int? IdTypeDemande,
+    int? IdCriticite,
+    int IdStatut,
+    int? IdTechnicienAssigne,
+    string DemandeurEmail,
+    string DemandeurDirection,
+    DateTime? DateCloture,
+    decimal DureeSla);
+
+public record TicketResponse(
+    int IdTicket,
+    string NumeroTicket,
+    DateTime DateCreation,
+    int? IdApplication,
+    int? IdTypeDemande,
+    int? IdCriticite,
+    int IdStatut,
+    int? IdTechnicienAssigne,
+    string DemandeurEmail,
+    string DemandeurDirection,
+    DateTime? DateCloture,
+    decimal DureeSla);
 
 public class PagedRequest
 {
@@ -26,4 +77,3 @@ public class PagedResult<T>
     public int TotalCount { get; init; }
     public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
 }
-

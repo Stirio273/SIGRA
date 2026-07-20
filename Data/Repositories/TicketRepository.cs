@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SIGRA.Controllers;
 using SIGRA.Data.Models;
 
 namespace SIGRA.Data.Repositories;
@@ -38,5 +39,39 @@ public sealed class TicketRepository : ITicketRepository
     public async Task<Ticket?> GetByIdAsync(int id, CancellationToken ct = default)
     {
         return await _context.Tickets.FirstOrDefaultAsync(t => t.IdTicket == id, ct);
+    }
+
+    public async Task<IReadOnlyList<Ticket>> GetAllAsync(CancellationToken ct = default)
+    {
+        return await _context.Tickets.ToListAsync(ct);
+    }
+
+    public async Task<PagedResult<Ticket>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken ct = default)
+    {
+        var query = _context.Tickets.AsQueryable();
+        var totalCount = await query.CountAsync(ct);
+        var items = await query
+            .OrderBy(t => t.IdTicket)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(ct);
+
+        return new PagedResult<Ticket>
+        {
+            Items = items,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
+    }
+
+    public async Task DeleteAsync(int id, CancellationToken ct = default)
+    {
+        var ticket = await _context.Tickets.FirstOrDefaultAsync(t => t.IdTicket == id, ct);
+        if (ticket != null)
+        {
+            _context.Tickets.Remove(ticket);
+            await _context.SaveChangesAsync(ct);
+        }
     }
 }

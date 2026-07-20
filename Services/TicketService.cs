@@ -2,6 +2,7 @@ using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MimeKit;
+using SIGRA.Controllers;
 using SIGRA.Data;
 using SIGRA.Data.Models;
 using SIGRA.Data.Repositories;
@@ -203,5 +204,64 @@ public class TicketService : ITicketService
         var sequence = await _ticketRepository.GetNextSequenceValueAsync();
         var ticketNumber = $"TICKET{now:yyyy}{now:MM}{sequence:D4}";
         return ticketNumber;
+    }
+
+    public async Task<Ticket> CreateAsync(CreateTicketRequest req)
+    {
+        var ticket = new Ticket
+        {
+            IdApplication = req.IdApplication,
+            IdTypeDemande = req.IdTypeDemande,
+            IdCriticite = req.IdCriticite,
+            IdStatut = req.IdStatut,
+            IdTechnicienAssigne = req.IdTechnicienAssigne,
+            DemandeurEmail = req.DemandeurEmail,
+            DemandeurDirection = req.DemandeurDirection,
+            DureeSla = req.DureeSla,
+            DateCreation = DateTime.UtcNow
+        };
+
+        return await _ticketRepository.CreateAsync(ticket);
+    }
+
+    public async Task<Ticket?> GetByIdAsync(int id)
+    {
+        return await _ticketRepository.GetByIdAsync(id);
+    }
+
+    public async Task<IReadOnlyList<Ticket>> GetAllAsync()
+    {
+        return await _ticketRepository.GetAllAsync();
+    }
+
+    public async Task<PagedResult<Ticket>> GetPagedAsync(int pageNumber, int pageSize)
+    {
+        return await _ticketRepository.GetPagedAsync(pageNumber, pageSize);
+    }
+
+    public async Task<bool> UpdateAsync(int id, UpdateTicketRequest req)
+    {
+        var ticket = await _ticketRepository.GetByIdAsync(id);
+        if (ticket == null)
+            return false;
+
+        ticket.IdApplication = req.IdApplication;
+        ticket.IdTypeDemande = req.IdTypeDemande;
+        ticket.IdCriticite = req.IdCriticite;
+        ticket.IdStatut = req.IdStatut;
+        ticket.IdTechnicienAssigne = req.IdTechnicienAssigne;
+        ticket.DemandeurEmail = req.DemandeurEmail;
+        ticket.DemandeurDirection = req.DemandeurDirection;
+        ticket.DateCloture = req.DateCloture;
+        ticket.DureeSla = req.DureeSla;
+
+        await _ticketRepository.UpdateAsync(ticket);
+        return true;
+    }
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+        await _ticketRepository.DeleteAsync(id);
+        return true;
     }
 }
