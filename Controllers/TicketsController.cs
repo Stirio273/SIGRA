@@ -1,0 +1,47 @@
+using Microsoft.AspNetCore.Mvc;
+using SIGRA.Services;
+
+namespace SIGRA.Controllers;
+
+[ApiController]
+[Route("api/tickets")]
+public class TicketsController : ControllerBase
+{
+    private readonly ITicketService _ticketService;
+    public TicketsController(ITicketService ticketService) => _ticketService = ticketService;
+
+    // [HttpPost]
+    // public async Task<IActionResult> Create(CreateTicketRequest req)
+    // {
+    //     var created = await _ticketService.CreateAsync(req);
+    //     return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+    // }
+
+    // [HttpGet("{id:int}")]
+    // public async Task<IActionResult> GetById(int id)
+    // {
+    //     var item = await _ticketService.GetByIdAsync(id);
+    //     return item is null ? NotFound() : Ok(item);
+    // }
+
+    // [HttpGet]
+    // public async Task<IActionResult> GetAll([FromQuery] PagedRequest req)
+    // {
+    //     var items = await _ticketService.GetAllAsync();
+    //     return Ok(items);
+    // }
+
+    // [HttpPut("{id:int}")]
+    // public async Task<IActionResult> Update(int id, UpdateTicketRequest req)
+    // {
+    //     var ok = await _ticketService.UpdateAsync(id, req);
+    //     return ok ? NoContent() : NotFound();
+    // }
+
+    // [HttpDelete("{id:int}")]
+    // public async Task<IActionResult> Delete(int id)
+    // {
+    //     var ok = await _ticketService.DeleteAsync(id);
+    //     return ok ? NoContent() : NotFound();
+    // }
+}
