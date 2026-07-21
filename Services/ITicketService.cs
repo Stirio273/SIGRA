@@ -14,6 +14,7 @@ public interface ITicketService
     Task<Ticket> CreateAsync(CreateTicketRequest req);
     Task<Ticket?> GetByIdAsync(int id);
     Task<IReadOnlyList<Ticket>> GetAllAsync();
+    Task<IReadOnlyList<Ticket>> GetByTechnicianAsync(Guid technicianUserGuid);
     Task<PagedResult<Ticket>> GetPagedAsync(int pageNumber, int pageSize);
     Task<bool> UpdateAsync(int id, UpdateTicketRequest req);
     Task<bool> DeleteAsync(int id);

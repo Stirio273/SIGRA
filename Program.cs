@@ -37,6 +37,8 @@ builder.Services.AddScoped<IEntitesExterneRepository, EntitesExterneRepository>(
 builder.Services.AddScoped<IEntitesExterneService, EntitesExterneService>();
 builder.Services.AddScoped<IJoursFerieRepository, JoursFerieRepository>();
 builder.Services.AddScoped<IJoursFerieService, JoursFerieService>();
+builder.Services.AddScoped<IUtilisateurRepository, UtilisateurRepository>();
+builder.Services.AddScoped<IUtilisateurService, UtilisateurService>();
 builder.Services.AddScoped<IEmailsSourceRepository, EmailsSourceRepository>();
 builder.Services.AddScoped<IPiecesJointeRepository, PiecesJointeRepository>();
 builder.Services.AddScoped<IStorageService, FileSystemStorageService>();

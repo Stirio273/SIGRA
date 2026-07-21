@@ -11,6 +11,7 @@ public interface ITicketRepository
     Task UpdateAsync(Ticket ticket, CancellationToken ct = default);
     Task<Ticket?> GetByIdAsync(int id, CancellationToken ct = default);
     Task<IReadOnlyList<Ticket>> GetAllAsync(CancellationToken ct = default);
+    Task<IReadOnlyList<Ticket>> GetByTechnicianAsync(Guid technicianUserGuid, CancellationToken ct = default);
     Task<PagedResult<Ticket>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken ct = default);
     Task DeleteAsync(int id, CancellationToken ct = default);
 }

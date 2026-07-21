@@ -18,7 +18,8 @@ public class ClassesServiceService : IClassesServiceService
         var classesService = new ClassesService
         {
             Code = req.Code,
-            Libelle = req.Libelle
+            Libelle = req.Libelle,
+            DureeSla = req.DureeSla
         };
 
         return await _classesServiceRepository.CreateAsync(classesService);
@@ -42,6 +43,7 @@ public class ClassesServiceService : IClassesServiceService
 
         classesService.Code = req.Code;
         classesService.Libelle = req.Libelle;
+        classesService.DureeSla = req.DureeSla;
 
         await _classesServiceRepository.UpdateAsync(classesService);
         return true;

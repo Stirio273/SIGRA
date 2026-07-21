@@ -13,8 +13,6 @@ public partial class Ticket
 
     public int? IdApplication { get; set; }
 
-    public int? IdTypeDemande { get; set; }
-
     public int? IdCriticite { get; set; }
 
     public int IdStatut { get; set; }
@@ -44,8 +42,6 @@ public partial class Ticket
     public virtual Statut IdStatutNavigation { get; set; } = null!;
 
     public virtual Utilisateur? IdTechnicienAssigneNavigation { get; set; }
-
-    public virtual TypesDemande? IdTypeDemandeNavigation { get; set; }
 
     public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 

@@ -1,3 +1,4 @@
+using System;
 using Microsoft.EntityFrameworkCore;
 using SIGRA.Controllers;
 using SIGRA.Data.Models;
@@ -44,6 +45,13 @@ public sealed class TicketRepository : ITicketRepository
     public async Task<IReadOnlyList<Ticket>> GetAllAsync(CancellationToken ct = default)
     {
         return await _context.Tickets.ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<Ticket>> GetByTechnicianAsync(Guid technicianUserGuid, CancellationToken ct = default)
+    {
+        return await _context.Tickets
+            .Where(t => t.IdTechnicienAssigneNavigation!.UserGuid == technicianUserGuid)
+            .ToListAsync(ct);
     }
 
     public async Task<PagedResult<Ticket>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken ct = default)

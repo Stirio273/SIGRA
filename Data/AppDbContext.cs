@@ -44,8 +44,6 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<ServiceAccountToken> ServiceAccountTokens { get; set; }
 
-    public virtual DbSet<Sla> Slas { get; set; }
-
     public virtual DbSet<Statut> Statuts { get; set; }
 
     public virtual DbSet<Ticket> Tickets { get; set; }
@@ -99,6 +97,9 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Code)
                 .HasMaxLength(20)
                 .HasColumnName("code");
+            entity.Property(e => e.DureeSla)
+                .HasPrecision(6, 2)
+                .HasColumnName("duree_sla");
             entity.Property(e => e.Libelle)
                 .HasMaxLength(100)
                 .HasColumnName("libelle");
@@ -406,12 +407,9 @@ public partial class AppDbContext : DbContext
 
             entity.ToTable("regles_criticite");
 
-            entity.HasIndex(e => new { e.IdCs, e.IdTypeDemande }, "regles_criticite_id_cs_id_type_demande_key").IsUnique();
-
             entity.Property(e => e.IdRegleCriticite).HasColumnName("id_regle_criticite");
             entity.Property(e => e.IdCriticite).HasColumnName("id_criticite");
             entity.Property(e => e.IdCs).HasColumnName("id_cs");
-            entity.Property(e => e.IdTypeDemande).HasColumnName("id_type_demande");
 
             entity.HasOne(d => d.IdCriticiteNavigation).WithMany(p => p.ReglesCriticites)
                 .HasForeignKey(d => d.IdCriticite)
@@ -422,11 +420,6 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(d => d.IdCs)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("regles_criticite_id_cs_fkey");
-
-            entity.HasOne(d => d.IdTypeDemandeNavigation).WithMany(p => p.ReglesCriticites)
-                .HasForeignKey(d => d.IdTypeDemande)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("regles_criticite_id_type_demande_fkey");
         });
 
         modelBuilder.Entity<Rejet>(entity =>
@@ -505,32 +498,6 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("now()")
                 .HasColumnName("updated_at");
-        });
-
-        modelBuilder.Entity<Sla>(entity =>
-        {
-            entity.HasKey(e => e.IdSla).HasName("sla_pkey");
-
-            entity.ToTable("sla");
-
-            entity.HasIndex(e => new { e.IdCs, e.IdTypeDemande }, "sla_id_cs_id_type_demande_key").IsUnique();
-
-            entity.Property(e => e.IdSla).HasColumnName("id_sla");
-            entity.Property(e => e.Duree)
-                .HasPrecision(6, 2)
-                .HasColumnName("duree");
-            entity.Property(e => e.IdCs).HasColumnName("id_cs");
-            entity.Property(e => e.IdTypeDemande).HasColumnName("id_type_demande");
-
-            entity.HasOne(d => d.IdCsNavigation).WithMany(p => p.Slas)
-                .HasForeignKey(d => d.IdCs)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("sla_id_cs_fkey");
-
-            entity.HasOne(d => d.IdTypeDemandeNavigation).WithMany(p => p.Slas)
-                .HasForeignKey(d => d.IdTypeDemande)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("sla_id_type_demande_fkey");
         });
 
         modelBuilder.Entity<Statut>(entity =>
@@ -626,7 +593,6 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.IdCriticite).HasColumnName("id_criticite");
             entity.Property(e => e.IdStatut).HasColumnName("id_statut");
             entity.Property(e => e.IdTechnicienAssigne).HasColumnName("id_technicien_assigne");
-            entity.Property(e => e.IdTypeDemande).HasColumnName("id_type_demande");
             entity.Property(e => e.NumeroTicket)
                 .HasMaxLength(30)
                 .HasColumnName("numero_ticket");
@@ -647,10 +613,6 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.IdTechnicienAssigneNavigation).WithMany(p => p.Tickets)
                 .HasForeignKey(d => d.IdTechnicienAssigne)
                 .HasConstraintName("tickets_id_technicien_assigne_fkey");
-
-            entity.HasOne(d => d.IdTypeDemandeNavigation).WithMany(p => p.Tickets)
-                .HasForeignKey(d => d.IdTypeDemande)
-                .HasConstraintName("tickets_id_type_demande_fkey");
         });
 
         modelBuilder.Entity<TypesDemande>(entity =>
@@ -716,6 +678,9 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Prenom)
                 .HasMaxLength(100)
                 .HasColumnName("prenom");
+            entity.Property(e => e.UserGuid)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("user_guid");
 
             entity.HasOne(d => d.IdRoleNavigation).WithMany(p => p.Utilisateurs)
                 .HasForeignKey(d => d.IdRole)

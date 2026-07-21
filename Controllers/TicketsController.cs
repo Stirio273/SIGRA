@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using SIGRA.Controllers;
 using SIGRA.Data.Models;
 using SIGRA.Services;
+using System;
 using System.Linq;
 
 namespace SIGRA.Controllers;
@@ -40,6 +41,13 @@ public class TicketsController : ControllerBase
         });
     }
 
+    [HttpGet("technician/{technicianUserGuid:guid}")]
+    public async Task<IActionResult> GetByTechnician(Guid technicianUserGuid)
+    {
+        var items = await _ticketService.GetByTechnicianAsync(technicianUserGuid);
+        return Ok(items.Select(ToResponse));
+    }
+
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, UpdateTicketRequest req)
     {
@@ -59,7 +67,7 @@ public class TicketsController : ControllerBase
         t.NumeroTicket,
         t.DateCreation,
         t.IdApplication,
-        t.IdTypeDemande,
+        // t.IdTypeDemande,
         t.IdCriticite,
         t.IdStatut,
         t.IdTechnicienAssigne,

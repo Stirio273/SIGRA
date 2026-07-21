@@ -11,9 +11,9 @@ public partial class ClassesService
 
     public string? Libelle { get; set; }
 
+    public decimal DureeSla { get; set; }
+
     public virtual ICollection<Application> Applications { get; set; } = new List<Application>();
 
     public virtual ICollection<ReglesCriticite> ReglesCriticites { get; set; } = new List<ReglesCriticite>();
-
-    public virtual ICollection<Sla> Slas { get; set; } = new List<Sla>();
 }

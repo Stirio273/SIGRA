@@ -50,5 +50,6 @@ public class ClassesServicesController : ControllerBase
     private static ClassesServiceResponse ToResponse(ClassesService c) => new(
         c.IdCs,
         c.Code,
-        c.Libelle);
+        c.Libelle,
+        c.DureeSla);
 }

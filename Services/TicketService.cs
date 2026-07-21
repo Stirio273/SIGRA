@@ -211,7 +211,6 @@ public class TicketService : ITicketService
         var ticket = new Ticket
         {
             IdApplication = req.IdApplication,
-            IdTypeDemande = req.IdTypeDemande,
             IdCriticite = req.IdCriticite,
             IdStatut = req.IdStatut,
             IdTechnicienAssigne = req.IdTechnicienAssigne,
@@ -234,6 +233,11 @@ public class TicketService : ITicketService
         return await _ticketRepository.GetAllAsync();
     }
 
+    public async Task<IReadOnlyList<Ticket>> GetByTechnicianAsync(Guid technicianUserGuid)
+    {
+        return await _ticketRepository.GetByTechnicianAsync(technicianUserGuid);
+    }
+
     public async Task<PagedResult<Ticket>> GetPagedAsync(int pageNumber, int pageSize)
     {
         return await _ticketRepository.GetPagedAsync(pageNumber, pageSize);
@@ -246,7 +250,6 @@ public class TicketService : ITicketService
             return false;
 
         ticket.IdApplication = req.IdApplication;
-        ticket.IdTypeDemande = req.IdTypeDemande;
         ticket.IdCriticite = req.IdCriticite;
         ticket.IdStatut = req.IdStatut;
         ticket.IdTechnicienAssigne = req.IdTechnicienAssigne;

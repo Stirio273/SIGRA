@@ -23,6 +23,8 @@ public partial class Utilisateur
 
     public int IdRole { get; set; }
 
+    public Guid UserGuid { get; set; }
+
     public virtual ICollection<Commentaire> Commentaires { get; set; } = new List<Commentaire>();
 
     public virtual ICollection<Escalade> Escalades { get; set; } = new List<Escalade>();

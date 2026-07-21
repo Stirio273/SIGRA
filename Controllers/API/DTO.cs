@@ -4,9 +4,9 @@ public record CreateApplicationRequest(string Libelle, bool Actif, int IdCs);
 public record UpdateApplicationRequest(string Libelle, bool Actif, int IdCs);
 public record ApplicationResponse(int IdApplication, string Libelle, bool Actif, int IdCs);
 
-public record CreateClassesServiceRequest(string Code, string? Libelle);
-public record UpdateClassesServiceRequest(string Code, string? Libelle);
-public record ClassesServiceResponse(int IdCs, string Code, string? Libelle);
+public record CreateClassesServiceRequest(string Code, string? Libelle, decimal DureeSla);
+public record UpdateClassesServiceRequest(string Code, string? Libelle, decimal DureeSla);
+public record ClassesServiceResponse(int IdCs, string Code, string? Libelle, decimal DureeSla);
 
 public record CreateCriticiteRequest(string Libelle, int Ordre);
 public record UpdateCriticiteRequest(string Libelle, int Ordre);
@@ -20,9 +20,13 @@ public record CreateJoursFerieRequest(DateOnly Date, string Libelle);
 public record UpdateJoursFerieRequest(DateOnly Date, string Libelle);
 public record JoursFerieResponse(int IdJourFerie, DateOnly Date, string Libelle);
 
+public record CreateUtilisateurRequest(string IdentifiantAd, string Nom, string Prenom, string Email, int IdRole, bool Actif);
+public record UpdateUtilisateurRequest(string IdentifiantAd, string Nom, string Prenom, string Email, int IdRole, bool Actif, DateTime? DateDesactivation);
+public record UtilisateurResponse(int IdUtilisateur, string IdentifiantAd, string Nom, string Prenom, string Email, bool Actif, DateTime? DateDesactivation, DateTime DateSynchronisation, int IdRole, Guid UserGuid);
+
 public record CreateTicketRequest(
     int? IdApplication,
-    int? IdTypeDemande,
+    // int? IdTypeDemande,
     int? IdCriticite,
     int IdStatut,
     int? IdTechnicienAssigne,
@@ -32,7 +36,7 @@ public record CreateTicketRequest(
 
 public record UpdateTicketRequest(
     int? IdApplication,
-    int? IdTypeDemande,
+    // int? IdTypeDemande,
     int? IdCriticite,
     int IdStatut,
     int? IdTechnicienAssigne,
@@ -46,7 +50,7 @@ public record TicketResponse(
     string NumeroTicket,
     DateTime DateCreation,
     int? IdApplication,
-    int? IdTypeDemande,
+    // int? IdTypeDemande,
     int? IdCriticite,
     int IdStatut,
     int? IdTechnicienAssigne,

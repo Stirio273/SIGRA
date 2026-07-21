@@ -9,13 +9,9 @@ public partial class ReglesCriticite
 
     public int IdCs { get; set; }
 
-    public int IdTypeDemande { get; set; }
-
     public int IdCriticite { get; set; }
 
     public virtual Criticite IdCriticiteNavigation { get; set; } = null!;
 
     public virtual ClassesService IdCsNavigation { get; set; } = null!;
-
-    public virtual TypesDemande IdTypeDemandeNavigation { get; set; } = null!;
 }

@@ -22,6 +22,7 @@ CREATE TABLE utilisateurs (
     actif               BOOLEAN NOT NULL DEFAULT TRUE,
     date_desactivation  TIMESTAMPTZ,
     date_synchronisation TIMESTAMPTZ NOT NULL DEFAULT now(),
+    user_guid           UUID NOT NULL DEFAULT gen_random_uuid(),
     id_role             INTEGER NOT NULL REFERENCES roles(id_role),
     CONSTRAINT chk_date_desactivation_coherente
         CHECK (
@@ -29,6 +30,8 @@ CREATE TABLE utilisateurs (
             OR (actif = FALSE)
         )
 );
+
+CREATE UNIQUE INDEX idx_utilisateur_user_guid ON utilisateurs(user_guid);
 
 CREATE INDEX idx_utilisateur_role ON utilisateurs(id_role);
 CREATE INDEX idx_utilisateur_actif ON utilisateurs(actif);
@@ -40,7 +43,8 @@ CREATE INDEX idx_utilisateur_actif ON utilisateurs(actif);
 CREATE TABLE classes_service (
     id_cs           SERIAL PRIMARY KEY,
     code            VARCHAR(20) NOT NULL UNIQUE,
-    libelle         VARCHAR(100)
+    libelle         VARCHAR(100),
+    duree_sla           NUMERIC(6,2) NOT NULL CHECK (duree_sla > 0)
 );
 
 CREATE TABLE applications (
@@ -53,10 +57,10 @@ CREATE TABLE applications (
 CREATE INDEX idx_application_cs ON applications(id_cs);
 CREATE INDEX idx_application_actif ON applications(actif);
 
-CREATE TABLE types_demande (
-    id_type_demande SERIAL PRIMARY KEY,
-    libelle         VARCHAR(50) NOT NULL UNIQUE
-);
+-- CREATE TABLE types_demande (
+--     id_type_demande SERIAL PRIMARY KEY,
+--     libelle         VARCHAR(50) NOT NULL UNIQUE
+-- );
 
 CREATE TABLE criticites (
     id_criticite    SERIAL PRIMARY KEY,
@@ -67,9 +71,9 @@ CREATE TABLE criticites (
 CREATE TABLE regles_criticite (
     id_regle_criticite  SERIAL PRIMARY KEY,
     id_cs               INTEGER NOT NULL REFERENCES classes_service(id_cs),
-    id_type_demande     INTEGER NOT NULL REFERENCES types_demande(id_type_demande),
+    -- id_type_demande     INTEGER NOT NULL REFERENCES types_demande(id_type_demande),
     id_criticite        INTEGER NOT NULL REFERENCES criticites(id_criticite),
-    UNIQUE (id_cs, id_type_demande)
+    UNIQUE (id_cs)
 );
 
 -- ============================================================================
@@ -101,7 +105,7 @@ CREATE TABLE tickets (
     numero_ticket           VARCHAR(30) NOT NULL UNIQUE,
     date_creation            TIMESTAMPTZ NOT NULL DEFAULT now(),
     id_application           INTEGER REFERENCES applications(id_application),
-    id_type_demande          INTEGER REFERENCES types_demande(id_type_demande),
+    -- id_type_demande          INTEGER REFERENCES types_demande(id_type_demande),
     id_criticite             INTEGER REFERENCES criticites(id_criticite),
     id_statut                INTEGER NOT NULL REFERENCES statuts(id_statut),
     id_technicien_assigne    INTEGER REFERENCES utilisateurs(id_utilisateur),
@@ -244,16 +248,8 @@ CREATE TABLE reassignations (
 CREATE INDEX idx_reassignation_ticket ON reassignations(id_ticket);
 
 -- ============================================================================
--- BLOC 7 : SLA & JOURS FÉRIÉS
+-- BLOC 7 : JOURS FÉRIÉS
 -- ============================================================================
-
-CREATE TABLE sla (
-    id_sla          SERIAL PRIMARY KEY,
-    id_cs           INTEGER NOT NULL REFERENCES classes_service(id_cs),
-    id_type_demande INTEGER NOT NULL REFERENCES types_demande(id_type_demande),
-    duree           NUMERIC(6,2) NOT NULL CHECK (duree > 0),
-    UNIQUE (id_cs, id_type_demande)
-);
 
 CREATE TABLE jours_feries (
     id_jour_ferie   SERIAL PRIMARY KEY,
