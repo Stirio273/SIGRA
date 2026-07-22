@@ -17,5 +17,6 @@ public interface ITicketService
     Task<IReadOnlyList<Ticket>> GetByTechnicianAsync(Guid technicianUserGuid);
     Task<PagedResult<Ticket>> GetPagedAsync(int pageNumber, int pageSize);
     Task<bool> UpdateAsync(int id, UpdateTicketRequest req);
+    Task<bool> AssignAsync(int ticketId, int? technicianId, string currentUserEmail);
     Task<bool> DeleteAsync(int id);
 }

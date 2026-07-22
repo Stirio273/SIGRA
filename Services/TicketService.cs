@@ -19,6 +19,7 @@ public class TicketService : ITicketService
     private readonly IStorageService _storageService;
     private readonly IConfiguration _config;
     private readonly ILogger<TicketService> _logger;
+    private readonly IUserAuthenticationService _userAuthenticationService;
 
     public TicketService(
         AppDbContext context,
@@ -28,7 +29,8 @@ public class TicketService : ITicketService
         IPiecesJointeRepository pieceJointeRepository,
         IStorageService storageService,
         IConfiguration config,
-        ILogger<TicketService> logger)
+        ILogger<TicketService> logger,
+        IUserAuthenticationService userAuthenticationService)
     {
         _context = context;
         _ticketRepository = ticketRepository;
@@ -38,6 +40,7 @@ public class TicketService : ITicketService
         _storageService = storageService;
         _config = config;
         _logger = logger;
+        _userAuthenticationService = userAuthenticationService;
     }
 
     public async Task<Ticket?> CreateTicketFromEmailAsync(
@@ -265,6 +268,27 @@ public class TicketService : ITicketService
     public async Task<bool> DeleteAsync(int id)
     {
         await _ticketRepository.DeleteAsync(id);
+        return true;
+    }
+
+    public async Task<bool> AssignAsync(int ticketId, int? technicianId, string currentUserEmail)
+    {
+        var ticket = await _ticketRepository.GetByIdAsync(ticketId);
+        if (ticket == null)
+            return false;
+
+        var currentUser = await _userAuthenticationService.GetAuthorizedUserAsync(currentUserEmail);
+        if (currentUser == null)
+            return false;
+
+        var isAdmin = currentUser.IdRoleNavigation.Libelle.Equals("Administrateur", StringComparison.OrdinalIgnoreCase);
+        var isTechnicien = currentUser.IdRoleNavigation.Libelle.Equals("Technicien", StringComparison.OrdinalIgnoreCase);
+
+        if (!isAdmin && (!isTechnicien || technicianId != currentUser.IdUtilisateur))
+            return false;
+
+        ticket.IdTechnicienAssigne = technicianId;
+        await _ticketRepository.UpdateAsync(ticket);
         return true;
     }
 }

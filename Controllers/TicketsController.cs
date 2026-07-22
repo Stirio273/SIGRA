@@ -12,7 +12,12 @@ namespace SIGRA.Controllers;
 public class TicketsController : ControllerBase
 {
     private readonly ITicketService _ticketService;
-    public TicketsController(ITicketService ticketService) => _ticketService = ticketService;
+    private readonly IUserAuthenticationService _userAuthenticationService;
+    public TicketsController(ITicketService ticketService, IUserAuthenticationService userAuthenticationService)
+    {
+        _ticketService = ticketService;
+        _userAuthenticationService = userAuthenticationService;
+    }
 
     [HttpPost]
     public async Task<IActionResult> Create(CreateTicketRequest req)
@@ -46,6 +51,17 @@ public class TicketsController : ControllerBase
     {
         var items = await _ticketService.GetByTechnicianAsync(technicianUserGuid);
         return Ok(items.Select(ToResponse));
+    }
+
+    [HttpPut("{id:int}/assign")]
+    public async Task<IActionResult> Assign(int id, AssignTicketRequest req)
+    {
+        var username = User.Identity?.Name;
+        if (string.IsNullOrEmpty(username))
+            return Unauthorized();
+
+        var ok = await _ticketService.AssignAsync(id, req.IdTechnicienAssigne, username);
+        return ok ? NoContent() : Forbid();
     }
 
     [HttpPut("{id:int}")]

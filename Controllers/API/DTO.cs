@@ -45,6 +45,8 @@ public record UpdateTicketRequest(
     DateTime? DateCloture,
     decimal DureeSla);
 
+public record AssignTicketRequest(int? IdTechnicienAssigne);
+
 public record TicketResponse(
     int IdTicket,
     string NumeroTicket,
