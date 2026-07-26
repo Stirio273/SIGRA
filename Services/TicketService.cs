@@ -246,11 +246,28 @@ public class TicketService : ITicketService
         return await _ticketRepository.GetPagedAsync(pageNumber, pageSize);
     }
 
+    public async Task<IReadOnlyList<Statut>> GetNextStatutsAsync(int idTicket, CancellationToken cancellationToken = default)
+    {
+        var ticket = await _ticketRepository.GetByIdAsync(idTicket, cancellationToken);
+        if (ticket == null)
+            return Array.Empty<Statut>();
+
+        var idStatutOrigine = ticket.IdStatut;
+        return await _statutRepository.GetNextStatutsAsync(idStatutOrigine, cancellationToken);
+    }
+
     public async Task<bool> UpdateAsync(int id, UpdateTicketRequest req)
     {
         var ticket = await _ticketRepository.GetByIdAsync(id);
         if (ticket == null)
             return false;
+
+        if (ticket.IdStatut != req.IdStatut)
+        {
+            var autorisee = await _statutRepository.IsTransitionAutoriseeAsync(ticket.IdStatut, req.IdStatut);
+            if (!autorisee)
+                return false;
+        }
 
         ticket.IdApplication = req.IdApplication;
         ticket.IdCriticite = req.IdCriticite;

@@ -56,13 +56,47 @@ public sealed class TicketRepository : ITicketRepository
 
     public async Task<PagedResult<Ticket>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken ct = default)
     {
-        var query = _context.Tickets.AsQueryable();
-        var totalCount = await query.CountAsync(ct);
-        var items = await query
+        var items = await _context.Tickets
             .OrderBy(t => t.IdTicket)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
+            .Select(t => new Ticket
+            {
+                IdTicket = t.IdTicket,
+                NumeroTicket = t.NumeroTicket,
+                DateCreation = t.DateCreation,
+                IdApplication = t.IdApplication,
+                IdCriticite = t.IdCriticite,
+                IdStatut = t.IdStatut,
+                IdTechnicienAssigne = t.IdTechnicienAssigne,
+                DemandeurEmail = t.DemandeurEmail,
+                DemandeurDirection = t.DemandeurDirection,
+                DateCloture = t.DateCloture,
+                DureeSla = t.DureeSla,
+                IdStatutNavigation = new Statut
+                {
+                    IdStatut = t.IdStatutNavigation.IdStatut,
+                    Libelle = t.IdStatutNavigation.Libelle
+                },
+                IdApplicationNavigation = t.IdApplicationNavigation == null ? null : new Application
+                {
+                    IdApplication = t.IdApplicationNavigation.IdApplication,
+                    Libelle = t.IdApplicationNavigation.Libelle
+                },
+                IdCriticiteNavigation = t.IdCriticiteNavigation == null ? null : new Criticite
+                {
+                    IdCriticite = t.IdCriticiteNavigation.IdCriticite,
+                    Libelle = t.IdCriticiteNavigation.Libelle
+                },
+                IdTechnicienAssigneNavigation = t.IdTechnicienAssigneNavigation == null ? null : new Utilisateur
+                {
+                    IdUtilisateur = t.IdTechnicienAssigneNavigation.IdUtilisateur,
+                    Email = t.IdTechnicienAssigneNavigation.Email
+                }
+            })
             .ToListAsync(ct);
+
+        var totalCount = await _context.Tickets.CountAsync(ct);
 
         return new PagedResult<Ticket>
         {

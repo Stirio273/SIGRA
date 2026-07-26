@@ -47,15 +47,21 @@ public record UpdateTicketRequest(
 
 public record AssignTicketRequest(int? IdTechnicienAssigne);
 
+public record StatutSuivantPossibleResponse(int IdStatut, string Libelle);
+
+public record ApplicationRefResponse(int IdApplication, string Libelle);
+public record StatutRefResponse(int IdStatut, string Libelle);
+public record CriticiteRefResponse(int IdCriticite, string Libelle);
+public record TechnicienRefResponse(int IdUtilisateur, string Email);
+
 public record TicketResponse(
     int IdTicket,
     string NumeroTicket,
     DateTime DateCreation,
-    int? IdApplication,
-    // int? IdTypeDemande,
-    int? IdCriticite,
-    int IdStatut,
-    int? IdTechnicienAssigne,
+    ApplicationRefResponse? Application,
+    CriticiteRefResponse? Criticite,
+    StatutRefResponse Statut,
+    TechnicienRefResponse? TechnicienAssigne,
     string DemandeurEmail,
     string DemandeurDirection,
     DateTime? DateCloture,

@@ -71,6 +71,13 @@ public class TicketsController : ControllerBase
         return ok ? NoContent() : NotFound();
     }
 
+    [HttpGet("{id:int}/next-statuts")]
+    public async Task<IActionResult> GetNextStatuts(int id)
+    {
+        var statuts = await _ticketService.GetNextStatutsAsync(id);
+        return Ok(statuts.Select(s => new StatutSuivantPossibleResponse(s.IdStatut, s.Libelle)));
+    }
+
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -82,11 +89,10 @@ public class TicketsController : ControllerBase
         t.IdTicket,
         t.NumeroTicket,
         t.DateCreation,
-        t.IdApplication,
-        // t.IdTypeDemande,
-        t.IdCriticite,
-        t.IdStatut,
-        t.IdTechnicienAssigne,
+        t.IdApplicationNavigation is not null ? new ApplicationRefResponse(t.IdApplicationNavigation.IdApplication, t.IdApplicationNavigation.Libelle) : null,
+        t.IdCriticiteNavigation is not null ? new CriticiteRefResponse(t.IdCriticiteNavigation.IdCriticite, t.IdCriticiteNavigation.Libelle) : null,
+        new StatutRefResponse(t.IdStatutNavigation.IdStatut, t.IdStatutNavigation.Libelle),
+        t.IdTechnicienAssigneNavigation is not null ? new TechnicienRefResponse(t.IdTechnicienAssigneNavigation.IdUtilisateur, t.IdTechnicienAssigneNavigation.Email) : null,
         t.DemandeurEmail,
         t.DemandeurDirection,
         t.DateCloture,

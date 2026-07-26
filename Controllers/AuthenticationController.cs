@@ -6,7 +6,7 @@ namespace SIGRA.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Policy = "ADAuthorizedUser")]
+[Authorize]
 public class AuthenticationController : ControllerBase
 {
     private readonly IUserAuthenticationService _authService;
@@ -20,14 +20,20 @@ public class AuthenticationController : ControllerBase
     public async Task<IActionResult> GetProfile()
     {
         var username = User.Identity?.Name ?? "Unknown";
-        var user = await _authService.GetAuthorizedUserAsync(username);
+        // var user = await _authService.GetAuthorizedUserAsync(username);
+
+        // return Ok(new
+        // {
+        //     AdUsername = username,
+        //     Email = user?.Email,
+        //     Role = user?.IdRole,
+        //     Message = "Access granted"
+        // });
 
         return Ok(new
         {
-            AdUsername = username,
-            Email = user?.Email,
-            Role = user?.IdRole,
-            Message = "Access granted"
+            User = User.Identity?.Name,
+            Type = User.Identity?.AuthenticationType
         });
     }
 

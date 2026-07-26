@@ -339,11 +339,17 @@ CREATE OR REPLACE TRIGGER tr_service_account_tokens_updated_at
 -- DONNÉES DE RÉFÉRENCE INITIALES
 -- ============================================================================
 
-INSERT INTO roles (libelle) VALUES ('Administrateur'), ('Technicien'), ('Manager');
+INSERT INTO roles (libelle) VALUES ('Administrateur'), ('Technicien'), ('Consultant');
 
-INSERT INTO types_demande (libelle) VALUES ('Réclamation'), ('Demande');
+INSERT INTO utilisateurs (identifiant_ad, nom, prenom, email, id_role) VALUES
+    ('ADMIN01', 'Admin', 'Système', 'admin@entreprise.com', 1),
+    ('TECH01', 'Dupont', 'Jean', 'jean.dupont@entreprise.com', 2),
+    ('TECH02', 'Martin', 'Marie', 'marie.martin@entreprise.com', 2),
+    ('CONS01', 'Bernard', 'Pierre', 'pierre.bernard@entreprise.com', 3);
 
-INSERT INTO criticites (libelle, ordre) VALUES ('Critique', 1), ('Haute', 2), ('Normale', 3);
+-- INSERT INTO types_demande (libelle) VALUES ('Réclamation'), ('Demande');
+
+INSERT INTO criticites (libelle, ordre) VALUES ('Majeure', 1), ('Normale', 2), ('Mineure', 3);
 
 INSERT INTO statuts (libelle, est_defaut) VALUES
     ('Nouveau', true), ('En cours', false), ('En attente', false), ('Escaladé', false),
@@ -352,7 +358,7 @@ INSERT INTO statuts (libelle, est_defaut) VALUES
 -- Transitions autorisées
 INSERT INTO transitions_autorisees (id_statut_origine, id_statut_destination)
 SELECT s1.id_statut, s2.id_statut
-FROM statut s1, statut s2
+FROM statuts s1, statuts s2
 WHERE (s1.libelle, s2.libelle) IN (
     ('Nouveau', 'En cours'),
     ('Nouveau', 'En attente de validation rejet'),

@@ -1,7 +1,9 @@
+using Microsoft.Extensions.Logging;
 using SIGRA.Data.Enums;
 using SIGRA.Data.Models;
 using SIGRA.Data.Repositories;
-
+using SIGRA.Services;
+using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace SIGRA.Services;
@@ -11,12 +13,14 @@ public class GmailIdentityProvider : IImapIdentityProvider
     private readonly IConfiguration _config;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ILogger<GmailIdentityProvider> _logger;
 
-    public GmailIdentityProvider(IConfiguration config, IHttpClientFactory httpClientFactory, IServiceScopeFactory scopeFactory)
+    public GmailIdentityProvider(IConfiguration config, IHttpClientFactory httpClientFactory, IServiceScopeFactory scopeFactory, ILogger<GmailIdentityProvider> logger)
     {
         _config = config;
         _httpClientFactory = httpClientFactory;
         _scopeFactory = scopeFactory;
+        _logger = logger;
     }
 
     public string GetMailboxIdentity() =>
@@ -64,7 +68,11 @@ public class GmailIdentityProvider : IImapIdentityProvider
 
         using var response = await httpClient.SendAsync(tokenRequest, cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
+        {
+            var errorPayload = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            _logger.LogError("Gmail token exchange failed with status {StatusCode}. Response: {Payload}", (int)response.StatusCode, errorPayload);
             return false;
+        }
 
         var payload = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
@@ -176,7 +184,11 @@ public class GmailIdentityProvider : IImapIdentityProvider
 
             using var response = await httpClient.SendAsync(tokenRequest, cancellationToken).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
+            {
+                var errorPayload = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                _logger.LogError("Gmail token refresh failed with status {StatusCode}. Response: {Payload}", (int)response.StatusCode, errorPayload);
                 return false;
+            }
 
             var payload = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
@@ -214,8 +226,9 @@ public class GmailIdentityProvider : IImapIdentityProvider
 
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Gmail token refresh failed.");
             return false;
         }
     }

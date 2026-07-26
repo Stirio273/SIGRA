@@ -21,21 +21,25 @@ public class UserAuthenticationService : IUserAuthenticationService
         _logger = logger;
     }
 
-    public async Task<Utilisateur?> GetAuthorizedUserAsync(string email)
+    public async Task<Utilisateur?> GetAuthorizedUserAsync(string username)
     {
-        if (string.IsNullOrWhiteSpace(email))
+        if (string.IsNullOrWhiteSpace(username))
         {
             return null;
         }
-        // Normalize username for comparison (case-insensitive)
+
+        var normalized = username.Trim().ToLower();
+
         return await _dbContext.Utilisateurs
-            .Where(u => u.Email.ToLower() == email.ToLower() && u.Actif)
+            .Where(u => u.Actif && (
+                u.Email.ToLower() == normalized ||
+                u.IdentifiantAd.ToLower() == normalized))
             .FirstOrDefaultAsync();
     }
 
-    public async Task<bool> IsUserAuthorizedAsync(string email)
+    public async Task<bool> IsUserAuthorizedAsync(string username)
     {
-        var user = await GetAuthorizedUserAsync(email);
+        var user = await GetAuthorizedUserAsync(username);
         return user != null;
     }
 }
