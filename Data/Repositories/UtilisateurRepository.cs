@@ -14,6 +14,11 @@ public sealed class UtilisateurRepository : IUtilisateurRepository
         _logger = logger;
     }
 
+    public async Task<IReadOnlyList<Utilisateur>> GetActiveUser(CancellationToken ct = default)
+    {
+        return await _context.Utilisateurs.Where(u => u.Actif).ToListAsync(ct);
+    }
+
     public async Task<IReadOnlyList<Utilisateur>> GetAllAsync(CancellationToken ct = default)
     {
         return await _context.Utilisateurs.ToListAsync(ct);

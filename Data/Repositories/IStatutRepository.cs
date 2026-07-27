@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using SIGRA.Data.Enums;
 using SIGRA.Data.Models;
 
 namespace SIGRA.Data.Repositories;

@@ -14,4 +14,5 @@ public interface ITicketRepository
     Task<IReadOnlyList<Ticket>> GetByTechnicianAsync(Guid technicianUserGuid, CancellationToken ct = default);
     Task<PagedResult<Ticket>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken ct = default);
     Task DeleteAsync(int id, CancellationToken ct = default);
+    Task<int?> GetIdStatutByDefaultAsync(CancellationToken ct = default);
 }

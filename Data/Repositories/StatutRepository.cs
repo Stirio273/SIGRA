@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SIGRA.Data.Enums;
 using SIGRA.Data.Models;
 using System.Linq;
 using System.Threading;

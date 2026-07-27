@@ -116,4 +116,13 @@ public sealed class TicketRepository : ITicketRepository
             await _context.SaveChangesAsync(ct);
         }
     }
+
+    public async Task<int?> GetIdStatutByDefaultAsync(CancellationToken ct = default)
+    {
+        return await _context.Statuts
+            .AsNoTracking()
+            .Where(s => s.EstDefaut)
+            .Select(s => (int?)s.IdStatut)
+            .FirstOrDefaultAsync(ct);
+    }
 }

@@ -13,10 +13,18 @@ public class TicketsController : ControllerBase
 {
     private readonly ITicketService _ticketService;
     private readonly IUserAuthenticationService _userAuthenticationService;
+
     public TicketsController(ITicketService ticketService, IUserAuthenticationService userAuthenticationService)
     {
         _ticketService = ticketService;
         _userAuthenticationService = userAuthenticationService;
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> SendDenyRequest(CreateDenyRequest req)
+    {
+
+        return null;
     }
 
     [HttpPost]

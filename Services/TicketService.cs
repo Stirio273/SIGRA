@@ -1,9 +1,11 @@
 using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using MimeKit;
 using SIGRA.Controllers;
 using SIGRA.Data;
+using SIGRA.Data.Enums;
 using SIGRA.Data.Models;
 using SIGRA.Data.Repositories;
 
@@ -41,6 +43,46 @@ public class TicketService : ITicketService
         _config = config;
         _logger = logger;
         _userAuthenticationService = userAuthenticationService;
+    }
+
+    public async Task RespondRejectDemandAsync(int ticketId, int rejetId, int idAuteur, bool isRejected)
+    {
+        var ticket = await _context.Tickets.FirstOrDefaultAsync(t => t.IdTicket == ticketId, default);
+        if (ticket is null)
+            throw new Exception("Ticket not found");
+
+        var rejet = await _context.Rejets.FirstOrDefaultAsync(r => r.IdRejet == rejetId, default);
+
+        if (isRejected)
+        {
+
+        }
+        else
+        {
+
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task AskRejectAsync(int ticketId, int idAuteur, string justificatif)
+    {
+        var ticket = await _context.Tickets.FirstOrDefaultAsync(t => t.IdTicket == ticketId, default);
+        if (ticket is null)
+            throw new Exception("Ticket not found");
+
+        var rejet = new Rejet
+        {
+            IdTicket = ticketId,
+            IdAuteur = idAuteur,
+            Justificatif = justificatif,
+            DateProposition = DateTime.Now
+        };
+
+        _context.Rejets.Add(rejet);
+        ticket.IdStatut = (int)TicketStatus.PendingReject;
+
+        await _context.SaveChangesAsync();
     }
 
     public async Task<Ticket?> CreateTicketFromEmailAsync(
@@ -253,7 +295,7 @@ public class TicketService : ITicketService
             return Array.Empty<Statut>();
 
         var idStatutOrigine = ticket.IdStatut;
-        return await _statutRepository.GetNextStatutsAsync(idStatutOrigine, cancellationToken);
+        return await _statutRepository.GetNextStatutsAsync((int)idStatutOrigine, cancellationToken);
     }
 
     public async Task<bool> UpdateAsync(int id, UpdateTicketRequest req)

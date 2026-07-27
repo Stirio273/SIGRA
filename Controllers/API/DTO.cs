@@ -45,6 +45,11 @@ public record UpdateTicketRequest(
     DateTime? DateCloture,
     decimal DureeSla);
 
+public record CreateDenyRequest(
+    int IdTicket,
+    string Justificatif
+);
+
 public record AssignTicketRequest(int? IdTechnicienAssigne);
 
 public record StatutSuivantPossibleResponse(int IdStatut, string Libelle);

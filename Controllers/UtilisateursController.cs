@@ -33,6 +33,13 @@ public class UtilisateursController : ControllerBase
         return item is null ? NotFound() : Ok(ToResponse(item));
     }
 
+    [HttpGet("active")]
+    public async Task<IActionResult> GetActiveUser()
+    {
+        var items = await _utilisateurService.GetActiveUser();
+        return Ok(items.Select(ToResponse));
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {

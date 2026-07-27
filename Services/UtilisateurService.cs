@@ -13,6 +13,11 @@ public class UtilisateurService : IUtilisateurService
         _utilisateurRepository = utilisateurRepository;
     }
 
+    public async Task<IReadOnlyList<Utilisateur>> GetActiveUser()
+    {
+        return await _utilisateurRepository.GetActiveUser();
+    }
+
     public async Task<Utilisateur> CreateAsync(CreateUtilisateurRequest req)
     {
         var utilisateur = new Utilisateur
