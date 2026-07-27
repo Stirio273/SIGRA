@@ -21,5 +21,5 @@ public interface ITicketService
     Task<bool> AssignAsync(int ticketId, int? technicianId, string currentUserEmail);
     Task<bool> DeleteAsync(int id);
     Task AskRejectAsync(int ticketId, int idAuteur, string justificatif);
-    Task<bool> RespondRejectDemandAsync(int ticketId, int rejetId, int idAuteur, bool isRejected);
+    Task<bool> RespondRejectDemandAsync(int ticketId, int rejetId, int idValidateur, bool isRejected);
 }

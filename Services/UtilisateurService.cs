@@ -13,9 +13,9 @@ public class UtilisateurService : IUtilisateurService
         _utilisateurRepository = utilisateurRepository;
     }
 
-    public async Task<IReadOnlyList<Utilisateur>> GetActiveUser()
+    public async Task<IReadOnlyList<Utilisateur>> GetActiveTechnicians()
     {
-        return await _utilisateurRepository.GetActiveUser();
+        return await _utilisateurRepository.GetActiveTechnicians();
     }
 
     public async Task<Utilisateur> CreateAsync(CreateUtilisateurRequest req)

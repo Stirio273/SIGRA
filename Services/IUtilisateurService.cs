@@ -5,7 +5,7 @@ namespace SIGRA.Services;
 
 public interface IUtilisateurService
 {
-    Task<IReadOnlyList<Utilisateur>> GetActiveUser();
+    Task<IReadOnlyList<Utilisateur>> GetActiveTechnicians();
     Task<Utilisateur> CreateAsync(CreateUtilisateurRequest req);
     Task<Utilisateur?> GetByIdAsync(int id);
     Task<Utilisateur?> GetByEmailAsync(string email);

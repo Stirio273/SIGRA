@@ -45,7 +45,7 @@ public class TicketService : ITicketService
         _userAuthenticationService = userAuthenticationService;
     }
 
-    public async Task RespondRejectDemandAsync(int ticketId, int rejetId, int idAuteur, bool isRejected)
+    public async Task<bool> RespondRejectDemandAsync(int ticketId, int rejetId, int idValidateur, bool isRejected)
     {
         var ticket = await _context.Tickets.FirstOrDefaultAsync(t => t.IdTicket == ticketId, default);
         if (ticket is null)
@@ -55,14 +55,16 @@ public class TicketService : ITicketService
 
         if (isRejected)
         {
-
+            rejet = ticket.Rejeter(rejet, idValidateur);
+            await _context.SaveChangesAsync();
+            return (rejet.Decision != null) ? (bool)rejet.Decision : true;
         }
         else
         {
-
+            rejet = ticket.RefuserRejet(rejet, idValidateur);
+            await _context.SaveChangesAsync();
+            return (rejet.Decision != null) ? (bool)rejet.Decision : false;
         }
-
-        await _context.SaveChangesAsync();
     }
 
     public async Task AskRejectAsync(int ticketId, int idAuteur, string justificatif)

@@ -5,7 +5,7 @@ namespace SIGRA.Data.Repositories;
 
 public interface IUtilisateurRepository
 {
-    Task<IReadOnlyList<Utilisateur>> GetActiveUser(CancellationToken ct = default);
+    Task<IReadOnlyList<Utilisateur>> GetActiveTechnicians(CancellationToken ct = default);
     Task<IReadOnlyList<Utilisateur>> GetAllAsync(CancellationToken ct = default);
     Task<Utilisateur?> GetByIdAsync(int id, CancellationToken ct = default);
     Task<Utilisateur?> GetByEmailAsync(string email, CancellationToken ct = default);

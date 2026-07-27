@@ -20,11 +20,19 @@ public class TicketsController : ControllerBase
         _userAuthenticationService = userAuthenticationService;
     }
 
-    [HttpPost]
+    [HttpPost("request-deny")]
     public async Task<IActionResult> SendDenyRequest(CreateDenyRequest req)
     {
+        var username = User.Identity?.Name;
+        if (string.IsNullOrEmpty(username))
+            return Unauthorized();
 
-        return null;
+        var currentUser = await _userAuthenticationService.GetAuthorizedUserAsync(username);
+        if (currentUser == null)
+            return Unauthorized();
+
+        await _ticketService.AskRejectAsync(req.IdTicket, currentUser.IdUtilisateur, req.Justificatif);
+        return NoContent();
     }
 
     [HttpPost]

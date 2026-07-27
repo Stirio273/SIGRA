@@ -14,9 +14,13 @@ public sealed class UtilisateurRepository : IUtilisateurRepository
         _logger = logger;
     }
 
-    public async Task<IReadOnlyList<Utilisateur>> GetActiveUser(CancellationToken ct = default)
+    public async Task<IReadOnlyList<Utilisateur>> GetActiveTechnicians(CancellationToken ct = default)
     {
-        return await _context.Utilisateurs.Where(u => u.Actif).ToListAsync(ct);
+        return await _context.Utilisateurs
+            .AsNoTracking()
+            .Where(u => u.Actif && u.IdRoleNavigation.Libelle == "Technicien")
+            .Select(u => new Utilisateur { Nom=u.Nom, Prenom=u.Prenom, Email=u.Email, UserGuid=u.UserGuid })
+            .ToListAsync(ct);
     }
 
     public async Task<IReadOnlyList<Utilisateur>> GetAllAsync(CancellationToken ct = default)

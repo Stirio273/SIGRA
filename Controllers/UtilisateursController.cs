@@ -33,11 +33,11 @@ public class UtilisateursController : ControllerBase
         return item is null ? NotFound() : Ok(ToResponse(item));
     }
 
-    [HttpGet("active")]
-    public async Task<IActionResult> GetActiveUser()
+    [HttpGet("technicians/active")]
+    public async Task<IActionResult> GetActiveTechnicians()
     {
-        var items = await _utilisateurService.GetActiveUser();
-        return Ok(items.Select(ToResponse));
+        var items = await _utilisateurService.GetActiveTechnicians();
+        return Ok(items.Select(ToTechnicienResponse));
     }
 
     [HttpGet]
@@ -60,6 +60,12 @@ public class UtilisateursController : ControllerBase
         var ok = await _utilisateurService.DeleteAsync(id);
         return ok ? NoContent() : NotFound();
     }
+
+    private static TechnicienResponse ToTechnicienResponse(Utilisateur u) => new(
+        u.Nom,
+        u.Prenom,
+        u.Email,
+        u.UserGuid);
 
     private static UtilisateurResponse ToResponse(Utilisateur u) => new(
         u.IdUtilisateur,
