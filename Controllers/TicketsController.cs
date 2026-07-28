@@ -99,14 +99,14 @@ public class TicketsController : ControllerBase
         return Ok(items.Select(ToResponse));
     }
 
-    [HttpPut("{id:int}/assign")]
-    public async Task<IActionResult> Assign(int id, AssignTicketRequest req)
+    [HttpPatch("assign")]
+    public async Task<IActionResult> Assign(AssignTicketsRequest req)
     {
         var username = User.Identity?.Name;
         if (string.IsNullOrEmpty(username))
             return Unauthorized();
 
-        var ok = await _ticketService.AssignAsync(id, req.IdTechnicienAssigne, username);
+        var ok = await _ticketService.AssignAsync(req.TicketIds, req.UserGuid, username);
         return ok ? NoContent() : Forbid();
     }
 

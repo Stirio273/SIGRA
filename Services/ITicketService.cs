@@ -18,7 +18,7 @@ public interface ITicketService
     Task<PagedResult<Ticket>> GetPagedAsync(int pageNumber, int pageSize);
     Task<IReadOnlyList<Statut>> GetNextStatutsAsync(int idTicket, CancellationToken cancellationToken = default);
     Task<bool> UpdateAsync(int id, UpdateTicketRequest req);
-    Task<bool> AssignAsync(int ticketId, int? technicianId, string currentUserEmail);
+    Task<bool> AssignAsync(IEnumerable<int> ticketIds, Guid? technicianUserGuid, string currentUserEmail);
     Task<bool> DeleteAsync(int id);
     Task AskRejectAsync(int ticketId, int idAuteur, string justificatif);
     Task<bool> RespondRejectDemandAsync(int ticketId, int rejetId, int idValidateur, bool isRejected);

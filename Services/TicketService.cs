@@ -349,24 +349,40 @@ public class TicketService : ITicketService
         return true;
     }
 
-    public async Task<bool> AssignAsync(int ticketId, int? technicianId, string currentUserEmail)
+    public async Task<bool> AssignAsync(IEnumerable<int> ticketIds, Guid? technicianUserGuid, string currentUserEmail)
     {
-        var ticket = await _context.Tickets.FindAsync(ticketId);
-        if (ticket == null)
-            return false;
-
         var currentUser = await _userAuthenticationService.GetAuthorizedUserAsync(currentUserEmail);
         if (currentUser == null)
             return false;
 
-        var isAdmin = currentUser.IdRoleNavigation.Libelle.Equals("Administrateur", StringComparison.OrdinalIgnoreCase);
-        var isTechnicien = currentUser.IdRoleNavigation.Libelle.Equals("Technicien", StringComparison.OrdinalIgnoreCase);
-
-        if (!isAdmin && (!isTechnicien || technicianId != currentUser.IdUtilisateur))
+        var role = await _context.Roles.FirstOrDefaultAsync(r => r.IdRole == currentUser.IdRole);
+        if (role == null)
             return false;
 
-        ticket.IdTechnicienAssigne = technicianId;
-        ticket.IdStatut = (int)TicketStatus.Opened;
+        var isAdmin = role.Libelle.Equals("Administrateur", StringComparison.OrdinalIgnoreCase);
+        var isTechnicien = role.Libelle.Equals("Technicien", StringComparison.OrdinalIgnoreCase);
+
+        if (!isAdmin && (!isTechnicien || technicianUserGuid != currentUser.UserGuid))
+            return false;
+
+        int? technicienId = null;
+        if (technicianUserGuid.HasValue)
+        {
+            var technicien = await _context.Utilisateurs.AsNoTracking()
+                .Where(u => u.UserGuid == technicianUserGuid.Value)
+                .Select(u => u.IdUtilisateur)
+                .FirstOrDefaultAsync();
+            if (technicien == 0)
+                return false;
+            technicienId = technicien;
+        }
+
+        await _context.Tickets
+            .Where(t => ticketIds.Contains(t.IdTicket))
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(b => b.IdTechnicienAssigne, technicienId)
+                .SetProperty(b => b.IdStatut, (int)TicketStatus.Opened));
+
         await _context.SaveChangesAsync();
         return true;
     }

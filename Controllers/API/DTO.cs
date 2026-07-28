@@ -64,7 +64,7 @@ public record TransferTicketRequest(
     bool estDefinitif
 );
 
-public record AssignTicketRequest(int? IdTechnicienAssigne);
+public record AssignTicketsRequest(List<int> TicketIds, Guid? UserGuid);
 
 public record StatutSuivantPossibleResponse(int IdStatut, string Libelle);
 
