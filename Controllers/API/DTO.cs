@@ -51,6 +51,19 @@ public record CreateDenyRequest(
     string Justificatif
 );
 
+public record RespondDenyRequest(
+    int rejetId,
+    int IdTicket,
+    bool decision
+);
+
+public record TransferTicketRequest(
+    int idTicket,
+    int idEntiteExterne,
+    string explication,
+    bool estDefinitif
+);
+
 public record AssignTicketRequest(int? IdTechnicienAssigne);
 
 public record StatutSuivantPossibleResponse(int IdStatut, string Libelle);

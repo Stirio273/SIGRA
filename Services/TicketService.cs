@@ -45,6 +45,23 @@ public class TicketService : ITicketService
         _userAuthenticationService = userAuthenticationService;
     }
 
+    public async Task TransferAsync(int ticketId, int idEntiteExterne, int idAuteur, string explication, bool estDefinitif)
+    {
+        var escalade = new Escalade
+        {
+            IdTicket = ticketId,
+            IdEntiteExterne = idEntiteExterne,
+            IdAuteur = idAuteur,
+            DateEscalade = DateTime.Now,
+            Explication = explication,
+            EstDefinitif = estDefinitif
+        };
+        await _context.Escalades.AddAsync(escalade);
+        var ticket = await _context.Tickets.FindAsync(ticketId);
+        ticket.Transferer(escalade);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task<bool> RespondRejectDemandAsync(int ticketId, int rejetId, int idValidateur, bool isRejected)
     {
         var ticket = await _context.Tickets.FirstOrDefaultAsync(t => t.IdTicket == ticketId, default);
@@ -147,7 +164,7 @@ public class TicketService : ITicketService
         if (resolvedTicketId.HasValue)
         {
             isFirstEmail = false;
-            ticket = await _ticketRepository.GetByIdAsync(resolvedTicketId.Value, cancellationToken)
+            ticket = await _context.Tickets.FindAsync(resolvedTicketId.Value, cancellationToken)
                 ?? throw new InvalidOperationException($"Ticket {resolvedTicketId.Value} not found for conversation.");
         }
         else
@@ -272,7 +289,7 @@ public class TicketService : ITicketService
 
     public async Task<Ticket?> GetByIdAsync(int id)
     {
-        return await _ticketRepository.GetByIdAsync(id);
+        return await _context.Tickets.FindAsync(id);
     }
 
     public async Task<IReadOnlyList<Ticket>> GetAllAsync()
@@ -292,7 +309,7 @@ public class TicketService : ITicketService
 
     public async Task<IReadOnlyList<Statut>> GetNextStatutsAsync(int idTicket, CancellationToken cancellationToken = default)
     {
-        var ticket = await _ticketRepository.GetByIdAsync(idTicket, cancellationToken);
+        var ticket = await _context.Tickets.FindAsync(idTicket, cancellationToken);
         if (ticket == null)
             return Array.Empty<Statut>();
 
@@ -302,7 +319,7 @@ public class TicketService : ITicketService
 
     public async Task<bool> UpdateAsync(int id, UpdateTicketRequest req)
     {
-        var ticket = await _ticketRepository.GetByIdAsync(id);
+        var ticket = await _context.Tickets.FindAsync(id);
         if (ticket == null)
             return false;
 
@@ -334,7 +351,7 @@ public class TicketService : ITicketService
 
     public async Task<bool> AssignAsync(int ticketId, int? technicianId, string currentUserEmail)
     {
-        var ticket = await _ticketRepository.GetByIdAsync(ticketId);
+        var ticket = await _context.Tickets.FindAsync(ticketId);
         if (ticket == null)
             return false;
 
@@ -349,7 +366,8 @@ public class TicketService : ITicketService
             return false;
 
         ticket.IdTechnicienAssigne = technicianId;
-        await _ticketRepository.UpdateAsync(ticket);
+        ticket.IdStatut = (int)TicketStatus.Opened;
+        await _context.SaveChangesAsync();
         return true;
     }
 }

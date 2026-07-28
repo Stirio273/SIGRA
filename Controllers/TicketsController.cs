@@ -20,6 +20,36 @@ public class TicketsController : ControllerBase
         _userAuthenticationService = userAuthenticationService;
     }
 
+    [HttpPost("{id}/transfer")]
+    public async Task<IActionResult> Transfer(TransferTicketRequest request)
+    {
+        var username = User.Identity?.Name;
+        if (string.IsNullOrEmpty(username))
+            return Unauthorized();
+
+        var currentUser = await _userAuthenticationService.GetAuthorizedUserAsync(username);
+        if (currentUser == null)
+            return Unauthorized();
+
+        await _ticketService.TransferAsync(request.idTicket, request.idEntiteExterne, currentUser.IdUtilisateur, request.explication, request.estDefinitif);
+        return Ok();
+    }
+
+    [HttpPost("request-deny/respond")]
+    public async Task<IActionResult> RespondDenyRequest(RespondDenyRequest req)
+    {
+        var username = User.Identity?.Name;
+        if (string.IsNullOrEmpty(username))
+            return Unauthorized();
+
+        var currentUser = await _userAuthenticationService.GetAuthorizedUserAsync(username);
+        if (currentUser == null)
+            return Unauthorized();
+
+        await _ticketService.RespondRejectDemandAsync(req.IdTicket, req.rejetId, currentUser.IdUtilisateur, req.decision);
+        return NoContent();
+    }
+
     [HttpPost("request-deny")]
     public async Task<IActionResult> SendDenyRequest(CreateDenyRequest req)
     {
