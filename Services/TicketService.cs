@@ -376,13 +376,25 @@ public class TicketService : ITicketService
             technicienId = technicien;
         }
 
+        var alreadyAssignedTickets = await _context.Tickets
+            .AsNoTracking()
+            .Where(t => ticketIds.Contains(t.IdTicket) && t.IdTechnicienAssigne != null)
+            .Select(t => t.NumeroTicket)
+            .ToListAsync();
+
+        if (alreadyAssignedTickets.Any())
+        {
+            return Result.Failure(
+                $"Ticket(s) already assigned: {string.Join(", ", alreadyAssignedTickets)}",
+                ErrorType.Conflict);
+        }
+
         await _context.Tickets
             .Where(t => ticketIds.Contains(t.IdTicket))
             .ExecuteUpdateAsync(setters => setters
                 .SetProperty(b => b.IdTechnicienAssigne, technicienId)
                 .SetProperty(b => b.IdStatut, (int)TicketStatus.Opened));
-
-        await _context.SaveChangesAsync();
+                
         return Result.Success();
     }
 

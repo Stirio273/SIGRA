@@ -31,6 +31,8 @@ public class UserAuthenticationService : IUserAuthenticationService
         var normalized = username.Trim().ToLower();
 
         return await _dbContext.Utilisateurs
+            .AsNoTracking()
+            .Include(u => u.IdRoleNavigation)
             .Where(u => u.Actif && (
                 u.Email.ToLower() == normalized ||
                 u.IdentifiantAd.ToLower() == normalized))

@@ -20,7 +20,7 @@ public class AuthenticationController : ControllerBase
     public async Task<IActionResult> GetProfile()
     {
         var username = User.Identity?.Name ?? "Unknown";
-        // var user = await _authService.GetAuthorizedUserAsync(username);
+        var user = await _authService.GetAuthorizedUserAsync(username);
 
         // return Ok(new
         // {
@@ -33,7 +33,8 @@ public class AuthenticationController : ControllerBase
         return Ok(new
         {
             User = User.Identity?.Name,
-            Type = User.Identity?.AuthenticationType
+            Type = User.Identity?.AuthenticationType,
+            Role = user.IdRoleNavigation.Libelle
         });
     }
 
