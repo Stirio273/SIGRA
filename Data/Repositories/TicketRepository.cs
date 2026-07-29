@@ -16,6 +16,44 @@ public sealed class TicketRepository : ITicketRepository
         _logger = logger;
     }
 
+    public async Task<Ticket?> GetFicheTicket(int idTicket, CancellationToken ct = default)
+    {
+        return await _context.Tickets
+        .AsNoTracking()
+        .Where(t => t.IdTicket == idTicket)
+        .Select(t => new Ticket
+        {
+            IdTicket = t.IdTicket,
+            NumeroTicket = t.NumeroTicket,
+            DateCreation = t.DateCreation,
+            IdApplicationNavigation = t.IdApplicationNavigation,
+            IdCriticiteNavigation = t.IdCriticiteNavigation,
+            IdStatutNavigation = new Statut
+            {
+                IdStatut = t.IdStatut,
+                Libelle = t.IdStatutNavigation.Libelle
+            },
+            IdTechnicienAssigneNavigation = new Utilisateur
+            {
+                Nom = t.IdTechnicienAssigneNavigation.Nom,
+                Prenom = t.IdTechnicienAssigneNavigation.Prenom,
+                Email = t.IdTechnicienAssigneNavigation.Email
+            },
+            DemandeurEmail = t.DemandeurEmail,
+            DemandeurDirection = t.DemandeurDirection,
+            DateCloture = t.DateCloture,
+            DureeSla = t.DureeSla,
+            EmailsSources = t.EmailsSources.Select(e => new EmailsSource
+            {
+                Expediteur = e.Expediteur,
+                Objet = e.Objet,
+                CorpsEmail = e.CorpsEmail,
+                DateReception = e.DateReception,
+                PiecesJointes = e.PiecesJointes
+            }).ToList()
+        }).FirstOrDefaultAsync();
+    }
+
     public async Task<long> GetNextSequenceValueAsync()
     {
         var result = await _context.Database

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SIGRA.Controllers;
 using SIGRA.Data.Models;
+using SIGRA.Domain;
 using SIGRA.Services;
 using System;
 using System.Linq;
@@ -18,6 +19,20 @@ public class TicketsController : ControllerBase
     {
         _ticketService = ticketService;
         _userAuthenticationService = userAuthenticationService;
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> Get(int id)
+    {
+        var ticket = await _ticketService.GetFicheTicket(id);
+
+        if (ticket == null)
+        {
+            var result = Result.Failure("Ticket not found", ErrorType.NotFound);
+            return result.ToHttpResult();
+        }
+
+        return Ok(ticket);
     }
 
     [HttpPost("{id}/transfer")]
@@ -106,8 +121,21 @@ public class TicketsController : ControllerBase
         if (string.IsNullOrEmpty(username))
             return Unauthorized();
 
-        var ok = await _ticketService.AssignAsync(req.TicketIds, req.UserGuid, username);
-        return ok ? NoContent() : Forbid();
+        var result = await _ticketService.AssignAsync(req.TicketIds, req.UserGuid, username);
+
+        return result.IsSuccess ? NoContent() : result.ToHttpResult();
+    }
+
+    [HttpPatch("reassign")]
+    public async Task<IActionResult> Reassign(ReassignTicketRequest request)
+    {
+        var username = User.Identity?.Name;
+        if (string.IsNullOrEmpty(username))
+            return Unauthorized();
+
+        var result = await _ticketService.ReassignAsync(request.TicketIds, request.UserGuid, request.justification);
+
+        return result.IsSuccess ? Ok() : result.ToHttpResult();
     }
 
     [HttpPut("{id:int}")]

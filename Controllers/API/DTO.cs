@@ -66,6 +66,8 @@ public record TransferTicketRequest(
 
 public record AssignTicketsRequest(List<int> TicketIds, Guid? UserGuid);
 
+public record ReassignTicketRequest(List<int> TicketIds, Guid? UserGuid, string justification);
+
 public record StatutSuivantPossibleResponse(int IdStatut, string Libelle);
 
 public record ApplicationRefResponse(int IdApplication, string Libelle);

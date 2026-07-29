@@ -8,6 +8,7 @@ using SIGRA.Data;
 using SIGRA.Data.Enums;
 using SIGRA.Data.Models;
 using SIGRA.Data.Repositories;
+using SIGRA.Domain;
 
 namespace SIGRA.Services;
 
@@ -45,6 +46,12 @@ public class TicketService : ITicketService
         _userAuthenticationService = userAuthenticationService;
     }
 
+    public async Task<Ticket> GetFicheTicket(int idTicket)
+    {
+        var ticket = await _ticketRepository.GetFicheTicket(idTicket);
+        return ticket;
+    }
+
     public async Task TransferAsync(int ticketId, int idEntiteExterne, int idAuteur, string explication, bool estDefinitif)
     {
         var escalade = new Escalade
@@ -70,18 +77,10 @@ public class TicketService : ITicketService
 
         var rejet = await _context.Rejets.FirstOrDefaultAsync(r => r.IdRejet == rejetId, default);
 
-        if (isRejected)
-        {
-            rejet = ticket.Rejeter(rejet, idValidateur);
-            await _context.SaveChangesAsync();
-            return (rejet.Decision != null) ? (bool)rejet.Decision : true;
-        }
-        else
-        {
-            rejet = ticket.RefuserRejet(rejet, idValidateur);
-            await _context.SaveChangesAsync();
-            return (rejet.Decision != null) ? (bool)rejet.Decision : false;
-        }
+        rejet = ticket.ValiderRejet(rejet, idValidateur, isRejected);
+
+        await _context.SaveChangesAsync();
+        return isRejected;
     }
 
     public async Task AskRejectAsync(int ticketId, int idAuteur, string justificatif)
@@ -349,21 +348,21 @@ public class TicketService : ITicketService
         return true;
     }
 
-    public async Task<bool> AssignAsync(IEnumerable<int> ticketIds, Guid? technicianUserGuid, string currentUserEmail)
+    public async Task<Result> AssignAsync(IEnumerable<int> ticketIds, Guid? technicianUserGuid, string currentUserEmail)
     {
         var currentUser = await _userAuthenticationService.GetAuthorizedUserAsync(currentUserEmail);
         if (currentUser == null)
-            return false;
+            return Result.Failure($"Cannot get the current user {currentUserEmail}", ErrorType.NotFound);
 
         var role = await _context.Roles.FirstOrDefaultAsync(r => r.IdRole == currentUser.IdRole);
         if (role == null)
-            return false;
+            return Result.Failure($"This user {currentUserEmail} doesn't have any role", ErrorType.NotFound);
 
         var isAdmin = role.Libelle.Equals("Administrateur", StringComparison.OrdinalIgnoreCase);
         var isTechnicien = role.Libelle.Equals("Technicien", StringComparison.OrdinalIgnoreCase);
 
         if (!isAdmin && (!isTechnicien || technicianUserGuid != currentUser.UserGuid))
-            return false;
+            return Result.Failure($"The current user {currentUserEmail} doesn't have rights to do this action", ErrorType.Conflict);
 
         int? technicienId = null;
         if (technicianUserGuid.HasValue)
@@ -373,7 +372,7 @@ public class TicketService : ITicketService
                 .Select(u => u.IdUtilisateur)
                 .FirstOrDefaultAsync();
             if (technicien == 0)
-                return false;
+                return Result.Failure($"Technician with email {currentUserEmail} not found", ErrorType.NotFound);
             technicienId = technicien;
         }
 
@@ -384,6 +383,57 @@ public class TicketService : ITicketService
                 .SetProperty(b => b.IdStatut, (int)TicketStatus.Opened));
 
         await _context.SaveChangesAsync();
-        return true;
+        return Result.Success();
+    }
+
+    public async Task<Result> ReassignAsync(IEnumerable<int> ticketIds, Guid? technicianUserGuid, string justification)
+    {
+        var tickets = await _context.Tickets
+        .Where(x => ticketIds.Contains(x.IdTicket))
+        .ToListAsync();
+
+        var missingIds = ticketIds
+        .Except(tickets.Select(x => x.IdTicket))
+        .ToList();
+
+        if (missingIds.Any())
+            return Result.Failure($"Tickets not found : {string.Join(", ", missingIds)}", ErrorType.NotFound);
+
+        int? technicienId = null;
+        if (technicianUserGuid.HasValue)
+        {
+            var technicien = await _context.Utilisateurs.AsNoTracking()
+                .Where(u => u.UserGuid == technicianUserGuid.Value)
+                .Select(u => u.IdUtilisateur)
+                .FirstOrDefaultAsync();
+            if (technicien == 0)
+                return Result.Failure($"Technician with guid {technicianUserGuid} not found", ErrorType.NotFound);
+            technicienId = technicien;
+        }
+
+        var reassignations = new List<Reassignation>();
+
+        foreach (var ticket in tickets)
+        {
+            var result = ticket.ReassignTo(technicienId, justification);
+            if (!result.IsSuccess)
+            {
+                return result;
+            }
+            reassignations.Add(new Reassignation
+            {
+                IdTicket = ticket.IdTicket,
+                IdAncienAssigne = ticket.IdTechnicienAssigne,
+                IdNouvelAssigne = (int)technicienId,
+                Motif = justification,
+                IdAuteur = 0,
+                DateReassignation = DateTime.Now
+            });
+        }
+
+        await _context.Reassignations.AddRangeAsync(reassignations);
+
+        await _context.SaveChangesAsync();
+        return Result.Success();
     }
 }

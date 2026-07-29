@@ -14,4 +14,5 @@ public interface ITicketRepository
     Task<PagedResult<Ticket>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken ct = default);
     Task DeleteAsync(int id, CancellationToken ct = default);
     Task<int?> GetIdStatutByDefaultAsync(CancellationToken ct = default);
+    Task<Ticket?> GetFicheTicket(int idTicket, CancellationToken ct = default);
 }
