@@ -21,7 +21,7 @@ public class TicketsController : ControllerBase
         _userAuthenticationService = userAuthenticationService;
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("details/{id}")]
     public async Task<IActionResult> Get(int id)
     {
         var ticket = await _ticketService.GetFicheTicket(id);
