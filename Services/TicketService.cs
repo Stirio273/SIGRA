@@ -23,6 +23,7 @@ public class TicketService : ITicketService
     private readonly IConfiguration _config;
     private readonly ILogger<TicketService> _logger;
     private readonly IUserAuthenticationService _userAuthenticationService;
+    private readonly INotificationService _notificationService;
 
     public TicketService(
         AppDbContext context,
@@ -33,7 +34,8 @@ public class TicketService : ITicketService
         IStorageService storageService,
         IConfiguration config,
         ILogger<TicketService> logger,
-        IUserAuthenticationService userAuthenticationService)
+        IUserAuthenticationService userAuthenticationService,
+        INotificationService notificationService)
     {
         _context = context;
         _ticketRepository = ticketRepository;
@@ -44,6 +46,7 @@ public class TicketService : ITicketService
         _config = config;
         _logger = logger;
         _userAuthenticationService = userAuthenticationService;
+        _notificationService = notificationService;
     }
 
     public async Task<Ticket> GetFicheTicket(int idTicket)
@@ -394,7 +397,15 @@ public class TicketService : ITicketService
             .ExecuteUpdateAsync(setters => setters
                 .SetProperty(b => b.IdTechnicienAssigne, technicienId)
                 .SetProperty(b => b.IdStatut, (int)TicketStatus.Opened));
-                
+
+        await _notificationService.SendAsync(
+            userId: technicienId ?? 0,
+            idTicket: 0,
+            title: "Ticket assigné",
+            message: $"Des ticket vous ont été assigné.",
+            eventType: new TypesEvenementNotification { Libelle = "Assignation ticket" }
+            );
+
         return Result.Success();
     }
 

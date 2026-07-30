@@ -42,6 +42,7 @@ public class ImapPollingService : BackgroundService
             }
             catch (OperationCanceledException)
             {
+                _logger.LogInformation("Service arrêté");
                 break;
             }
         }

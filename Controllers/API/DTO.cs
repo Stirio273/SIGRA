@@ -110,3 +110,16 @@ public class PagedResult<T>
     public int TotalCount { get; init; }
     public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
 }
+
+public class NotificationDto
+{
+    public int Id { get; set; }
+    public string Title { get; set; } = default!;
+    public string Message { get; set; } = default!;
+    public string EventType { get; set; } = default!;
+    public Guid? ResourceId { get; set; }
+    public string? ResourceType { get; set; }
+    public bool IsRead { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+

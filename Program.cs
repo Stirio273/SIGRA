@@ -3,6 +3,7 @@ using SIGRA.Data;
 using SIGRA.Data.Enums;
 using SIGRA.Data.Repositories;
 using SIGRA.Domain.Options;
+using SIGRA.Hubs;
 using SIGRA.Middleware;
 using SIGRA.Services;
 
@@ -19,6 +20,8 @@ builder.Services.AddOpenApi();
 builder.Services.AddHttpClient();
 
 builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection("Storage"));
+
+builder.Services.AddSignalR();
 
 builder.Services.AddScoped<IServiceAccountTokenRepository, ServiceAccountTokenRepository>();
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
@@ -40,6 +43,7 @@ builder.Services.AddScoped<IUtilisateurService, UtilisateurService>();
 builder.Services.AddScoped<IEmailsSourceRepository, EmailsSourceRepository>();
 builder.Services.AddScoped<IPiecesJointeRepository, PiecesJointeRepository>();
 builder.Services.AddScoped<IStorageService, FileSystemStorageService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddSingleton<ImapMailService>();
 builder.Services.AddSingleton<ImapSyncService>();
 builder.Services.AddSingleton<IImapIdentityProvider, GmailIdentityProvider>();
@@ -89,6 +93,8 @@ if (app.Environment.IsDevelopment())
         options.DocumentPath = "/openapi/v1.json";
     });
 }
+
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
