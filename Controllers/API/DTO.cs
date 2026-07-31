@@ -1,3 +1,5 @@
+using SIGRA.Domain;
+
 namespace SIGRA.Controllers;
 
 public record CreateApplicationRequest(string Libelle, bool Actif, int IdCs);
@@ -122,4 +124,25 @@ public class NotificationDto
     public bool IsRead { get; set; }
     public DateTime CreatedAt { get; set; }
 }
+
+public class ReportQueryParameters
+{
+    public DateTime From { get; set; }
+    public DateTime To { get; set; }
+
+    public Result Validate()
+    {
+        if (From > To)
+            return Result.Failure(
+                "La date de début doit être antérieure à la date de fin.", ErrorType.BadRequest);
+
+        if ((To - From).TotalDays > 365)
+            return Result.Failure(
+                "La période ne peut pas dépasser 365 jours.", ErrorType.BadRequest
+                );
+
+        return Result.Success();
+    }
+}
+
 
