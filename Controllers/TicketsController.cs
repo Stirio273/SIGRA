@@ -76,8 +76,8 @@ public class TicketsController : ControllerBase
         if (currentUser == null)
             return Unauthorized();
 
-        await _ticketService.AskRejectAsync(req.IdTicket, currentUser.IdUtilisateur, req.Justificatif);
-        return NoContent();
+        var result = await _ticketService.AskRejectAsync(req.IdTicket, currentUser.IdUtilisateur, req.Justificatif);
+        return result.IsSuccess ? NoContent() : result.ToHttpResult();
     }
 
     [HttpPost]

@@ -11,5 +11,5 @@ public interface IStorageService
         string folder);
 
     Task DeleteAsync(string fileUrl);
-    Task<Stream> DownloadAsync(string fileUrl);
+    Task<Stream> DownloadAsync(string relativePath);
 }

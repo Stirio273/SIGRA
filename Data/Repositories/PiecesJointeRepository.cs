@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using SIGRA.Data.Models;
 
 namespace SIGRA.Data.Repositories;
@@ -17,5 +18,10 @@ public sealed class PiecesJointeRepository : IPiecesJointeRepository
     {
         _context.PiecesJointes.Add(pieceJointe);
         await _context.SaveChangesAsync(ct);
+    }
+
+    public async Task<PiecesJointe?> GetByIdAsync(int id, CancellationToken ct = default)
+    {
+        return await _context.PiecesJointes.FirstOrDefaultAsync(p => p.IdPieceJointe == id, ct);
     }
 }

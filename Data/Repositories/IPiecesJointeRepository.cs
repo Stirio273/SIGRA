@@ -5,4 +5,5 @@ namespace SIGRA.Data.Repositories;
 public interface IPiecesJointeRepository
 {
     Task CreatePieceJointeAsync(PiecesJointe pieceJointe, CancellationToken ct = default);
+    Task<PiecesJointe?> GetByIdAsync(int id, CancellationToken ct = default);
 }

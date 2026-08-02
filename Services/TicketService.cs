@@ -1,4 +1,6 @@
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +11,7 @@ using SIGRA.Data.Enums;
 using SIGRA.Data.Models;
 using SIGRA.Data.Repositories;
 using SIGRA.Domain;
+using SIGRA.Services.Helper;
 
 namespace SIGRA.Services;
 
@@ -86,24 +89,31 @@ public class TicketService : ITicketService
         return isRejected;
     }
 
-    public async Task AskRejectAsync(int ticketId, int idAuteur, string justificatif)
+    public async Task<Result> AskRejectAsync(int ticketId, int idAuteur, string justificatif)
     {
         var ticket = await _context.Tickets.FirstOrDefaultAsync(t => t.IdTicket == ticketId, default);
         if (ticket is null)
-            throw new Exception("Ticket not found");
+            return Result.Failure("Ticket not found", ErrorType.NotFound);
+
+        if (ticket.IdStatut == (int)TicketStatus.PendingReject ||
+            await _context.Rejets.AsNoTracking().AnyAsync(r => r.IdTicket == ticketId && r.Decision == null))
+        {
+            return Result.Failure("Rejection request already pending for this ticket.", ErrorType.Conflict);
+        }
 
         var rejet = new Rejet
         {
             IdTicket = ticketId,
             IdAuteur = idAuteur,
             Justificatif = justificatif,
-            DateProposition = DateTime.Now
+            DateProposition = DateTime.UtcNow
         };
 
         _context.Rejets.Add(rejet);
         ticket.IdStatut = (int)TicketStatus.PendingReject;
 
         await _context.SaveChangesAsync();
+        return Result.Success();
     }
 
     public async Task<Ticket?> CreateTicketFromEmailAsync(
@@ -207,7 +217,7 @@ public class TicketService : ITicketService
             ConversationIdGraph = resolvedConversationId!,
             Expediteur = mailInfo.SenderEmail,
             Objet = mailInfo.Subject,
-            CorpsEmail = mailInfo.Body,
+            CorpsEmail = EmailHelper.GetCleanBody(message),
             DateReception = mailInfo.SentDate.UtcDateTime,
             EstEmailInitial = isFirstEmail
         };

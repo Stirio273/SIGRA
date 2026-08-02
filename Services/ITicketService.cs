@@ -24,7 +24,7 @@ public interface ITicketService
     Task<Result> AssignAsync(IEnumerable<int> ticketIds, Guid? technicianUserGuid, string currentUserEmail);
     Task<Result> ReassignAsync(IEnumerable<int> ticketIds, Guid? technicianUserGuid, string justification);
     Task<bool> DeleteAsync(int id);
-    Task AskRejectAsync(int ticketId, int idAuteur, string justificatif);
+    Task <Result>AskRejectAsync(int ticketId, int idAuteur, string justificatif);
     Task<bool> RespondRejectDemandAsync(int ticketId, int rejetId, int idValidateur, bool isRejected);
     Task TransferAsync(int ticketId, int idEntiteExterne, int idAuteur, string explication, bool estDefinitif);
 }

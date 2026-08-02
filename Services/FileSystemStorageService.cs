@@ -53,16 +53,13 @@ public class FileSystemStorageService : IStorageService
         }
     }
 
-    public Task<Stream> DownloadAsync(string fileUrl)
+    public Task<Stream> DownloadAsync(string relativePath)
     {
-        // Reconvertir l'URL en chemin local
-        var relativePath = fileUrl.Replace(_options.BaseUrl, "");
         var filePath = Path.Combine(_options.BasePath, relativePath);
 
         if (!File.Exists(filePath))
             throw new NotFoundException($"Fichier introuvable : {filePath}");
 
-        // Fonctionne pour Local ET NFS
         Stream stream = File.OpenRead(filePath);
         return Task.FromResult(stream);
     }
