@@ -15,5 +15,5 @@ public partial class ClassesService
 
     public virtual ICollection<Application> Applications { get; set; } = new List<Application>();
 
-    public virtual ReglesCriticite? ReglesCriticite { get; set; }
+    public virtual ICollection<ReglesCriticite> ReglesCriticites { get; set; } = new List<ReglesCriticite>();
 }

@@ -1,3 +1,4 @@
+using SIGRA.Data.Models;
 using SIGRA.Domain;
 
 namespace SIGRA.Controllers;
@@ -54,7 +55,6 @@ public record CreateDenyRequest(
 );
 
 public record RespondDenyRequest(
-    int rejetId,
     int IdTicket,
     bool decision
 );
@@ -69,6 +69,8 @@ public record TransferTicketRequest(
 public record AssignTicketsRequest(List<int> TicketIds, Guid? UserGuid);
 
 public record ReassignTicketRequest(List<int> TicketIds, Guid? UserGuid, string justification);
+
+public record PendingRejectResponse(int RejetId, int TicketId, TechnicienResponse Auteur, string Justificatif, DateTime DateProposition, int? IdValidateur, bool? Decision, DateTime? DateDecision);
 
 public record StatutSuivantPossibleResponse(int IdStatut, string Libelle);
 

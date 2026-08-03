@@ -1,8 +1,8 @@
-using SIGRA.Data.Models;
+// using SIGRA.Data.Models;
 
-namespace SIGRA.Data.Repositories;
+// namespace SIGRA.Data.Repositories;
 
-public interface ITypesDemandeRepository
-{
-    Task<int?> GetTypeDemandeIdAsync(string libelle, CancellationToken ct = default);
-}
+// public interface ITypesDemandeRepository
+// {
+//     Task<int?> GetTypeDemandeIdAsync(string libelle, CancellationToken ct = default);
+// }

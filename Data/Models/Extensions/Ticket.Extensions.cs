@@ -43,7 +43,7 @@ public partial class Ticket
         }
         rejet.IdValidateur = idValidateur;
         rejet.Decision = isRejected;
-        rejet.DateDecision = DateTime.Now;
+        rejet.DateDecision = DateTime.UtcNow;
         return rejet;
     }
 }

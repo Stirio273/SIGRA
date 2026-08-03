@@ -341,7 +341,7 @@ CREATE OR REPLACE TRIGGER tr_service_account_tokens_updated_at
 
 CREATE TABLE rapport
 (
-    id                      SERIAL          NOT NULL,
+    id                      SERIAL          PRIMARY KEY,
     date_debut_semaine      TIMESTAMPTZ     NOT NULL,
     type_rapport            VARCHAR(100)    NOT NULL,
     date_envoie             TIMESTAMPTZ     NOT NULL,

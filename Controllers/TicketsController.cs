@@ -50,6 +50,13 @@ public class TicketsController : ControllerBase
         return Ok();
     }
 
+    [HttpGet("{id:int}/pending-reject")]
+    public async Task<IActionResult> GetPendingReject(int id)
+    {
+        var pending = await _ticketService.GetPendingRejectAsync(id);
+        return pending is null ? NotFound() : Ok(pending);
+    }
+
     [HttpPost("request-deny/respond")]
     public async Task<IActionResult> RespondDenyRequest(RespondDenyRequest req)
     {
@@ -61,7 +68,7 @@ public class TicketsController : ControllerBase
         if (currentUser == null)
             return Unauthorized();
 
-        await _ticketService.RespondRejectDemandAsync(req.IdTicket, req.rejetId, currentUser.IdUtilisateur, req.decision);
+        await _ticketService.RespondRejectDemandAsync(req.IdTicket, currentUser.IdUtilisateur, req.decision);
         return NoContent();
     }
 

@@ -49,6 +49,7 @@ builder.Services.AddScoped<IEmailsSourceRepository, EmailsSourceRepository>();
 builder.Services.AddScoped<IPiecesJointeRepository, PiecesJointeRepository>();
 builder.Services.AddScoped<IStorageService, FileSystemStorageService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IWeeklyReportBuilder, WeeklyReportBuilder>();
 builder.Services.AddScoped<ChartGenerator>();

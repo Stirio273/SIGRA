@@ -75,13 +75,13 @@ public class TicketService : ITicketService
         await _context.SaveChangesAsync();
     }
 
-    public async Task<bool> RespondRejectDemandAsync(int ticketId, int rejetId, int idValidateur, bool isRejected)
+    public async Task<bool> RespondRejectDemandAsync(int ticketId, int idValidateur, bool isRejected)
     {
         var ticket = await _context.Tickets.FirstOrDefaultAsync(t => t.IdTicket == ticketId, default);
         if (ticket is null)
             throw new Exception("Ticket not found");
 
-        var rejet = await _context.Rejets.FirstOrDefaultAsync(r => r.IdRejet == rejetId, default);
+        var rejet = await _context.Rejets.FirstOrDefaultAsync(r => r.IdTicket == ticketId && r.Decision == null, default);
 
         rejet = ticket.ValiderRejet(rejet, idValidateur, isRejected);
 
@@ -114,6 +114,23 @@ public class TicketService : ITicketService
 
         await _context.SaveChangesAsync();
         return Result.Success();
+    }
+
+    public async Task<PendingRejectResponse?> GetPendingRejectAsync(int ticketId)
+    {
+        return await _context.Rejets.AsNoTracking()
+            .Where(r => r.IdTicket == ticketId && r.Decision == null)
+            .OrderByDescending(r => r.DateProposition)
+            .Select(r => new PendingRejectResponse(
+                r.IdRejet,
+                r.IdTicket,
+                new TechnicienResponse(r.IdAuteurNavigation.Nom, r.IdAuteurNavigation.Prenom, "", Guid.Empty),
+                r.Justificatif,
+                r.DateProposition,
+                r.IdValidateur,
+                r.Decision,
+                r.DateDecision))
+            .FirstOrDefaultAsync();
     }
 
     public async Task<Ticket?> CreateTicketFromEmailAsync(
