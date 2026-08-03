@@ -336,6 +336,21 @@ CREATE OR REPLACE TRIGGER tr_service_account_tokens_updated_at
     EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================================================
+-- BLOC 10 : Rapport hebdomadaire
+-- ============================================================================
+
+CREATE TABLE rapport
+(
+    id                      SERIAL          NOT NULL,
+    date_debut_semaine      TIMESTAMPTZ     NOT NULL,
+    type_rapport            VARCHAR(100)    NOT NULL,
+    date_envoie             TIMESTAMPTZ     NOT NULL,
+
+    CONSTRAINT uq_rapport_date_debut_semaine_type_rapport
+        UNIQUE (date_debut_semaine, type_rapport)
+);
+
+-- ============================================================================
 -- DONNÉES DE RÉFÉRENCE INITIALES
 -- ============================================================================
 

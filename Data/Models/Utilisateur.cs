@@ -21,9 +21,9 @@ public partial class Utilisateur
 
     public DateTime DateSynchronisation { get; set; }
 
-    public int IdRole { get; set; }
-
     public Guid UserGuid { get; set; }
+
+    public int IdRole { get; set; }
 
     public virtual ICollection<Commentaire> Commentaires { get; set; } = new List<Commentaire>();
 

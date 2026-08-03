@@ -67,3 +67,14 @@ public class SlaComplianceEntryDto
     // Taux de respect en pourcentage
     public double ComplianceRate { get; set; }
 }
+
+public class WeeklyReportDto
+{
+    public DateTime WeekStart { get; set; }
+    public DateTime WeekEnd { get; set; }
+
+    public WeeklyRequestsReportDto WeeklyRequests { get; set; } = default!;
+    public RequestsByApplicationReportDto RequestsByApplication { get; set; } = default!;
+    public SlaComplianceReportDto SlaCompliance { get; set; } = default!;
+}
+

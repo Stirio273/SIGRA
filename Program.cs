@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Infrastructure;
 using SIGRA.Data;
 using SIGRA.Data.Enums;
 using SIGRA.Data.Repositories;
@@ -8,6 +9,8 @@ using SIGRA.Middleware;
 using SIGRA.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration["ConnectionStrings:DefaultConnection"], o => o.MapEnum<OAuthProvider>("oauth_provider")));
@@ -19,6 +22,8 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddHttpClient();
 
+builder.Services.Configure<SMTPOptions>(
+    builder.Configuration.GetSection("Smtp"));
 builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection("Storage"));
 
 builder.Services.AddSignalR();
@@ -44,10 +49,16 @@ builder.Services.AddScoped<IEmailsSourceRepository, EmailsSourceRepository>();
 builder.Services.AddScoped<IPiecesJointeRepository, PiecesJointeRepository>();
 builder.Services.AddScoped<IStorageService, FileSystemStorageService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IWeeklyReportBuilder, WeeklyReportBuilder>();
+builder.Services.AddScoped<ChartGenerator>();
+builder.Services.AddScoped<IPdfReportGenerator, PdfReportGenerator>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddSingleton<ImapMailService>();
 builder.Services.AddSingleton<ImapSyncService>();
 builder.Services.AddSingleton<IImapIdentityProvider, GmailIdentityProvider>();
 builder.Services.AddHostedService<ImapPollingService>();
+builder.Services.AddHostedService<ReportBackgroundService>();
 
 
 builder.Services.AddCors(options =>
