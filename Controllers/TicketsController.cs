@@ -102,9 +102,9 @@ public class TicketsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] PagedRequest req)
+    public async Task<IActionResult> GetAll([FromQuery] TicketSearchRequest req)
     {
-        var result = await _ticketService.GetPagedAsync(req.PageNumber, req.PageSize);
+        var result = await _ticketService.GetPagedAsync(req);
         return Ok(new PagedResult<TicketResponse>
         {
             Items = result.Items.Select(ToResponse).ToList(),

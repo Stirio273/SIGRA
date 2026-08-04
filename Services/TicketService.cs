@@ -331,9 +331,9 @@ public class TicketService : ITicketService
         return await _ticketRepository.GetByTechnicianAsync(technicianUserGuid);
     }
 
-    public async Task<PagedResult<Ticket>> GetPagedAsync(int pageNumber, int pageSize)
+    public async Task<PagedResult<Ticket>> GetPagedAsync(TicketSearchRequest criteria)
     {
-        return await _ticketRepository.GetPagedAsync(pageNumber, pageSize);
+        return await _ticketRepository.GetPagedAsync(criteria);
     }
 
     public async Task<IReadOnlyList<Statut>> GetNextStatutsAsync(int idTicket, CancellationToken cancellationToken = default)

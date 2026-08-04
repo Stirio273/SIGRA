@@ -1,4 +1,5 @@
 using System;
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using SIGRA.Controllers;
 using SIGRA.Data.Models;
@@ -87,12 +88,17 @@ public sealed class TicketRepository : ITicketRepository
             .ToListAsync(ct);
     }
 
-    public async Task<PagedResult<Ticket>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken ct = default)
+    public async Task<PagedResult<Ticket>> GetPagedAsync(TicketSearchRequest criteria, CancellationToken ct = default)
     {
-        var items = await _context.Tickets
-            .OrderBy(t => t.IdTicket)
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
+        var query = _context.Tickets.AsNoTracking().AsQueryable();
+
+        // Chaque filtre s'applique UNIQUEMENT s'il est fourni
+        query = ApplyFilters(query, criteria);
+        query = ApplySorting(query, criteria);
+
+        var items = await query
+            .Skip((criteria.Pagination.PageNumber - 1) * criteria.Pagination.PageSize)
+            .Take(criteria.Pagination.PageSize)
             .Select(t => new Ticket
             {
                 IdTicket = t.IdTicket,
@@ -129,15 +135,68 @@ public sealed class TicketRepository : ITicketRepository
             })
             .ToListAsync(ct);
 
-        var totalCount = await _context.Tickets.CountAsync(ct);
+        var totalCount = await query.CountAsync(ct);
 
         return new PagedResult<Ticket>
         {
             Items = items,
-            PageNumber = pageNumber,
-            PageSize = pageSize,
+            PageNumber = criteria.Pagination.PageNumber,
+            PageSize = criteria.Pagination.PageSize,
             TotalCount = totalCount
         };
+    }
+
+    private static IQueryable<Ticket> ApplyFilters(
+        IQueryable<Ticket> query, TicketSearchRequest request)
+    {
+        // if (!string.IsNullOrWhiteSpace(request.SearchText))
+        // {
+        //     var search = request.SearchText.Trim();
+        //     query = query.Where(t =>
+        //         t.Title.Contains(search) ||
+        //         t.Description.Contains(search));
+        // }
+
+        if (request.Status.HasValue)
+            query = query.Where(t => t.IdStatut == (int)request.Status.Value);
+
+        if (request.Criticite.HasValue)
+            query = query.Where(t => t.IdCriticite == (int)request.Criticite.Value);
+
+        if (!string.IsNullOrWhiteSpace(request.ApplicationName))
+            query = query.Where(t => t.IdApplicationNavigation.Libelle == request.ApplicationName);
+
+        if (request.AssignedTechnician.HasValue)
+            query = query.Where(t => t.IdTechnicienAssigneNavigation.UserGuid == request.AssignedTechnician.Value);
+
+        if (request.CreatedFrom.HasValue)
+            query = query.Where(t => t.DateCreation >= request.CreatedFrom.Value);
+
+        if (request.CreatedTo.HasValue)
+            query = query.Where(t => t.DateCreation <= request.CreatedTo.Value);
+
+        // if (request.IsOverdue == true)
+        //     query = query.Where(t =>
+        //         t.SlaDeadline < DateTime.UtcNow && t.Status != TicketStatus.Closed);
+
+        return query;
+    }
+
+    private static IQueryable<Ticket> ApplySorting(
+        IQueryable<Ticket> query, TicketSearchRequest request)
+    {
+        Expression<Func<Ticket, object>> keySelector = request.SortBy?.ToLower() switch
+        {
+            "numeroTicket" => t => t.NumeroTicket,
+            "priority" => t => t.IdCriticite,
+            "status" => t => t.IdStatut,
+            "createdat" => t => t.DateCreation,
+            _ => t => t.DateCreation
+        };
+
+        return request.SortDescending
+            ? query.OrderByDescending(keySelector)
+            : query.OrderBy(keySelector);
     }
 
     public async Task DeleteAsync(int id, CancellationToken ct = default)

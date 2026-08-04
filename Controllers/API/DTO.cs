@@ -1,3 +1,4 @@
+using SIGRA.Data.Enums;
 using SIGRA.Data.Models;
 using SIGRA.Domain;
 
@@ -91,6 +92,24 @@ public record TicketResponse(
     string DemandeurDirection,
     DateTime? DateCloture,
     decimal DureeSla);
+
+public record TicketSearchRequest(PagedRequest Pagination)
+{
+    // Filtres
+    public string? SearchText { get; set; }         // Recherche dans titre/description
+    public TicketStatus? Status { get; set; }
+    public TicketCriticite? Criticite { get; set; }
+    public string? ApplicationName { get; set; }
+    public Guid? AssignedTechnician { get; set; }
+    public DateTime? CreatedFrom { get; set; }
+    public DateTime? CreatedTo { get; set; }
+    // public bool? IsOverdue { get; set; }
+
+    // Tri
+    public string? SortBy { get; set; } = "CreatedAt";
+    public bool SortDescending { get; set; } = true;
+}
+
 
 public class PagedRequest
 {
