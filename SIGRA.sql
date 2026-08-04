@@ -353,6 +353,7 @@ CREATE TABLE rapport
 -- ============================================================================
 -- DONNÉES DE RÉFÉRENCE INITIALES
 -- ============================================================================
+INSERT INTO classes_service (code, libelle, duree_sla) VALUES ('CS1', 'CS1', 2) ('CS2', 'CS2', 4) ('CS3', 'CS3', 6) ('CS4', 'CS4', 8);
 
 INSERT INTO roles (libelle) VALUES ('Administrateur'), ('Technicien'), ('Consultant');
 

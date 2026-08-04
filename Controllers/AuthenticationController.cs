@@ -32,6 +32,7 @@ public class AuthenticationController : ControllerBase
 
         return Ok(new
         {
+            UserGuid = user.UserGuid,
             User = User.Identity?.Name,
             Type = User.Identity?.AuthenticationType,
             Role = user.IdRoleNavigation.Libelle
