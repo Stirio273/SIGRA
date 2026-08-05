@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SIGRA.Services;
+using SIGRA.Services.Providers;
 
 namespace SIGRA.Controllers;
 
