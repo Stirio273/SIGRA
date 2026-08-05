@@ -1,4 +1,4 @@
-namespace SIGRA.Services;
+namespace SIGRA.Services.Providers;
 
 public interface IImapIdentityProvider
 {

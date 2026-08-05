@@ -7,6 +7,7 @@ using SIGRA.Domain.Options;
 using SIGRA.Hubs;
 using SIGRA.Middleware;
 using SIGRA.Services;
+using SIGRA.Services.Providers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,9 +26,16 @@ builder.Services.AddHttpClient();
 builder.Services.Configure<SMTPOptions>(
     builder.Configuration.GetSection("Smtp"));
 builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection("Storage"));
+builder.Services.Configure<BusinessHoursOptions>(
+    builder.Configuration.GetSection("BusinessHours"));
 
 builder.Services.AddSignalR();
 
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<IHolidayProvider, HolidayProvider>();
+builder.Services.AddScoped<IBusinessTimeCalculator, BusinessTimeCalculator>();
+// builder.Services.AddScoped<ISlaPolicyProvider, SlaPolicyProvider>();
+builder.Services.AddScoped<ITicketSlaService, TicketSlaService>();
 builder.Services.AddScoped<IServiceAccountTokenRepository, ServiceAccountTokenRepository>();
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 builder.Services.AddScoped<IStatutRepository, StatutRepository>();

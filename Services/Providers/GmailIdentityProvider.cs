@@ -6,7 +6,7 @@ using SIGRA.Services;
 using System.Net.Http.Headers;
 using System.Text.Json;
 
-namespace SIGRA.Services;
+namespace SIGRA.Services.Providers;
 
 public class GmailIdentityProvider : IImapIdentityProvider
 {
