@@ -4,6 +4,10 @@ using SIGRA.Domain;
 
 namespace SIGRA.Controllers;
 
+public record CreateRoleRequest(string Libelle);
+public record UpdateRoleRequest(string Libelle);
+public record RoleResponse(int IdRole, string Libelle);
+
 public record CreateApplicationRequest(string Libelle, bool Actif, int IdCs);
 public record UpdateApplicationRequest(string Libelle, bool Actif, int IdCs);
 public record ApplicationResponse(int IdApplication, string Libelle, bool Actif, int IdCs);
@@ -24,7 +28,7 @@ public record CreateJoursFerieRequest(DateOnly Date, string Libelle);
 public record UpdateJoursFerieRequest(DateOnly Date, string Libelle);
 public record JoursFerieResponse(int IdJourFerie, DateOnly Date, string Libelle);
 
-public record CreateUtilisateurRequest(string IdentifiantAd, string Nom, string Prenom, string Email, int IdRole, bool Actif);
+public record CreateUtilisateurRequest(string Email, int IdRole);
 public record UpdateUtilisateurRequest(string IdentifiantAd, string Nom, string Prenom, string Email, int IdRole, bool Actif, DateTime? DateDesactivation);
 public record UtilisateurResponse(int IdUtilisateur, string IdentifiantAd, string Nom, string Prenom, string Email, bool Actif, DateTime? DateDesactivation, DateTime DateSynchronisation, int IdRole, Guid UserGuid);
 public record TechnicienResponse(string Nom, string Prenom, string Email, Guid UserGuid);
@@ -59,6 +63,8 @@ public record RespondDenyRequest(
     int IdTicket,
     bool decision
 );
+
+public record UpdateTicketApplicationRequest(int? IdApplication);
 
 public record TransferTicketRequest(
     int idTicket,

@@ -27,6 +27,7 @@ public class TicketService : ITicketService
     private readonly ILogger<TicketService> _logger;
     private readonly IUserAuthenticationService _userAuthenticationService;
     private readonly INotificationService _notificationService;
+    private readonly IApplicationRepository _applicationRepository;
 
     public TicketService(
         AppDbContext context,
@@ -38,7 +39,8 @@ public class TicketService : ITicketService
         IConfiguration config,
         ILogger<TicketService> logger,
         IUserAuthenticationService userAuthenticationService,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        IApplicationRepository applicationRepository)
     {
         _context = context;
         _ticketRepository = ticketRepository;
@@ -50,6 +52,7 @@ public class TicketService : ITicketService
         _logger = logger;
         _userAuthenticationService = userAuthenticationService;
         _notificationService = notificationService;
+        _applicationRepository = applicationRepository;
     }
 
     public async Task<Ticket> GetFicheTicket(int idTicket)
@@ -376,6 +379,24 @@ public class TicketService : ITicketService
     {
         await _ticketRepository.DeleteAsync(id);
         return true;
+    }
+
+    public async Task<Result> UpdateApplicationAsync(int ticketId, int? idApplication)
+    {
+        var ticket = await _context.Tickets.FindAsync(ticketId);
+        if (ticket == null)
+            return Result.Failure("Ticket not found", ErrorType.NotFound);
+
+        if (idApplication.HasValue)
+        {
+            var app = await _applicationRepository.GetByIdAsync(idApplication.Value);
+            if (app == null)
+                return Result.Failure("Application not found", ErrorType.NotFound);
+        }
+
+        ticket.IdApplication = idApplication;
+        await _context.SaveChangesAsync();
+        return Result.Success();
     }
 
     public async Task<Result> AssignAsync(IEnumerable<int> ticketIds, Guid? technicianUserGuid, string currentUserEmail)

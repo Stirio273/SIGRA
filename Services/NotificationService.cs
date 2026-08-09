@@ -40,7 +40,7 @@ public class NotificationService : INotificationService
             IdDestinataire = userId,
             IdTicket = idTicket,
             IdTypeEvenement = eventType.IdTypeEvenement,
-            DateCreation = DateTime.Now,
+            DateCreation = DateTime.UtcNow,
             // ResourceId = resourceId,
             // ResourceType = resourceType,
             EstLue = false,

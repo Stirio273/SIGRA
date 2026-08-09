@@ -11,17 +11,19 @@ namespace SIGRA.Controllers;
 public class NotificationController : ControllerBase
 {
     private readonly INotificationService _notificationService;
+    private readonly IUserAuthenticationService _userAuthenticationService;
 
-    public NotificationController(INotificationService notificationService)
+    public NotificationController(INotificationService notificationService, IUserAuthenticationService userAuthenticationService)
     {
         _notificationService = notificationService;
+        _userAuthenticationService = userAuthenticationService;
     }
 
     // Récupère toutes les notifications au chargement
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var userId = GetUserId();
+        var userId = await GetUserIdAsync();
         var notifications = await _notificationService.GetAllAsync(userId);
 
         return Ok(notifications);
@@ -31,7 +33,7 @@ public class NotificationController : ControllerBase
     [HttpGet("unread-count")]
     public async Task<IActionResult> GetUnreadCount()
     {
-        var userId = GetUserId();
+        var userId = await GetUserIdAsync();
         var result = await _notificationService.GetUnreadCountAsync(userId);
 
         return Ok(result);
@@ -41,7 +43,7 @@ public class NotificationController : ControllerBase
     [HttpPatch("{id}/read")]
     public async Task<IActionResult> MarkAsRead(int id)
     {
-        var userId = GetUserId();
+        var userId = await GetUserIdAsync();
         var result = await _notificationService.MarkAsReadAsync(id, userId);
 
         if (!result.IsSuccess)
@@ -54,7 +56,7 @@ public class NotificationController : ControllerBase
     [HttpPatch("read-all")]
     public async Task<IActionResult> MarkAllAsRead()
     {
-        var userId = GetUserId();
+        var userId = await GetUserIdAsync();
         var result = await _notificationService.MarkAllAsReadAsync(userId);
 
         if (!result.IsSuccess)
@@ -63,9 +65,16 @@ public class NotificationController : ControllerBase
         return NoContent();
     }
 
-    private int GetUserId()
+    private async Task<int> GetUserIdAsync()
     {
-        var claim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return Int16.Parse(claim!);
+        var username = User.Identity?.Name;
+        if (string.IsNullOrEmpty(username))
+            throw new UnauthorizedAccessException("No authenticated user found.");
+
+        var user = await _userAuthenticationService.GetAuthorizedUserAsync(username);
+        if (user == null)
+            throw new UnauthorizedAccessException($"User '{username}' is not authorized.");
+
+        return user.IdUtilisateur;
     }
 }

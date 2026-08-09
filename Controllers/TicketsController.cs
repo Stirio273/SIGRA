@@ -152,6 +152,16 @@ public class TicketsController : ControllerBase
         return ok ? NoContent() : NotFound();
     }
 
+    [HttpPatch("{id:int}")]
+    public async Task<IActionResult> UpdateApplication(int id, UpdateTicketApplicationRequest req)
+    {
+        // if (id != req.IdTicket)
+        //     return BadRequest();
+
+        var result = await _ticketService.UpdateApplicationAsync(id, req.IdApplication);
+        return result.IsSuccess ? NoContent() : result.ToHttpResult();
+    }
+
     [HttpGet("{id:int}/next-statuts")]
     public async Task<IActionResult> GetNextStatuts(int id)
     {

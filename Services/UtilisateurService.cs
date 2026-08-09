@@ -22,12 +22,12 @@ public class UtilisateurService : IUtilisateurService
     {
         var utilisateur = new Utilisateur
         {
-            IdentifiantAd = req.IdentifiantAd,
-            Nom = req.Nom,
-            Prenom = req.Prenom,
+            IdentifiantAd = "",
+            Nom = "",
+            Prenom = "",
             Email = req.Email,
             IdRole = req.IdRole,
-            Actif = req.Actif,
+            Actif = true,
             DateSynchronisation = DateTime.UtcNow
         };
 

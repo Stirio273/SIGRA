@@ -28,4 +28,5 @@ public interface ITicketService
     Task<PendingRejectResponse?> GetPendingRejectAsync(int ticketId);
     Task<bool> RespondRejectDemandAsync(int ticketId, int idValidateur, bool isRejected);
     Task TransferAsync(int ticketId, int idEntiteExterne, int idAuteur, string explication, bool estDefinitif);
+    Task<Result> UpdateApplicationAsync(int ticketId, int? idApplication);
 }
