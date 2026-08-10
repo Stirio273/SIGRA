@@ -27,7 +27,6 @@ public class TicketService : ITicketService
     private readonly ILogger<TicketService> _logger;
     private readonly IUserAuthenticationService _userAuthenticationService;
     private readonly INotificationService _notificationService;
-    private readonly IApplicationRepository _applicationRepository;
 
     public TicketService(
         AppDbContext context,
@@ -39,8 +38,7 @@ public class TicketService : ITicketService
         IConfiguration config,
         ILogger<TicketService> logger,
         IUserAuthenticationService userAuthenticationService,
-        INotificationService notificationService,
-        IApplicationRepository applicationRepository)
+        INotificationService notificationService)
     {
         _context = context;
         _ticketRepository = ticketRepository;
@@ -52,7 +50,6 @@ public class TicketService : ITicketService
         _logger = logger;
         _userAuthenticationService = userAuthenticationService;
         _notificationService = notificationService;
-        _applicationRepository = applicationRepository;
     }
 
     public async Task<Ticket> GetFicheTicket(int idTicket)
@@ -68,12 +65,14 @@ public class TicketService : ITicketService
             IdTicket = ticketId,
             IdEntiteExterne = idEntiteExterne,
             IdAuteur = idAuteur,
-            DateEscalade = DateTime.Now,
+            DateEscalade = DateTime.UtcNow,
             Explication = explication,
             EstDefinitif = estDefinitif
         };
         await _context.Escalades.AddAsync(escalade);
         var ticket = await _context.Tickets.FindAsync(ticketId);
+        if (ticket is null)
+            throw new Exception("Ticket not found");
         ticket.Transferer(escalade);
         await _context.SaveChangesAsync();
     }
@@ -400,12 +399,22 @@ public class TicketService : ITicketService
 
         if (idApplication.HasValue)
         {
-            var app = await _applicationRepository.GetByIdAsync(idApplication.Value);
+            var app = await _context.Applications
+                .Include(a => a.IdCsNavigation)
+                .FirstOrDefaultAsync(a => a.IdApplication == idApplication.Value);
             if (app == null)
                 return Result.Failure("Application not found", ErrorType.NotFound);
+
+            ticket.IdApplication = idApplication;
+            ticket.IdCriticite = app.IdCsNavigation.IdCriticite;
+            ticket.DureeSla = app.IdCsNavigation.DureeSla;
+        }
+        else
+        {
+            ticket.IdApplication = null;
+            ticket.IdCriticite = null;
         }
 
-        ticket.IdApplication = idApplication;
         await _context.SaveChangesAsync();
         return Result.Success();
     }

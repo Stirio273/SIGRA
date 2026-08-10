@@ -16,7 +16,7 @@ public sealed class ClassesServiceRepository : IClassesServiceRepository
 
     public async Task<IReadOnlyList<ClassesService>> GetAllAsync(CancellationToken ct = default)
     {
-        return await _context.ClassesServices.ToListAsync(ct);
+        return await _context.ClassesServices.AsNoTracking().Include(cs => cs.IdCriticiteNavigation).OrderBy(cs => cs.IdCs).ToListAsync(ct);
     }
 
     public async Task<ClassesService?> GetByIdAsync(int id, CancellationToken ct = default)

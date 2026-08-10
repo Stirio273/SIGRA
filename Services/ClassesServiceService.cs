@@ -44,6 +44,7 @@ public class ClassesServiceService : IClassesServiceService
         classesService.Code = req.Code;
         classesService.Libelle = req.Libelle;
         classesService.DureeSla = req.DureeSla;
+        classesService.IdCriticite = req.IdCriticite;
 
         await _classesServiceRepository.UpdateAsync(classesService);
         return true;

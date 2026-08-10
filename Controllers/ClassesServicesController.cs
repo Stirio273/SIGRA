@@ -51,5 +51,6 @@ public class ClassesServicesController : ControllerBase
         c.IdCs,
         c.Code,
         c.Libelle,
-        c.DureeSla);
+        c.DureeSla,
+        new CriticiteRefResponse(c.IdCriticite, c.IdCriticiteNavigation.Libelle));
 }

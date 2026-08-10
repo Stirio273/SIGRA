@@ -13,7 +13,11 @@ public partial class ClassesService
 
     public decimal DureeSla { get; set; }
 
+    public int IdCriticite { get; set; }
+
     public virtual ICollection<Application> Applications { get; set; } = new List<Application>();
+
+    public virtual Criticite IdCriticiteNavigation { get; set; } = null!;
 
     public virtual ICollection<ReglesCriticite> ReglesCriticites { get; set; } = new List<ReglesCriticite>();
 }

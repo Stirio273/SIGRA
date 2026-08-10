@@ -36,7 +36,7 @@ public class TicketsController : ControllerBase
     }
 
     [HttpPost("{id}/transfer")]
-    public async Task<IActionResult> Transfer(TransferTicketRequest request)
+    public async Task<IActionResult> Transfer(int id, TransferTicketRequest request)
     {
         var username = User.Identity?.Name;
         if (string.IsNullOrEmpty(username))
@@ -46,7 +46,7 @@ public class TicketsController : ControllerBase
         if (currentUser == null)
             return Unauthorized();
 
-        await _ticketService.TransferAsync(request.idTicket, request.idEntiteExterne, currentUser.IdUtilisateur, request.explication, request.estDefinitif);
+        await _ticketService.TransferAsync(id, request.idEntiteExterne, currentUser.IdUtilisateur, request.explication, request.estDefinitif);
         return Ok();
     }
 

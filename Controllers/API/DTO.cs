@@ -13,8 +13,8 @@ public record UpdateApplicationRequest(string Libelle, bool Actif, int IdCs);
 public record ApplicationResponse(int IdApplication, string Libelle, bool Actif, int IdCs);
 
 public record CreateClassesServiceRequest(string Code, string? Libelle, decimal DureeSla);
-public record UpdateClassesServiceRequest(string Code, string? Libelle, decimal DureeSla);
-public record ClassesServiceResponse(int IdCs, string Code, string? Libelle, decimal DureeSla);
+public record UpdateClassesServiceRequest(string Code, string? Libelle, decimal DureeSla, int IdCriticite);
+public record ClassesServiceResponse(int IdCs, string Code, string? Libelle, decimal DureeSla, CriticiteRefResponse criticite);
 
 public record CreateCriticiteRequest(string Libelle, int Ordre);
 public record UpdateCriticiteRequest(string Libelle, int Ordre);

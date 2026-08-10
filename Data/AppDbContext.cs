@@ -102,9 +102,17 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.DureeSla)
                 .HasPrecision(6, 2)
                 .HasColumnName("duree_sla");
+            entity.Property(e => e.IdCriticite)
+                .HasDefaultValue(5)
+                .HasColumnName("id_criticite");
             entity.Property(e => e.Libelle)
                 .HasMaxLength(100)
                 .HasColumnName("libelle");
+
+            entity.HasOne(d => d.IdCriticiteNavigation).WithMany(p => p.ClassesServices)
+                .HasForeignKey(d => d.IdCriticite)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("classes_service_id_criticite_fkey");
         });
 
         modelBuilder.Entity<Commentaire>(entity =>

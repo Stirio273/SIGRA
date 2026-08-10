@@ -44,7 +44,8 @@ CREATE TABLE classes_service (
     id_cs           SERIAL PRIMARY KEY,
     code            VARCHAR(20) NOT NULL UNIQUE,
     libelle         VARCHAR(100),
-    duree_sla           NUMERIC(6,2) NOT NULL CHECK (duree_sla > 0)
+    duree_sla           NUMERIC(6,2) NOT NULL CHECK (duree_sla > 0),
+    id_criticite        INTEGER NOT NULL REFERENCES criticites(id_criticite)
 );
 
 CREATE TABLE applications (
