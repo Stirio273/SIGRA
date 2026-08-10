@@ -5,6 +5,17 @@ namespace SIGRA.Data.Models;
 
 public partial class Ticket
 {
+    public Result Cloturer()
+    {
+        if (this.IdStatut == (int)TicketStatus.Closed)
+        {
+            return Result.Failure("Ticket is already closed", ErrorType.Conflict);
+        }
+        this.IdStatut = (int)TicketStatus.Closed;
+        this.DateCloture = DateTime.UtcNow;
+        return Result.Success();
+    }
+
     public Result ReassignTo(int? newAssigneeId, string justification)
     {
         if (IdTechnicienAssigne is null)

@@ -101,6 +101,13 @@ public class TicketsController : ControllerBase
         return item is null ? NotFound() : Ok(ToResponse(item));
     }
 
+    [HttpPatch("{id:int}/close")]
+    public async Task<IActionResult> Close(int id)
+    {
+        var result = await _ticketService.CloseAsync(id);
+        return result.IsSuccess ? NoContent() : result.ToHttpResult();
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] TicketSearchRequest req)
     {

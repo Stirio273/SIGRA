@@ -375,6 +375,17 @@ public class TicketService : ITicketService
         return true;
     }
 
+    public async Task<Result> CloseAsync(int id)
+    {
+        var ticket = await _context.Tickets.FindAsync(id);
+        if (ticket == null)
+            return Result.Failure("Ticket not found", ErrorType.NotFound);
+
+        ticket.Cloturer();
+        await _context.SaveChangesAsync();
+        return Result.Success();
+    }
+
     public async Task<bool> DeleteAsync(int id)
     {
         await _ticketRepository.DeleteAsync(id);
