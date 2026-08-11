@@ -32,7 +32,7 @@ public class TicketsController : ControllerBase
             return result.ToHttpResult();
         }
 
-        return Ok(ticket);
+        return Ok(ToResponse(ticket));
     }
 
     [HttpPost("{id}/transfer")]
@@ -194,5 +194,6 @@ public class TicketsController : ControllerBase
         t.DemandeurEmail,
         t.DemandeurDirection,
         t.DateCloture,
-        t.DureeSla);
+        t.DureeSla,
+        t.DeadlineResolution);
 }

@@ -18,6 +18,8 @@ namespace SIGRA.Services;
 public class TicketService : ITicketService
 {
     private readonly AppDbContext _context;
+    private readonly IBusinessTimeCalculator _businessTimeCalculator;
+    private readonly ITicketSlaService _ticketSlaService;
     private readonly ITicketRepository _ticketRepository;
     private readonly IStatutRepository _statutRepository;
     private readonly IEmailsSourceRepository _emailSourceRepository;
@@ -30,6 +32,8 @@ public class TicketService : ITicketService
 
     public TicketService(
         AppDbContext context,
+        IBusinessTimeCalculator businessTimeCalculator,
+        ITicketSlaService ticketSlaService,
         ITicketRepository ticketRepository,
         IStatutRepository statutRepository,
         IEmailsSourceRepository emailSourceRepository,
@@ -41,6 +45,8 @@ public class TicketService : ITicketService
         INotificationService notificationService)
     {
         _context = context;
+        _businessTimeCalculator = businessTimeCalculator;
+        _ticketSlaService = ticketSlaService;
         _ticketRepository = ticketRepository;
         _statutRepository = statutRepository;
         _emailSourceRepository = emailSourceRepository;
@@ -361,6 +367,39 @@ public class TicketService : ITicketService
                 return false;
         }
 
+        // Passage en "attente client" - démarre une pause
+        if (req.IdStatut == (int)TicketStatus.Pending)
+        {
+            _context.TicketSlaPauses.Add(new TicketSlaPause
+            {
+                IdTicket = ticket.IdTicket,
+                PausedAt = DateTime.UtcNow
+            });
+        }
+
+        // Sortie de "attente client" - termine la pause active
+        if (ticket.IdStatut == (int)TicketStatus.Pending
+            && req.IdStatut != (int)TicketStatus.Pending)
+        {
+            var activePause = await _context.TicketSlaPauses
+                .Where(p => p.IdTicket == ticket.IdTicket && p.ResumedAt == null)
+                .FirstOrDefaultAsync();
+
+            if (activePause is not null)
+            {
+                activePause.ResumedAt = DateTime.UtcNow;
+
+                // Décaler les deadlines de la durée de la pause
+                var pauseDuration = activePause.ResumedAt.Value - activePause.PausedAt;
+
+                ticket.DeadlineResolution = await _businessTimeCalculator
+                    .AddBusinessTimeAsync((DateTime)ticket.DeadlineResolution, (TimeSpan)pauseDuration);
+
+                // ticket.ResolutionDeadline = await _businessTimeCalculator
+                //     .AddBusinessTimeAsync(ticket.ResolutionDeadline, pauseDuration);
+            }
+        }
+
         ticket.IdApplication = req.IdApplication;
         ticket.IdCriticite = req.IdCriticite;
         ticket.IdStatut = req.IdStatut;
@@ -370,7 +409,7 @@ public class TicketService : ITicketService
         ticket.DateCloture = req.DateCloture;
         ticket.DureeSla = req.DureeSla;
 
-        await _ticketRepository.UpdateAsync(ticket);
+        await _context.SaveChangesAsync();
         return true;
     }
 
@@ -408,12 +447,14 @@ public class TicketService : ITicketService
             ticket.IdApplication = idApplication;
             ticket.IdCriticite = app.IdCsNavigation.IdCriticite;
             ticket.DureeSla = app.IdCsNavigation.DureeSla;
+            ticket.DeadlineResolution = await _ticketSlaService.CalculateSlaAsync(ticket);
         }
         else
         {
             ticket.IdApplication = null;
             ticket.IdCriticite = null;
         }
+
 
         await _context.SaveChangesAsync();
         return Result.Success();

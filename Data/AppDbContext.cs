@@ -50,7 +50,7 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Ticket> Tickets { get; set; }
 
-    public virtual DbSet<TypesDemande> TypesDemandes { get; set; }
+    public virtual DbSet<TicketSlaPause> TicketSlaPauses { get; set; }
 
     public virtual DbSet<TypesEvenementNotification> TypesEvenementNotifications { get; set; }
 
@@ -60,7 +60,8 @@ public partial class AppDbContext : DbContext
     {
         modelBuilder
             .HasPostgresEnum("oauth_provider", new[] { "google", "microsoft" })
-            .HasPostgresExtension("unaccent");
+            .HasPostgresExtension("unaccent")
+            .HasPostgresExtension("vector");
 
         modelBuilder.Entity<Application>(entity =>
         {
@@ -102,9 +103,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.DureeSla)
                 .HasPrecision(6, 2)
                 .HasColumnName("duree_sla");
-            entity.Property(e => e.IdCriticite)
-                .HasDefaultValue(5)
-                .HasColumnName("id_criticite");
+            entity.Property(e => e.IdCriticite).HasColumnName("id_criticite");
             entity.Property(e => e.Libelle)
                 .HasMaxLength(100)
                 .HasColumnName("libelle");
@@ -433,6 +432,8 @@ public partial class AppDbContext : DbContext
 
             entity.ToTable("regles_criticite");
 
+            entity.HasIndex(e => e.IdCs, "regles_criticite_id_cs_key").IsUnique();
+
             entity.Property(e => e.IdRegleCriticite).HasColumnName("id_regle_criticite");
             entity.Property(e => e.IdCriticite).HasColumnName("id_criticite");
             entity.Property(e => e.IdCs).HasColumnName("id_cs");
@@ -442,8 +443,8 @@ public partial class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("regles_criticite_id_criticite_fkey");
 
-            entity.HasOne(d => d.IdCsNavigation).WithMany(p => p.ReglesCriticites)
-                .HasForeignKey(d => d.IdCs)
+            entity.HasOne(d => d.IdCsNavigation).WithOne(p => p.ReglesCriticite)
+                .HasForeignKey<ReglesCriticite>(d => d.IdCs)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("regles_criticite_id_cs_fkey");
         });
@@ -606,6 +607,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.DateCreation)
                 .HasDefaultValueSql("now()")
                 .HasColumnName("date_creation");
+            entity.Property(e => e.DeadlineResolution).HasColumnName("deadline_resolution");
             entity.Property(e => e.DemandeurDirection)
                 .HasMaxLength(150)
                 .HasColumnName("demandeur_direction");
@@ -641,18 +643,23 @@ public partial class AppDbContext : DbContext
                 .HasConstraintName("tickets_id_technicien_assigne_fkey");
         });
 
-        modelBuilder.Entity<TypesDemande>(entity =>
+        modelBuilder.Entity<TicketSlaPause>(entity =>
         {
-            entity.HasKey(e => e.IdTypeDemande).HasName("types_demande_pkey");
+            entity.HasKey(e => e.Id).HasName("ticket_sla_pause_pkey");
 
-            entity.ToTable("types_demande");
+            entity.ToTable("ticket_sla_pause");
 
-            entity.HasIndex(e => e.Libelle, "types_demande_libelle_key").IsUnique();
+            entity.HasIndex(e => e.IdTicket, "idx_ticket_sla_pause_ticket");
 
-            entity.Property(e => e.IdTypeDemande).HasColumnName("id_type_demande");
-            entity.Property(e => e.Libelle)
-                .HasMaxLength(50)
-                .HasColumnName("libelle");
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.IdTicket).HasColumnName("id_ticket");
+            entity.Property(e => e.PausedAt).HasColumnName("paused_at");
+            entity.Property(e => e.ResumedAt).HasColumnName("resumed_at");
+
+            entity.HasOne(d => d.IdTicketNavigation).WithMany(p => p.TicketSlaPauses)
+                .HasForeignKey(d => d.IdTicket)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("ticket_sla_pause_id_ticket_fkey");
         });
 
         modelBuilder.Entity<TypesEvenementNotification>(entity =>
@@ -678,6 +685,8 @@ public partial class AppDbContext : DbContext
             entity.HasIndex(e => e.Actif, "idx_utilisateur_actif");
 
             entity.HasIndex(e => e.IdRole, "idx_utilisateur_role");
+
+            entity.HasIndex(e => e.UserGuid, "idx_utilisateur_user_guid").IsUnique();
 
             entity.HasIndex(e => e.Email, "utilisateurs_email_key").IsUnique();
 

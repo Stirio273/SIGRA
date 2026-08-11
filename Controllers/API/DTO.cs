@@ -97,7 +97,8 @@ public record TicketResponse(
     string DemandeurEmail,
     string DemandeurDirection,
     DateTime? DateCloture,
-    decimal DureeSla);
+    decimal DureeSla,
+    DateTime? DeadlineResolution);
 
 public record TicketSearchRequest(PagedRequest Pagination)
 {

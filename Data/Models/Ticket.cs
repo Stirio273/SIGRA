@@ -27,6 +27,8 @@ public partial class Ticket
 
     public decimal DureeSla { get; set; }
 
+    public DateTime? DeadlineResolution { get; set; }
+
     public virtual ICollection<Commentaire> Commentaires { get; set; } = new List<Commentaire>();
 
     public virtual ICollection<EmailsSource> EmailsSources { get; set; } = new List<EmailsSource>();
@@ -48,4 +50,6 @@ public partial class Ticket
     public virtual ICollection<Reassignation> Reassignations { get; set; } = new List<Reassignation>();
 
     public virtual Rejet? Rejet { get; set; }
+
+    public virtual ICollection<TicketSlaPause> TicketSlaPauses { get; set; } = new List<TicketSlaPause>();
 }

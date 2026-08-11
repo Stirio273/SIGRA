@@ -40,6 +40,13 @@ CREATE INDEX idx_utilisateur_actif ON utilisateurs(actif);
 -- BLOC 2 : APPLICATION, CLASSE DE SERVICE & CRITICITÉ
 -- ============================================================================
 
+
+CREATE TABLE criticites (
+    id_criticite    SERIAL PRIMARY KEY,
+    libelle         VARCHAR(50) NOT NULL UNIQUE,
+    ordre           INTEGER NOT NULL UNIQUE
+);
+
 CREATE TABLE classes_service (
     id_cs           SERIAL PRIMARY KEY,
     code            VARCHAR(20) NOT NULL UNIQUE,
@@ -62,12 +69,6 @@ CREATE INDEX idx_application_actif ON applications(actif);
 --     id_type_demande SERIAL PRIMARY KEY,
 --     libelle         VARCHAR(50) NOT NULL UNIQUE
 -- );
-
-CREATE TABLE criticites (
-    id_criticite    SERIAL PRIMARY KEY,
-    libelle         VARCHAR(50) NOT NULL UNIQUE,
-    ordre           INTEGER NOT NULL UNIQUE
-);
 
 CREATE TABLE regles_criticite (
     id_regle_criticite  SERIAL PRIMARY KEY,
@@ -114,6 +115,7 @@ CREATE TABLE tickets (
     demandeur_direction      VARCHAR(150) NOT NULL,
     date_cloture             TIMESTAMPTZ,
     duree_sla                NUMERIC(6,2) NOT NULL,
+    deadline_resolution      TIMESTAMPTZ
     CONSTRAINT chk_date_cloture_coherente
         CHECK (date_cloture IS NULL OR date_cloture >= date_creation)
 );
@@ -135,6 +137,15 @@ CREATE TABLE historique_statut (
 );
 
 CREATE INDEX idx_historique_statut_ticket ON historique_statut(id_ticket);
+
+CREATE TABLE ticket_sla_pause(
+    id                      SERIAL PRIMARY KEY,
+    id_ticket               INTEGER NOT NULL REFERENCES tickets(id_ticket),
+    paused_at               TIMESTAMPTZ,
+    resumed_at              TIMESTAMPTZ
+);
+
+CREATE INDEX idx_ticket_sla_pause_ticket ON ticket_sla_pause(id_ticket);
 
 -- ============================================================================
 -- BLOC 4 : EMAIL SOURCE (métadonnées d'ingestion)

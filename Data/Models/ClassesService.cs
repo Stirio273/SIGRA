@@ -19,5 +19,5 @@ public partial class ClassesService
 
     public virtual Criticite IdCriticiteNavigation { get; set; } = null!;
 
-    public virtual ICollection<ReglesCriticite> ReglesCriticites { get; set; } = new List<ReglesCriticite>();
+    public virtual ReglesCriticite? ReglesCriticite { get; set; }
 }
