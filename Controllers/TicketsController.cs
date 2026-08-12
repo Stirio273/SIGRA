@@ -63,7 +63,7 @@ public class TicketsController : ControllerBase
             return result.ToHttpResult();
         }
 
-        return Ok(ToResponse(ticket));
+        return Ok(ticket);
     }
 
     [HttpPost("{id}/transfer")]
