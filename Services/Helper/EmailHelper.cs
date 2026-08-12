@@ -7,35 +7,39 @@ public class EmailHelper
 {
     public static string GetCleanBody(MimeMessage message)
     {
-        var body = message.TextBody ?? message.HtmlBody ?? string.Empty;
-
-        if (string.IsNullOrEmpty(body))
-            return string.Empty;
-
-        if (body.Contains('<') && body.Contains('>'))
+        try
         {
-            body = Regex.Replace(body, "<.*?>", string.Empty);
-        }
+            var bodyType = message.Body.ContentType;
+            var body = message.TextBody ?? message.HtmlBody ?? string.Empty;
 
-        var lines = body.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
-        var result = new List<string>();
+            if (string.IsNullOrEmpty(body))
+                return string.Empty;
 
-        foreach (var line in lines)
-        {
-            var trimmed = line.Trim();
-            if (trimmed.StartsWith(">") ||
-                IsQuoteHeaderLine(trimmed) ||
-                trimmed.StartsWith("From:", StringComparison.OrdinalIgnoreCase) ||
-                trimmed.StartsWith("Sent:", StringComparison.OrdinalIgnoreCase) ||
-                trimmed.StartsWith("To:", StringComparison.OrdinalIgnoreCase) ||
-                trimmed.StartsWith("Subject:", StringComparison.OrdinalIgnoreCase))
+
+            if (bodyType.IsMimeType("text", "html"))
             {
-                break;
+                // Step 1: Remove HTML quote containers
+                var strippedHtml = HtmlEmailCleanerHelper.CleanHtmlBody(body);
+
+                // Step 2: Convert to plain text for final cleanup
+                var plainText = HtmlEmailCleanerHelper.ExtractPlainText(strippedHtml);
+
+                // Step 3: Apply plain text patterns as fallback
+                body = PlainTextEmailCleanerHelper.CleanPlainTextBody(plainText);
             }
-            result.Add(line);
+            else
+            {
+                // Direct plain text cleaning
+                body = PlainTextEmailCleanerHelper.CleanPlainTextBody(body);
+            }
+
+            return body;
+        }
+        catch (System.Exception)
+        {
+            throw;
         }
 
-        return string.Join(Environment.NewLine, result).Trim();
     }
 
     private static bool IsQuoteHeaderLine(string line)

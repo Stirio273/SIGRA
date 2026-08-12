@@ -1,8 +1,15 @@
+using System.ComponentModel.DataAnnotations;
 using SIGRA.Data.Enums;
 using SIGRA.Data.Models;
 using SIGRA.Domain;
 
 namespace SIGRA.Controllers;
+
+public class ReopenTicketDto
+{
+    [Required, MinLength(10, ErrorMessage = "Le motif doit contenir au moins 10 caractères.")]
+    public string Justification { get; set; } = default!;
+}
 
 public record CreateRoleRequest(string Libelle);
 public record UpdateRoleRequest(string Libelle);

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using SIGRA.Controllers;
 using SIGRA.Data.Models;
 using SIGRA.Domain;
+using SIGRA.Domain.Exceptions;
 using SIGRA.Services;
 using System;
 using System.Linq;
@@ -19,6 +20,36 @@ public class TicketsController : ControllerBase
     {
         _ticketService = ticketService;
         _userAuthenticationService = userAuthenticationService;
+    }
+
+    [HttpPost("{id}/reopen")]
+    public async Task<IActionResult> ReopenTicket(int id, [FromBody] ReopenTicketDto dto)
+    {
+        try
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized();
+
+            var currentUser = await _userAuthenticationService.GetAuthorizedUserAsync(username);
+            if (currentUser == null)
+                return Unauthorized();
+
+
+            await _ticketService.ReopenTicketAsync(
+                new ReopenTicketRequest { TicketId = id, Reason = dto.Justification },
+                currentUser.IdUtilisateur);
+
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+        catch (NotFoundException)
+        {
+            return NotFound();
+        }
     }
 
     [HttpGet("details/{id}")]

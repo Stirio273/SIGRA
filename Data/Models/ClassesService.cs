@@ -15,6 +15,8 @@ public partial class ClassesService
 
     public int IdCriticite { get; set; }
 
+    public decimal DureeSlaReouverture { get; set; }
+
     public virtual ICollection<Application> Applications { get; set; } = new List<Application>();
 
     public virtual Criticite IdCriticiteNavigation { get; set; } = null!;

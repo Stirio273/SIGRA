@@ -52,7 +52,8 @@ CREATE TABLE classes_service (
     code            VARCHAR(20) NOT NULL UNIQUE,
     libelle         VARCHAR(100),
     duree_sla           NUMERIC(6,2) NOT NULL CHECK (duree_sla > 0),
-    id_criticite        INTEGER NOT NULL REFERENCES criticites(id_criticite)
+    id_criticite        INTEGER NOT NULL REFERENCES criticites(id_criticite),
+    duree_sla_reouverture   NUMERIC(6,2) NOT NULL CHECK (duree_sla_reouverture > 0)
 );
 
 CREATE TABLE applications (
@@ -398,7 +399,9 @@ WHERE (s1.libelle, s2.libelle) IN (
     ('Escaladé', 'Résolu'),
     ('En attente de validation rejet', 'Nouveau'),
     ('En attente de validation rejet', 'Rejeté'),
-    ('Résolu', 'Clôturé')
+    ('Résolu', 'Clôturé'),
+    ('Résolu', 'En cours'),
+    ('Clôturé', 'En cours')
 );
 
 INSERT INTO types_evenement_notification (libelle) VALUES
@@ -407,4 +410,5 @@ INSERT INTO types_evenement_notification (libelle) VALUES
     ('Ticket escaladé depuis plus de 48h'),
     ('Ticket à 80% du délai SLA'),
     ('Proposition de rejet soumise'),
-    ('Réassignation reçue');
+    ('Réassignation reçue')
+    ('Ticket réouvert');

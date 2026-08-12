@@ -12,6 +12,7 @@ using SIGRA.Data.Models;
 using SIGRA.Data.Repositories;
 using SIGRA.Domain;
 using SIGRA.Services.Helper;
+using SIGRA.Domain.Exceptions;
 
 namespace SIGRA.Services;
 
@@ -56,6 +57,62 @@ public class TicketService : ITicketService
         _logger = logger;
         _userAuthenticationService = userAuthenticationService;
         _notificationService = notificationService;
+    }
+
+    public async Task ReopenTicketAsync(ReopenTicketRequest request, int idAuteur)
+    {
+        var ticket = await _context.Tickets.Include(t => t.IdApplicationNavigation).FirstOrDefaultAsync(t => t.IdTicket == request.TicketId)
+            ?? throw new NotFoundException($"Ticket {request.TicketId} introuvable.");
+
+        // Validation de la transition via le state machine centralisé
+        var autorisee = await _statutRepository.IsTransitionAutoriseeAsync(ticket.IdStatut, (int)TicketStatus.Opened);
+        if (!autorisee)
+            return;
+
+        if (string.IsNullOrWhiteSpace(request.Reason))
+        {
+            throw new ValidationException("Un motif de réouverture est obligatoire.");
+        }
+
+        var dateClotureOriginal = ticket.DateCloture
+            ?? throw new InvalidOperationException("La date de clôture manquant sur un ticket clôturé.");
+
+        // 1) Historiser l'événement de réouverture AVANT de modifier le ticket
+        // _context.TicketReopenHistories.Add(new TicketReopenHistory
+        // {
+        //     Id = Guid.NewGuid(),
+        //     TicketId = ticket.Id,
+        //     OriginalClosedAt = originalClosedAt,
+        //     ReopenedAt = DateTime.UtcNow,
+        //     ReopenedByUserId = currentUserId,
+        //     Reason = request.Reason,
+        //     WasOriginalResolutionSlaBreached = ticket.WasResolutionSlaBreached
+        // });
+
+        // 2) Recalculer les deadlines SLA pour la nouvelle phase
+        // var policy = await _slaPolicyProvider.GetPolicyAsync(ticket.Priority);
+        var classeService = await _context.ClassesServices.AsNoTracking().FirstOrDefaultAsync(c => c.IdCs == ticket.IdApplicationNavigation.IdCs);
+        var reopenDuration = TimeSpan.FromHours((double)classeService.DureeSlaReouverture);// policy.ReopenResolutionTime ?? policy.ResolutionTime;
+
+        var newResolutionDeadline = await _businessTimeCalculator
+            .AddBusinessTimeAsync(DateTime.UtcNow, reopenDuration);
+
+        // 3) Mettre à jour l'état du ticket
+        ticket.IdStatut = (int)TicketStatus.Opened;
+        ticket.DateCloture = null;                          // Plus fermé
+        ticket.DeadlineResolution = newResolutionDeadline; // Nouvelle deadline
+        // ticket.WasResolutionSlaBreached = false;          // Reset pour la nouvelle phase
+        // ticket.ReopenCount += 1;
+        // ticket.LastReopenedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation(
+            "Ticket {TicketId} réouvert par {UserId}. Motif: {Reason}. Nouvelle deadline: {Deadline}",
+            ticket.IdTicket, idAuteur, request.Reason, newResolutionDeadline);
+
+        // 4) Notifier les parties concernées
+        await _notificationService.SendAsync(idAuteur, ticket.IdTicket, "", "", new TypesEvenementNotification { Libelle = "Réouverture ticket" });
     }
 
     public async Task<Ticket> GetFicheTicket(int idTicket)
@@ -400,6 +457,17 @@ public class TicketService : ITicketService
             }
         }
 
+        var historiqueStatut = new HistoriqueStatut
+        {
+            IdTicket = ticket.IdTicket,
+            IdStatutPrecedent = ticket.IdStatut,
+            IdStatutSuivant = req.IdStatut,
+            IdAuteur = ticket.IdTechnicienAssigne ?? 0,
+            DateHeure = DateTime.UtcNow
+        };
+
+        _context.HistoriqueStatuts.Add(historiqueStatut);
+
         ticket.IdApplication = req.IdApplication;
         ticket.IdCriticite = req.IdCriticite;
         ticket.IdStatut = req.IdStatut;
@@ -447,6 +515,7 @@ public class TicketService : ITicketService
             ticket.IdApplication = idApplication;
             ticket.IdCriticite = app.IdCsNavigation.IdCriticite;
             ticket.DureeSla = app.IdCsNavigation.DureeSla;
+            ticket.IdApplicationNavigation = app;
             ticket.DeadlineResolution = await _ticketSlaService.CalculateSlaAsync(ticket);
         }
         else
@@ -566,6 +635,7 @@ public class TicketService : ITicketService
         await _context.Reassignations.AddRangeAsync(reassignations);
 
         await _context.SaveChangesAsync();
+        await _notificationService.SendAsync((int)technicienId, tickets[0].IdTicket, "Ticket Réassigné", $"Les tickets {String.Join(", ", tickets.Select(t => t.NumeroTicket))} vous ont été réassignés", null);
         return Result.Success();
     }
 }

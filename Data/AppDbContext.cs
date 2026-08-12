@@ -103,6 +103,9 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.DureeSla)
                 .HasPrecision(6, 2)
                 .HasColumnName("duree_sla");
+            entity.Property(e => e.DureeSlaReouverture)
+                .HasPrecision(6, 2)
+                .HasColumnName("duree_sla_reouverture");
             entity.Property(e => e.IdCriticite).HasColumnName("id_criticite");
             entity.Property(e => e.Libelle)
                 .HasMaxLength(100)

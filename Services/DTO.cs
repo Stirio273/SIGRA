@@ -1,3 +1,10 @@
+public class ReopenTicketRequest
+{
+    public int TicketId { get; set; }
+    public string Reason { get; set; } = default!;
+}
+
+
 public class WeeklyRequestsReportDto
 {
     public DateTime From { get; set; }
