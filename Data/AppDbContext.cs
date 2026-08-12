@@ -28,7 +28,7 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<HistoriqueStatut> HistoriqueStatuts { get; set; }
 
-    public virtual DbSet<JoursFery> JoursFeries { get; set; }
+    public virtual DbSet<JoursFerie> JoursFeries { get; set; }
 
     public virtual DbSet<Notification> Notifications { get; set; }
 
@@ -49,6 +49,8 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<Statut> Statuts { get; set; }
 
     public virtual DbSet<Ticket> Tickets { get; set; }
+
+    public virtual DbSet<TicketSlaPause> TicketSlaPauses { get; set; }
 
     public virtual DbSet<TypesDemande> TypesDemandes { get; set; }
 
@@ -299,7 +301,7 @@ public partial class AppDbContext : DbContext
                 .HasConstraintName("historique_statut_id_ticket_fkey");
         });
 
-        modelBuilder.Entity<JoursFery>(entity =>
+        modelBuilder.Entity<JoursFerie>(entity =>
         {
             entity.HasKey(e => e.IdJourFerie).HasName("jours_feries_pkey");
 
@@ -520,6 +522,8 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Email)
                 .HasMaxLength(256)
                 .HasColumnName("email");
+            entity.Property(e => e.Provider)
+                .HasColumnName("provider");
             entity.Property(e => e.EncryptedAccessToken).HasColumnName("encrypted_access_token");
             entity.Property(e => e.EncryptedRefreshToken).HasColumnName("encrypted_refresh_token");
             entity.Property(e => e.Scopes).HasColumnName("scopes");
@@ -642,6 +646,25 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.IdTechnicienAssigneNavigation).WithMany(p => p.Tickets)
                 .HasForeignKey(d => d.IdTechnicienAssigne)
                 .HasConstraintName("tickets_id_technicien_assigne_fkey");
+        });
+
+        modelBuilder.Entity<TicketSlaPause>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("ticket_sla_pause_pkey");
+
+            entity.ToTable("ticket_sla_pause");
+
+            entity.HasIndex(e => e.IdTicket, "idx_ticket_sla_pause_ticket");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.IdTicket).HasColumnName("id_ticket");
+            entity.Property(e => e.PausedAt).HasColumnName("paused_at");
+            entity.Property(e => e.ResumedAt).HasColumnName("resumed_at");
+
+            entity.HasOne(d => d.IdTicketNavigation).WithMany(p => p.TicketSlaPauses)
+                .HasForeignKey(d => d.IdTicket)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("ticket_sla_pause_id_ticket_fkey");
         });
 
         modelBuilder.Entity<TypesDemande>(entity =>

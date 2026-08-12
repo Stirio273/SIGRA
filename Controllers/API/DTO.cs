@@ -88,6 +88,12 @@ public record PendingRejectResponse(int RejetId, int TicketId, TechnicienRespons
 
 public record StatutSuivantPossibleResponse(int IdStatut, string Libelle);
 
+public record TicketApplicationResponse(int IdApplication, string Libelle, bool Actif, int IdCs);
+public record TicketCriticiteResponse(int IdCriticite, string Libelle, int Ordre);
+public record TicketStatutResponse(int IdStatut, string Libelle, bool EstDefaut);
+public record TicketTechnicienResponse(int IdUtilisateur, string Nom, string Prenom, string Email, Guid UserGuid);
+public record EmailsSourceResponse(string Expediteur, string? Objet, string? CorpsEmail, DateTime DateReception, ICollection<PiecesJointe> PiecesJointes);
+
 public record ApplicationRefResponse(int IdApplication, string Libelle);
 public record StatutRefResponse(int IdStatut, string Libelle);
 public record CriticiteRefResponse(int IdCriticite, string Libelle);
@@ -97,15 +103,16 @@ public record TicketResponse(
     int IdTicket,
     string NumeroTicket,
     DateTime DateCreation,
-    ApplicationRefResponse? Application,
-    CriticiteRefResponse? Criticite,
-    StatutRefResponse Statut,
-    TechnicienRefResponse? TechnicienAssigne,
+    TicketApplicationResponse? Application,
+    TicketCriticiteResponse? Criticite,
+    TicketStatutResponse Statut,
+    TicketTechnicienResponse? TechnicienAssigne,
     string DemandeurEmail,
     string DemandeurDirection,
     DateTime? DateCloture,
     decimal DureeSla,
-    DateTime? DeadlineResolution);
+    DateTime? DeadlineResolution,
+    IReadOnlyList<EmailsSourceResponse>? EmailsSources);
 
 public record TicketSearchRequest(PagedRequest Pagination)
 {

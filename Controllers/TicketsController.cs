@@ -63,7 +63,7 @@ public class TicketsController : ControllerBase
             return result.ToHttpResult();
         }
 
-        return Ok(ticket);
+        return Ok(ToResponse(ticket));
     }
 
     [HttpPost("{id}/transfer")]
@@ -218,13 +218,27 @@ public class TicketsController : ControllerBase
         t.IdTicket,
         t.NumeroTicket,
         t.DateCreation,
-        t.IdApplicationNavigation is not null ? new ApplicationRefResponse(t.IdApplicationNavigation.IdApplication, t.IdApplicationNavigation.Libelle) : null,
-        t.IdCriticiteNavigation is not null ? new CriticiteRefResponse(t.IdCriticiteNavigation.IdCriticite, t.IdCriticiteNavigation.Libelle) : null,
-        new StatutRefResponse(t.IdStatutNavigation.IdStatut, t.IdStatutNavigation.Libelle),
-        t.IdTechnicienAssigneNavigation is not null ? new TechnicienRefResponse(t.IdTechnicienAssigneNavigation.IdUtilisateur, t.IdTechnicienAssigneNavigation.Email) : null,
+        t.IdApplicationNavigation is not null
+            ? new TicketApplicationResponse(t.IdApplicationNavigation.IdApplication, t.IdApplicationNavigation.Libelle, t.IdApplicationNavigation.Actif, t.IdApplicationNavigation.IdCs)
+            : null,
+        t.IdCriticiteNavigation is not null
+            ? new TicketCriticiteResponse(t.IdCriticiteNavigation.IdCriticite, t.IdCriticiteNavigation.Libelle, t.IdCriticiteNavigation.Ordre)
+            : null,
+        new TicketStatutResponse(t.IdStatutNavigation.IdStatut, t.IdStatutNavigation.Libelle, t.IdStatutNavigation.EstDefaut),
+        t.IdTechnicienAssigneNavigation is not null
+            ? new TicketTechnicienResponse(t.IdTechnicienAssigneNavigation.IdUtilisateur, t.IdTechnicienAssigneNavigation.Nom, t.IdTechnicienAssigneNavigation.Prenom, t.IdTechnicienAssigneNavigation.Email, t.IdTechnicienAssigneNavigation.UserGuid)
+            : null,
         t.DemandeurEmail,
         t.DemandeurDirection,
         t.DateCloture,
         t.DureeSla,
-        t.DeadlineResolution);
+        t.DeadlineResolution,
+        t.EmailsSources is not null ? t.EmailsSources.Select(item => new EmailsSourceResponse
+        (
+           item.Expediteur, 
+           item.Objet, 
+           item.CorpsEmail, 
+           item.DateReception, 
+           item.PiecesJointes
+    )).ToList() : null);
 }

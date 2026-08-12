@@ -50,7 +50,7 @@ public partial class Ticket
         }
         else
         {
-            this.IdStatut = (int)TicketStatus.New;
+            this.IdStatut = (int)TicketStatus.Opened;
         }
         rejet.IdValidateur = idValidateur;
         rejet.Decision = isRejected;

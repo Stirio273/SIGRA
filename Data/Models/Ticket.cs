@@ -50,4 +50,6 @@ public partial class Ticket
     public virtual ICollection<Reassignation> Reassignations { get; set; } = new List<Reassignation>();
 
     public virtual Rejet? Rejet { get; set; }
+
+    public virtual ICollection<TicketSlaPause> TicketSlaPauses { get; set; } = new List<TicketSlaPause>();
 }
