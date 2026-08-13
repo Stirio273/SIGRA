@@ -93,13 +93,13 @@ CREATE UNIQUE INDEX uq_statut_defaut
     ON statuts(est_defaut)
     WHERE est_defaut = TRUE;
 
-CREATE TABLE transitions_autorisees (
-    id_statut_origine       INTEGER NOT NULL REFERENCES statuts(id_statut),
-    id_statut_destination   INTEGER NOT NULL REFERENCES statuts(id_statut),
-    PRIMARY KEY (id_statut_origine, id_statut_destination),
-    CONSTRAINT chk_transition_differente
-        CHECK (id_statut_origine <> id_statut_destination)
-);
+-- CREATE TABLE transitions_autorisees (
+--     id_statut_origine       INTEGER NOT NULL REFERENCES statuts(id_statut),
+--     id_statut_destination   INTEGER NOT NULL REFERENCES statuts(id_statut),
+--     PRIMARY KEY (id_statut_origine, id_statut_destination),
+--     CONSTRAINT chk_transition_differente
+--         CHECK (id_statut_origine <> id_statut_destination)
+-- );
 
 CREATE SEQUENCE seq_tickets_numero_ticket START 1 INCREMENT 1;
 

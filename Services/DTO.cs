@@ -4,6 +4,11 @@ public class ReopenTicketRequest
     public string Reason { get; set; } = default!;
 }
 
+public class TicketRequest
+{
+
+}
+
 
 public class WeeklyRequestsReportDto
 {

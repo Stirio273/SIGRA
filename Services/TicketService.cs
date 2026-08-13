@@ -65,7 +65,7 @@ public class TicketService : ITicketService
             ?? throw new NotFoundException($"Ticket {request.TicketId} introuvable.");
 
         // Validation de la transition via le state machine centralisé
-        var autorisee = await _statutRepository.IsTransitionAutoriseeAsync(ticket.IdStatut, (int)TicketStatus.Opened);
+        var autorisee = TicketStatusTransitions.IsValidTransition((TicketStatus)ticket.IdStatut, TicketStatus.Opened);
         if (!autorisee)
             return;
 
@@ -98,9 +98,9 @@ public class TicketService : ITicketService
             .AddBusinessTimeAsync(DateTime.UtcNow, reopenDuration);
 
         // 3) Mettre à jour l'état du ticket
-        ticket.IdStatut = (int)TicketStatus.Opened;
-        ticket.DateCloture = null;                          // Plus fermé
-        ticket.DeadlineResolution = newResolutionDeadline; // Nouvelle deadline
+        ticket.Ouvrir(newResolutionDeadline);
+        // ticket.DateCloture = null;                          // Plus fermé
+        // ticket.DeadlineResolution = newResolutionDeadline; // Nouvelle deadline
         // ticket.WasResolutionSlaBreached = false;          // Reset pour la nouvelle phase
         // ticket.ReopenCount += 1;
         // ticket.LastReopenedAt = DateTime.UtcNow;
@@ -175,7 +175,7 @@ public class TicketService : ITicketService
         };
 
         _context.Rejets.Add(rejet);
-        ticket.IdStatut = (int)TicketStatus.PendingReject;
+        ticket.AttendreRejet();
 
         await _context.SaveChangesAsync();
         return Result.Success();
@@ -266,23 +266,24 @@ public class TicketService : ITicketService
             isFirstEmail = true;
             resolvedConversationId = conversationId ?? Guid.NewGuid().ToString();
 
-            var statutId = _config.GetValue<int?>("TicketDefaults:StatutId");
-            if (!statutId.HasValue)
-            {
-                statutId = await _statutRepository.GetIdStatutByDefaultAsync(cancellationToken);
-                if (!statutId.HasValue)
-                    throw new InvalidOperationException("Default Statut not found.");
-            }
+            // var statutId = _config.GetValue<int?>("TicketDefaults:StatutId");
+            // if (!statutId.HasValue)
+            // {
+            //     statutId = await _statutRepository.GetIdStatutByDefaultAsync(cancellationToken);
+            //     if (!statutId.HasValue)
+            //         throw new InvalidOperationException("Default Statut not found.");
+            // }
 
             ticket = new Ticket
             {
                 NumeroTicket = await GenerateTempTicketNumber(),
-                IdStatut = statutId.Value,
                 DemandeurEmail = mailInfo.SenderEmail,
                 DemandeurDirection = string.IsNullOrWhiteSpace(mailInfo.Sender) ? mailInfo.SenderEmail : mailInfo.Sender,
                 DateCreation = mailInfo.SentDate.UtcDateTime,
                 DureeSla = 0
             };
+
+            ticket.Creer();
 
             await _ticketRepository.CreateAsync(ticket, cancellationToken);
 
@@ -370,13 +371,14 @@ public class TicketService : ITicketService
         {
             IdApplication = req.IdApplication,
             IdCriticite = req.IdCriticite,
-            IdStatut = req.IdStatut,
             IdTechnicienAssigne = req.IdTechnicienAssigne,
             DemandeurEmail = req.DemandeurEmail,
             DemandeurDirection = req.DemandeurDirection,
             DureeSla = req.DureeSla,
             DateCreation = DateTime.UtcNow
         };
+
+        ticket.PasserStatutSuivant((TicketStatus)req.IdStatut);
 
         return await _ticketRepository.CreateAsync(ticket);
     }
@@ -396,7 +398,7 @@ public class TicketService : ITicketService
         return await _ticketRepository.GetByTechnicianAsync(technicianUserGuid);
     }
 
-    public async Task<PagedResult<Ticket>> GetPagedAsync(TicketSearchRequest criteria)
+    public async Task<PagedResult<TicketResponse>> GetPagedAsync(TicketSearchRequest criteria)
     {
         return await _ticketRepository.GetPagedAsync(criteria);
     }
@@ -408,21 +410,22 @@ public class TicketService : ITicketService
             return Array.Empty<Statut>();
 
         var idStatutOrigine = ticket.IdStatut;
-        return await _statutRepository.GetNextStatutsAsync((int)idStatutOrigine, cancellationToken);
+        var allowedStatus = TicketStatusTransitions.GetAllowedTransitions((TicketStatus)idStatutOrigine);
+        return await _statutRepository.GetNextStatutsAsync(allowedStatus, cancellationToken);
     }
 
-    public async Task<bool> UpdateAsync(int id, UpdateTicketRequest req)
+    public async Task<Result> UpdateAsync(int id, UpdateTicketRequest req)
     {
         var ticket = await _context.Tickets.FindAsync(id);
         if (ticket == null)
-            return false;
+            return Result.Failure("Ticket not found", ErrorType.NotFound);
 
-        if (ticket.IdStatut != req.IdStatut)
-        {
-            var autorisee = await _statutRepository.IsTransitionAutoriseeAsync(ticket.IdStatut, req.IdStatut);
-            if (!autorisee)
-                return false;
-        }
+        // if (ticket.IdStatut != req.IdStatut)
+        // {
+        //     var autorisee = await _statutRepository.IsTransitionAutoriseeAsync(ticket.IdStatut, req.IdStatut);
+        //     if (!autorisee)
+        //         return false;
+        // }
 
         // Passage en "attente client" - démarre une pause
         if (req.IdStatut == (int)TicketStatus.Pending)
@@ -470,7 +473,11 @@ public class TicketService : ITicketService
 
         ticket.IdApplication = req.IdApplication;
         ticket.IdCriticite = req.IdCriticite;
-        ticket.IdStatut = req.IdStatut;
+        var autorisee = ticket.PasserStatutSuivant((TicketStatus)req.IdStatut);
+        if (autorisee != Result.Success())
+        {
+            return autorisee;
+        }
         ticket.IdTechnicienAssigne = req.IdTechnicienAssigne;
         ticket.DemandeurEmail = req.DemandeurEmail;
         ticket.DemandeurDirection = req.DemandeurDirection;
@@ -478,7 +485,7 @@ public class TicketService : ITicketService
         ticket.DureeSla = req.DureeSla;
 
         await _context.SaveChangesAsync();
-        return true;
+        return Result.Success();
     }
 
     public async Task<Result> CloseAsync(int id)

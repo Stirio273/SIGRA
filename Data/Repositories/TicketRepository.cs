@@ -88,7 +88,7 @@ public sealed class TicketRepository : ITicketRepository
             .ToListAsync(ct);
     }
 
-    public async Task<PagedResult<Ticket>> GetPagedAsync(TicketSearchRequest criteria, CancellationToken ct = default)
+    public async Task<PagedResult<TicketResponse>> GetPagedAsync(TicketSearchRequest criteria, CancellationToken ct = default)
     {
         var query = _context.Tickets.AsNoTracking().AsQueryable();
 
@@ -99,45 +99,27 @@ public sealed class TicketRepository : ITicketRepository
         var items = await query
             .Skip((criteria.Pagination.PageNumber - 1) * criteria.Pagination.PageSize)
             .Take(criteria.Pagination.PageSize)
-            .Select(t => new Ticket
-            {
-                IdTicket = t.IdTicket,
-                NumeroTicket = t.NumeroTicket,
-                DateCreation = t.DateCreation,
-                IdApplication = t.IdApplication,
-                IdCriticite = t.IdCriticite,
-                IdStatut = t.IdStatut,
-                IdTechnicienAssigne = t.IdTechnicienAssigne,
-                DemandeurEmail = t.DemandeurEmail,
-                DemandeurDirection = t.DemandeurDirection,
-                DateCloture = t.DateCloture,
-                DureeSla = t.DureeSla,
-                IdStatutNavigation = new Statut
-                {
-                    IdStatut = t.IdStatutNavigation.IdStatut,
-                    Libelle = t.IdStatutNavigation.Libelle
-                },
-                IdApplicationNavigation = t.IdApplicationNavigation == null ? null : new Application
-                {
-                    IdApplication = t.IdApplicationNavigation.IdApplication,
-                    Libelle = t.IdApplicationNavigation.Libelle
-                },
-                IdCriticiteNavigation = t.IdCriticiteNavigation == null ? null : new Criticite
-                {
-                    IdCriticite = t.IdCriticiteNavigation.IdCriticite,
-                    Libelle = t.IdCriticiteNavigation.Libelle
-                },
-                IdTechnicienAssigneNavigation = t.IdTechnicienAssigneNavigation == null ? null : new Utilisateur
-                {
-                    IdUtilisateur = t.IdTechnicienAssigneNavigation.IdUtilisateur,
-                    Email = t.IdTechnicienAssigneNavigation.Email
-                }
-            })
+            .Select(t => new TicketResponse
+            (
+                IdTicket: t.IdTicket,
+                NumeroTicket: t.NumeroTicket,
+                DateCreation: t.DateCreation,
+                Application: t.IdApplicationNavigation == null ? null : new TicketApplicationResponse(t.IdApplicationNavigation.IdApplication, t.IdApplicationNavigation.Libelle, false, 0),
+                Criticite: t.IdCriticiteNavigation == null ? null : new TicketCriticiteResponse(t.IdCriticiteNavigation.IdCriticite, t.IdCriticiteNavigation.Libelle, 0),
+                Statut: new TicketStatutResponse(t.IdStatutNavigation.IdStatut, t.IdStatutNavigation.Libelle, false),
+                TechnicienAssigne: t.IdTechnicienAssigneNavigation == null ? null : new TicketTechnicienResponse(t.IdTechnicienAssigneNavigation.IdUtilisateur, "", "", t.IdTechnicienAssigneNavigation.Email, Guid.Empty),
+                DemandeurEmail: t.DemandeurEmail,
+                DemandeurDirection: t.DemandeurDirection,
+                DateCloture: t.DateCloture,
+                DureeSla: t.DureeSla,
+                DeadlineResolution: t.DeadlineResolution,
+                EmailsSources: null
+            ))
             .ToListAsync(ct);
 
         var totalCount = await query.CountAsync(ct);
 
-        return new PagedResult<Ticket>
+        return new PagedResult<TicketResponse>
         {
             Items = items,
             PageNumber = criteria.Pagination.PageNumber,

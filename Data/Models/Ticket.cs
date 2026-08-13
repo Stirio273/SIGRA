@@ -15,7 +15,7 @@ public partial class Ticket
 
     public int? IdCriticite { get; set; }
 
-    public int IdStatut { get; set; }
+    public int IdStatut { get; private set; }
 
     public int? IdTechnicienAssigne { get; set; }
 

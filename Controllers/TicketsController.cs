@@ -145,7 +145,7 @@ public class TicketsController : ControllerBase
         var result = await _ticketService.GetPagedAsync(req);
         return Ok(new PagedResult<TicketResponse>
         {
-            Items = result.Items.Select(ToResponse).ToList(),
+            Items = result.Items,
             PageNumber = result.PageNumber,
             PageSize = result.PageSize,
             TotalCount = result.TotalCount
@@ -187,7 +187,7 @@ public class TicketsController : ControllerBase
     public async Task<IActionResult> Update(int id, UpdateTicketRequest req)
     {
         var ok = await _ticketService.UpdateAsync(id, req);
-        return ok ? NoContent() : NotFound();
+        return ok.IsSuccess ? NoContent() : NotFound();
     }
 
     [HttpPatch("{id:int}")]
@@ -235,10 +235,10 @@ public class TicketsController : ControllerBase
         t.DeadlineResolution,
         t.EmailsSources is not null ? t.EmailsSources.Select(item => new EmailsSourceResponse
         (
-           item.Expediteur, 
-           item.Objet, 
-           item.CorpsEmail, 
-           item.DateReception, 
+           item.Expediteur,
+           item.Objet,
+           item.CorpsEmail,
+           item.DateReception,
            item.PiecesJointes
     )).ToList() : null);
 }

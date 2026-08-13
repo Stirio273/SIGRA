@@ -35,19 +35,18 @@ public sealed class StatutRepository : IStatutRepository
         return statut?.IdStatut;
     }
 
-    public async Task<bool> IsTransitionAutoriseeAsync(int idStatutOrigine, int idStatutDestination, CancellationToken ct = default)
-    {
-        return await _context.Statuts
-            .Where(s => s.IdStatut == idStatutOrigine)
-            .SelectMany(s => s.IdStatutDestinations)
-            .AnyAsync(d => d.IdStatut == idStatutDestination, ct);
-    }
+    // public async Task<bool> IsTransitionAutoriseeAsync(int idStatutOrigine, int idStatutDestination, CancellationToken ct = default)
+    // {
+    //     return await _context.Statuts
+    //         .Where(s => s.IdStatut == idStatutOrigine)
+    //         .SelectMany(s => s.IdStatutDestinations)
+    //         .AnyAsync(d => d.IdStatut == idStatutDestination, ct);
+    // }
 
-    public async Task<IReadOnlyList<Statut>> GetNextStatutsAsync(int idStatutOrigine, CancellationToken ct = default)
+    public async Task<IReadOnlyList<Statut>> GetNextStatutsAsync(IReadOnlyList<TicketStatus> ticketStatuses, CancellationToken ct = default)
     {
         return await _context.Statuts
-            .Where(s => s.IdStatut == idStatutOrigine)
-            .SelectMany(s => s.IdStatutDestinations)
+            .Where(s => ticketStatuses.Contains((TicketStatus)s.IdStatut))
             .AsNoTracking()
             .ToListAsync(ct);
     }

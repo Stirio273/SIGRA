@@ -10,6 +10,6 @@ public interface IStatutRepository
 {
     Task<int?> GetIdStatutByDefaultAsync(CancellationToken ct = default);
     Task<int?> GetStatutIdAsync(string libelle, CancellationToken ct = default);
-    Task<bool> IsTransitionAutoriseeAsync(int idStatutOrigine, int idStatutDestination, CancellationToken ct = default);
-    Task<IReadOnlyList<Statut>> GetNextStatutsAsync(int idStatutOrigine, CancellationToken ct = default);
+    // Task<bool> IsTransitionAutoriseeAsync(int idStatutOrigine, int idStatutDestination, CancellationToken ct = default);
+    Task<IReadOnlyList<Statut>> GetNextStatutsAsync(IReadOnlyList<TicketStatus> ticketStatuses, CancellationToken ct = default);
 }

@@ -5,6 +5,45 @@ namespace SIGRA.Data.Models;
 
 public partial class Ticket
 {
+    private Result EnsureValidTransition(TicketStatus target)
+    {
+        if (!TicketStatusTransitions.IsValidTransition((TicketStatus)IdStatut, target))
+            return Result.Failure(
+                $"Transition invalide : impossible de passer de '{IdStatut}' à '{target}'.", ErrorType.Conflict);
+        return Result.Success();
+    }
+
+    public Result PasserStatutSuivant(TicketStatus target)
+    {
+        var verification = EnsureValidTransition(target);
+        if (verification != Result.Success())
+        {
+            return verification;
+        }
+        IdStatut = (int)target;
+        return Result.Success();
+    }
+
+    public Result Creer()
+    {
+        IdStatut = (int)TicketStatus.New;
+        return Result.Success();
+    }
+
+    public Result AttendreRejet()
+    {
+        IdStatut = (int)TicketStatus.PendingReject;
+        return Result.Success();
+    }
+
+    public Result Ouvrir(DateTime deadlineResolution)
+    {
+        IdStatut = (int)TicketStatus.Opened;
+        DateCloture = null;
+        DeadlineResolution = deadlineResolution;
+        return Result.Success();
+    }
+
     public Result Cloturer()
     {
         if (this.IdStatut == (int)TicketStatus.Closed)

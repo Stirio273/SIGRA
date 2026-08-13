@@ -18,9 +18,9 @@ public interface ITicketService
     Task<Ticket?> GetByIdAsync(int id);
     Task<IReadOnlyList<Ticket>> GetAllAsync();
     Task<IReadOnlyList<Ticket>> GetByTechnicianAsync(Guid technicianUserGuid);
-    Task<PagedResult<Ticket>> GetPagedAsync(TicketSearchRequest criteria);
+    Task<PagedResult<TicketResponse>> GetPagedAsync(TicketSearchRequest criteria);
     Task<IReadOnlyList<Statut>> GetNextStatutsAsync(int idTicket, CancellationToken cancellationToken = default);
-    Task<bool> UpdateAsync(int id, UpdateTicketRequest req);
+    Task<Result> UpdateAsync(int id, UpdateTicketRequest req);
     Task<Result> AssignAsync(IEnumerable<int> ticketIds, Guid? technicianUserGuid, string currentUserEmail);
     Task<Result> ReassignAsync(IEnumerable<int> ticketIds, Guid? technicianUserGuid, string justification);
     Task<bool> DeleteAsync(int id);
