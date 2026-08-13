@@ -152,6 +152,13 @@ public class TicketsController : ControllerBase
         });
     }
 
+    [HttpGet("statuts")]
+    public async Task<IActionResult> GetAllStatus()
+    {
+        var result = await _ticketService.GetListStatus();
+        return Ok(result);
+    }
+
     [HttpGet("technician/{technicianUserGuid:guid}")]
     public async Task<IActionResult> GetByTechnician(Guid technicianUserGuid)
     {

@@ -645,4 +645,9 @@ public class TicketService : ITicketService
         await _notificationService.SendAsync((int)technicienId, tickets[0].IdTicket, "Ticket Réassigné", $"Les tickets {String.Join(", ", tickets.Select(t => t.NumeroTicket))} vous ont été réassignés", null);
         return Result.Success();
     }
+
+    public async Task<IReadOnlyList<Statut>> GetListStatus()
+    {
+        return _context.Statuts.AsNoTracking().ToList();
+    }
 }

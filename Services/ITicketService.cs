@@ -31,4 +31,5 @@ public interface ITicketService
     Task TransferAsync(int ticketId, int idEntiteExterne, int idAuteur, string explication, bool estDefinitif);
     Task<Result> UpdateApplicationAsync(int ticketId, int? idApplication);
     Task ReopenTicketAsync(ReopenTicketRequest request, int idAuteur);
+    Task<IReadOnlyList<Statut>> GetListStatus();
 }

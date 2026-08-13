@@ -119,7 +119,7 @@ public record TicketSearchRequest(PagedRequest Pagination)
     // Filtres
     public string? SearchText { get; set; }         // Recherche dans titre/description
     public TicketStatus? Status { get; set; }
-    public TicketCriticite? Criticite { get; set; }
+    public int? Criticite { get; set; }
     public string? ApplicationName { get; set; }
     public Guid? AssignedTechnician { get; set; }
     public DateTime? CreatedFrom { get; set; }

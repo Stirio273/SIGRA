@@ -2,7 +2,7 @@ namespace SIGRA.Data.Enums;
 
 public enum TicketCriticite
 {
-    Major = 1,
-    Normal = 2,
-    Minor = 3
+    Major = 10,
+    Normal = 5,
+    Minor = 1
 }

@@ -56,7 +56,9 @@ public sealed class UtilisateurRepository : IUtilisateurRepository
         var utilisateur = await _context.Utilisateurs.FirstOrDefaultAsync(u => u.IdUtilisateur == id, ct);
         if (utilisateur != null)
         {
-            _context.Utilisateurs.Remove(utilisateur);
+            utilisateur.Actif = false;
+            utilisateur.DateDesactivation = DateTime.UtcNow;
+            // _context.Utilisateurs.Remove(utilisateur);
             await _context.SaveChangesAsync(ct);
         }
     }

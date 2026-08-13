@@ -152,15 +152,14 @@ public sealed class TicketRepository : ITicketRepository
             query = query.Where(t => t.IdTechnicienAssigneNavigation.UserGuid == request.AssignedTechnician.Value);
 
         if (request.CreatedFrom.HasValue)
-            query = query.Where(t => t.DateCreation >= request.CreatedFrom.Value);
+            query = query.Where(t => t.DateCreation >= request.CreatedFrom.Value.ToUniversalTime());
 
         if (request.CreatedTo.HasValue)
-            query = query.Where(t => t.DateCreation <= request.CreatedTo.Value);
+            query = query.Where(t => t.DateCreation <= request.CreatedTo.Value.ToUniversalTime());
 
         // if (request.IsOverdue == true)
         //     query = query.Where(t =>
         //         t.SlaDeadline < DateTime.UtcNow && t.Status != TicketStatus.Closed);
-
         return query;
     }
 
