@@ -24,6 +24,29 @@ public class NotificationService : INotificationService
         _logger = logger;
     }
 
+    public async Task NotifyAlertAsync(Ticket ticket, string message, string alertType)
+    {
+        var notification = new
+        {
+            Type = "TicketAlert",
+            AlertType = alertType,
+            TicketId = ticket.IdTicket,
+            Message = message,
+            // Priority = ticket.Priority
+        };
+
+        if (ticket.IdTechnicienAssigne is not null)
+        {
+            await _hubContext.Clients
+                .Group($"user-{ticket.IdTechnicienAssigne}")
+                .SendAsync("ReceiveNotification", notification);
+        }
+
+        await _hubContext.Clients
+            .Group("team-managers")
+            .SendAsync("ReceiveAlert", notification);
+    }
+
     // Crée et envoie une notification
     public async Task<Result> SendAsync(
         int userId,

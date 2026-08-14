@@ -1,12 +1,16 @@
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
 using SIGRA.Data;
 using SIGRA.Data.Enums;
 using SIGRA.Data.Repositories;
 using SIGRA.Domain.Options;
+using SIGRA.Domain.Rules;
 using SIGRA.Hubs;
 using SIGRA.Middleware;
 using SIGRA.Services;
+using SIGRA.Services.Handlers;
 using SIGRA.Services.Providers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,6 +34,14 @@ builder.Services.Configure<BusinessHoursOptions>(
     builder.Configuration.GetSection("BusinessHours"));
 
 builder.Services.AddSignalR();
+
+builder.Services.AddHangfire(config => config.UsePostgreSqlStorage(builder.Configuration["ConnectionStrings:DefaultConnection"]));
+builder.Services.AddHangfireServer();
+
+RecurringJob.AddOrUpdate<TicketAlertEvaluationService>(
+    "ticket-alerts-evaluation",
+    service => service.EvaluateAllRulesAsync(),
+    "*/15 * * * *");
 
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IHolidayProvider, HolidayProvider>();
@@ -65,6 +77,13 @@ builder.Services.AddScoped<IWeeklyReportBuilder, WeeklyReportBuilder>();
 builder.Services.AddScoped<ChartGenerator>();
 builder.Services.AddScoped<IPdfReportGenerator, PdfReportGenerator>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<ITicketAlertRule, WaitingTooLongRule>();
+builder.Services.AddScoped<ITicketAlertRule, EscalatedTooLongRule>();
+builder.Services.AddScoped<ITicketAlertRule, SlaThresholdRule>();
+builder.Services.AddScoped<TicketAlertEvaluationService>();
+builder.Services.AddScoped<IDomainEventHandler<TicketReopenedEvent>, RecordReopenHistoryHandler>();
+builder.Services.AddScoped<IDomainEventHandler<TicketReopenedEvent>, NotifyTicketReopenedHandler>();
+builder.Services.AddScoped<IDomainEventHandler<TicketReopenedEvent>, AlertOnRepeatedReopenHandler>();
 builder.Services.AddSingleton<ImapMailService>();
 builder.Services.AddSingleton<ImapSyncService>();
 builder.Services.AddSingleton<IImapIdentityProvider, GmailIdentityProvider>();

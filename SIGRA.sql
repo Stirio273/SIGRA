@@ -116,7 +116,8 @@ CREATE TABLE tickets (
     demandeur_direction      VARCHAR(150) NOT NULL,
     date_cloture             TIMESTAMPTZ,
     duree_sla                NUMERIC(6,2) NOT NULL,
-    deadline_resolution      TIMESTAMPTZ
+    deadline_resolution      TIMESTAMPTZ,
+    date_changement_statut   TIMESTAMPTZ,
     CONSTRAINT chk_date_cloture_coherente
         CHECK (date_cloture IS NULL OR date_cloture >= date_creation)
 );
@@ -278,6 +279,19 @@ CREATE TABLE types_evenement_notification (
     id_type_evenement   SERIAL PRIMARY KEY,
     libelle             VARCHAR(150) NOT NULL UNIQUE
 );
+
+CREATE TABLE alerte_ticket(
+    id                          SERIAL PRIMARY KEY,
+    id_ticket                   INTEGER NOT NULL REFERENCES tickets(id_ticket),
+    type_alerte                 VARCHAR(150) NOT NULL,
+    date_declenchement          TIMESTAMPTZ NOT NULL,
+    date_expiration             TIMESTAMPTZ
+);
+
+CREATE UNIQUE INDEX idx_alerte_ticket_one_active_ticket
+    ON alerte_ticket(id_ticket, type_alerte)
+    WHERE date_expiration IS NULL;
+
 
 CREATE TABLE notifications (
     id_notification     SERIAL PRIMARY KEY,

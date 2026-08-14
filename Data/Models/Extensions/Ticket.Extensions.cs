@@ -5,6 +5,12 @@ namespace SIGRA.Data.Models;
 
 public partial class Ticket
 {
+    private readonly List<object> _domainEvents = new();
+    public IReadOnlyList<object> DomainEvents => _domainEvents.AsReadOnly();
+
+
+    public void ClearDomainEvents() => _domainEvents.Clear();
+
     private Result EnsureValidTransition(TicketStatus target)
     {
         if (!TicketStatusTransitions.IsValidTransition((TicketStatus)IdStatut, target))
@@ -21,24 +27,29 @@ public partial class Ticket
             return verification;
         }
         IdStatut = (int)target;
+        DateChangementStatut = DateTime.UtcNow;
         return Result.Success();
     }
 
     public Result Creer()
     {
         IdStatut = (int)TicketStatus.New;
+        DateChangementStatut = DateTime.UtcNow;
+        _domainEvents.Add(new TicketCreatedEvent(IdTicket));
         return Result.Success();
     }
 
     public Result AttendreRejet()
     {
         IdStatut = (int)TicketStatus.PendingReject;
+        DateChangementStatut = DateTime.UtcNow;
         return Result.Success();
     }
 
     public Result Ouvrir(DateTime deadlineResolution)
     {
         IdStatut = (int)TicketStatus.Opened;
+        DateChangementStatut = DateTime.UtcNow;
         DateCloture = null;
         DeadlineResolution = deadlineResolution;
         return Result.Success();
@@ -51,7 +62,9 @@ public partial class Ticket
             return Result.Failure("Ticket is already closed", ErrorType.Conflict);
         }
         this.IdStatut = (int)TicketStatus.Closed;
+        DateChangementStatut = DateTime.UtcNow;
         this.DateCloture = DateTime.UtcNow;
+        _domainEvents.Add(new TicketClosedEvent(IdTicket, WasResolutionSlaBreached));
         return Result.Success();
     }
 
@@ -74,9 +87,11 @@ public partial class Ticket
         {
             throw new InvalidOperationException("Cannot transfer a closed ticket.");
         }
+        DateChangementStatut = DateTime.UtcNow;
         if (transfert.EstDefinitif)
         {
             this.IdStatut = (int)TicketStatus.Solved;
+            return;
         }
         this.IdStatut = (int)TicketStatus.Redirected;
     }
@@ -91,6 +106,7 @@ public partial class Ticket
         {
             this.IdStatut = (int)TicketStatus.Opened;
         }
+        DateChangementStatut = DateTime.UtcNow;
         rejet.IdValidateur = idValidateur;
         rejet.Decision = isRejected;
         rejet.DateDecision = DateTime.UtcNow;

@@ -12,6 +12,8 @@ public partial class AppDbContext : DbContext
     {
     }
 
+    public virtual DbSet<AlerteTicket> AlerteTickets { get; set; }
+
     public virtual DbSet<Application> Applications { get; set; }
 
     public virtual DbSet<ClassesService> ClassesServices { get; set; }
@@ -62,6 +64,30 @@ public partial class AppDbContext : DbContext
             .HasPostgresEnum("oauth_provider", new[] { "google", "microsoft" })
             .HasPostgresExtension("unaccent")
             .HasPostgresExtension("vector");
+
+        modelBuilder.Entity<AlerteTicket>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("alerte_ticket_pkey");
+
+            entity.ToTable("alerte_ticket");
+
+            entity.HasIndex(e => new { e.IdTicket, e.TypeAlerte }, "idx_alerte_ticket_one_active_ticket")
+                .IsUnique()
+                .HasFilter("(date_expiration IS NULL)");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.DateDeclenchement).HasColumnName("date_declenchement");
+            entity.Property(e => e.DateExpiration).HasColumnName("date_expiration");
+            entity.Property(e => e.IdTicket).HasColumnName("id_ticket");
+            entity.Property(e => e.TypeAlerte)
+                .HasMaxLength(150)
+                .HasColumnName("type_alerte");
+
+            entity.HasOne(d => d.IdTicketNavigation).WithMany(p => p.AlerteTickets)
+                .HasForeignKey(d => d.IdTicket)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("alerte_ticket_id_ticket_fkey");
+        });
 
         modelBuilder.Entity<Application>(entity =>
         {
@@ -568,6 +594,7 @@ public partial class AppDbContext : DbContext
             entity.HasIndex(e => e.NumeroTicket, "tickets_numero_ticket_key").IsUnique();
 
             entity.Property(e => e.IdTicket).HasColumnName("id_ticket");
+            entity.Property(e => e.DateChangementStatut).HasColumnName("date_changement_statut");
             entity.Property(e => e.DateCloture).HasColumnName("date_cloture");
             entity.Property(e => e.DateCreation)
                 .HasDefaultValueSql("now()")

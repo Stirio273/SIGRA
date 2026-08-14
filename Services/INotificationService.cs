@@ -19,4 +19,5 @@ public interface INotificationService
     Task<int> GetUnreadCountAsync(int userId);
     Task<Result> MarkAsReadAsync(int notificationId, int userId);
     Task<Result> MarkAllAsReadAsync(int userId);
+    Task NotifyAlertAsync(Ticket ticket, string message, string alertType);
 }

@@ -15,7 +15,7 @@ public partial class Ticket
 
     public int? IdCriticite { get; set; }
 
-    public int IdStatut { get; private set; }
+    public int IdStatut { get; set; }
 
     public int? IdTechnicienAssigne { get; set; }
 
@@ -28,6 +28,10 @@ public partial class Ticket
     public decimal DureeSla { get; set; }
 
     public DateTime? DeadlineResolution { get; set; }
+
+    public DateTime? DateChangementStatut { get; set; }
+
+    public virtual ICollection<AlerteTicket> AlerteTickets { get; set; } = new List<AlerteTicket>();
 
     public virtual ICollection<Commentaire> Commentaires { get; set; } = new List<Commentaire>();
 
