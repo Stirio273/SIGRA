@@ -47,6 +47,6 @@ public class TicketSlaService : ITicketSlaService
         //     RemainingBusinessTime = remaining
         // };
 
-        return resolutionDeadline;
+        return resolutionDeadline.ToUniversalTime();
     }
 }

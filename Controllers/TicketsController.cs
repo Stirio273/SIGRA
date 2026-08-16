@@ -224,7 +224,7 @@ public class TicketsController : ControllerBase
     private static TicketResponse ToResponse(Ticket t) => new(
         t.IdTicket,
         t.NumeroTicket,
-        t.DateCreation,
+        t.DateCreation.ToLocalTime(),
         t.IdApplicationNavigation is not null
             ? new TicketApplicationResponse(t.IdApplicationNavigation.IdApplication, t.IdApplicationNavigation.Libelle, t.IdApplicationNavigation.Actif, t.IdApplicationNavigation.IdCs)
             : null,
@@ -237,9 +237,9 @@ public class TicketsController : ControllerBase
             : null,
         t.DemandeurEmail,
         t.DemandeurDirection,
-        t.DateCloture,
+        t.DateCloture?.ToLocalTime(),
         t.DureeSla,
-        t.DeadlineResolution,
+        t.DeadlineResolution?.ToLocalTime(),
         t.EmailsSources is not null ? t.EmailsSources.Select(item => new EmailsSourceResponse
         (
            item.Expediteur,

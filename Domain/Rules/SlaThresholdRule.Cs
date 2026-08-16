@@ -29,8 +29,8 @@ public class SlaThresholdRule : ITicketAlertRule
         // Filtre SQL LARGE mais efficace : élimine déjà les tickets
         // fermés ou dont le délai est déjà (largement) dépassé
         return db.Tickets
-            .Where(t => t.IdStatut != (int)TicketStatus.Closed
-                     && t.DeadlineResolution > now);
+            .Where(t => t.IdStatut != (int)TicketStatus.Closed);
+                    //  && t.DeadlineResolution > now);
     }
 
     public async Task<bool> ShouldTriggerAsync(Ticket ticket)

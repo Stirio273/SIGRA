@@ -53,16 +53,22 @@ public class NotificationService : INotificationService
         int idTicket,
         string title,
         string message,
-        TypesEvenementNotification eventType,
+        string eventType,
         Guid? resourceId = null,
         string? resourceType = null)
     {
+        if (userId == 0)
+        {
+            return Result.Failure("Un destinataire est obligatoire", ErrorType.Unprocessable);
+        }
         // 1) Sauvegarde en base
         var notification = new Notification
         {
             IdDestinataire = userId,
             IdTicket = idTicket,
-            IdTypeEvenement = eventType.IdTypeEvenement,
+            TypeEvenement = eventType,
+            Titre = title,
+            Message = message,
             DateCreation = DateTime.UtcNow,
             // ResourceId = resourceId,
             // ResourceType = resourceType,
@@ -77,9 +83,9 @@ public class NotificationService : INotificationService
         var dto = new NotificationDto
         {
             Id = notification.IdNotification,
-            // Title = notification.Title,
-            Message = eventType.Libelle,
-            // EventType = notification.EventType,
+            Title = notification.Titre,
+            Message = notification.Message,
+            EventType = notification.TypeEvenement,
             // ResourceId = notification.ResourceId,
             // ResourceType = notification.ResourceType,
             IsRead = false,
@@ -119,9 +125,9 @@ public class NotificationService : INotificationService
             .Select(x => new NotificationDto
             {
                 Id = x.IdNotification,
-                // Title = x.Title,
-                Message = x.IdTypeEvenementNavigation.Libelle,
-                // EventType = x.EventType,
+                Title = x.Titre,
+                Message = x.Message,
+                EventType = x.TypeEvenement,
                 // ResourceId = x.ResourceId,
                 // ResourceType = x.ResourceType,
                 IsRead = x.EstLue,
@@ -152,7 +158,7 @@ public class NotificationService : INotificationService
             return Result.Failure($"Notification {notificationId} not found.", ErrorType.NotFound);
 
         notification.EstLue = true;
-        notification.DateLecture = DateTime.Now;
+        notification.DateLecture = DateTime.UtcNow;
         await _db.SaveChangesAsync();
 
         return Result.Success();
@@ -165,7 +171,7 @@ public class NotificationService : INotificationService
             .Where(x => x.IdDestinataire == userId && !x.EstLue)
             .ExecuteUpdateAsync(x => x
                 .SetProperty(n => n.EstLue, true)
-                .SetProperty(n => n.DateLecture, DateTime.Now));
+                .SetProperty(n => n.DateLecture, DateTime.UtcNow));
 
         return Result.Success();
     }

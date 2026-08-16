@@ -19,6 +19,7 @@ public class BusinessTimeCalculator : IBusinessTimeCalculator
 
     public async Task<bool> IsBusinessDayAsync(DateTime date)
     {
+        date = date.ToLocalTime();
         if (!_options.WorkingDays.Contains(date.DayOfWeek))
             return false;
 
@@ -29,6 +30,7 @@ public class BusinessTimeCalculator : IBusinessTimeCalculator
     // Ajoute une durée OUVRÉE à une date de départ
     public async Task<DateTime> AddBusinessTimeAsync(DateTime start, TimeSpan duration)
     {
+        start = start.ToLocalTime();
         var remaining = duration;
         var current = await SnapToNextBusinessMomentAsync(start);
 
@@ -58,6 +60,8 @@ public class BusinessTimeCalculator : IBusinessTimeCalculator
     // Calcule le temps OUVRÉ écoulé entre deux dates
     public async Task<TimeSpan> GetElapsedBusinessTimeAsync(DateTime start, DateTime end)
     {
+        start = start.ToLocalTime();
+        end = end.ToLocalTime();
         if (end <= start) return TimeSpan.Zero;
 
         var elapsed = TimeSpan.Zero;
@@ -90,6 +94,7 @@ public class BusinessTimeCalculator : IBusinessTimeCalculator
     // Trouve le créneau contenant l'instant donné
     private Task<BusinessTimeSlot> GetCurrentSlotAsync(DateTime moment)
     {
+        moment = moment.ToLocalTime();
         var timeOfDay = moment.TimeOfDay;
 
         var slot = _options.DailySlots
@@ -106,7 +111,7 @@ public class BusinessTimeCalculator : IBusinessTimeCalculator
     // (ex: un samedi 10h → lundi 9h ; un lundi 20h → mardi 9h)
     private async Task<DateTime> SnapToNextBusinessMomentAsync(DateTime date)
     {
-        var current = date;
+        var current = date.ToLocalTime();
 
         while (true)
         {

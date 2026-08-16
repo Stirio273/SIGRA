@@ -112,7 +112,7 @@ public class TicketService : ITicketService
             ticket.IdTicket, idAuteur, request.Reason, newResolutionDeadline);
 
         // 4) Notifier les parties concernées
-        await _notificationService.SendAsync(idAuteur, ticket.IdTicket, "", "", new TypesEvenementNotification { Libelle = "Réouverture ticket" });
+        await _notificationService.SendAsync(idAuteur, ticket.IdTicket, "", "", "Réouverture ticket");
     }
 
     public async Task<Ticket> GetFicheTicket(int idTicket)
@@ -184,7 +184,7 @@ public class TicketService : ITicketService
     public async Task<PendingRejectResponse?> GetPendingRejectAsync(int ticketId)
     {
         return await _context.Rejets.AsNoTracking()
-            .Where(r => r.IdTicket == ticketId && r.Decision == null)
+            .Where(r => (r.IdTicket == ticketId && r.Decision == null) || (r.IdTicket == ticketId && r.Decision == true))
             .OrderByDescending(r => r.DateProposition)
             .Select(r => new PendingRejectResponse(
                 r.IdRejet,
@@ -588,7 +588,7 @@ public class TicketService : ITicketService
             idTicket: 0,
             title: "Ticket assigné",
             message: $"Des ticket vous ont été assigné.",
-            eventType: new TypesEvenementNotification { Libelle = "Assignation ticket" }
+            eventType: "Assignation ticket"
             );
 
         return Result.Success();
@@ -635,7 +635,7 @@ public class TicketService : ITicketService
                 IdNouvelAssigne = (int)technicienId,
                 Motif = justification,
                 IdAuteur = 0,
-                DateReassignation = DateTime.Now
+                DateReassignation = DateTime.UtcNow
             });
         }
 

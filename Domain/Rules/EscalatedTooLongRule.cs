@@ -17,7 +17,7 @@ public class EscalatedTooLongRule : ITicketAlertRule
         return db.Tickets
             .Where(t => t.IdStatut == (int)TicketStatus.Redirected
                      && t.IdStatut != (int)TicketStatus.Closed
-                     && t.Escalades.Last().DateEscalade <= threshold);
+                     && t.Escalades.OrderBy(e => e.DateEscalade).Last().DateEscalade <= threshold);
     }
 
     public Task<bool> ShouldTriggerAsync(Ticket ticket) => Task.FromResult(true);

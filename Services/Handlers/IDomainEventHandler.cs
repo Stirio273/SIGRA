@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.SignalR;
 using SIGRA.Data;
 using SIGRA.Data.Models;
 using SIGRA.Domain;
+using SIGRA.Hubs;
 
 namespace SIGRA.Services.Handlers;
 
@@ -18,12 +20,11 @@ public class RecordReopenHistoryHandler : IDomainEventHandler<TicketReopenedEven
     {
         _db.HistoriqueStatuts.Add(new HistoriqueStatut
         {
-            Id = Guid.NewGuid(),
-            TicketId = domainEvent.TicketId,
-            OriginalClosedAt = domainEvent.OriginalClosedAt,
-            ReopenedAt = DateTime.UtcNow,
-            ReopenedByUserId = domainEvent.ReopenedByUserId,
-            Reason = domainEvent.Reason
+            IdTicket = domainEvent.TicketId,
+            // OriginalClosedAt = domainEvent.OriginalClosedAt,
+            DateHeure = DateTime.UtcNow,
+            IdAuteur = domainEvent.ReopenedByUserId,
+            // Reason = domainEvent.Reason
         });
 
         await _db.SaveChangesAsync();
@@ -38,7 +39,7 @@ public class NotifyTicketReopenedHandler : IDomainEventHandler<TicketReopenedEve
     public async Task HandleAsync(TicketReopenedEvent domainEvent)
     {
         var ticket = await _db.Tickets.FindAsync(domainEvent.TicketId);
-        await _notificationService.NotifyTicketReopenedAsync(ticket!, domainEvent.ReopenedByUserId);
+        // await _notificationService.NotifyTicketReopenedAsync(ticket!, domainEvent.ReopenedByUserId);
     }
 }
 

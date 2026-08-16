@@ -15,7 +15,7 @@ public class ResolveAllAlertsOnCloseHandler : IDomainEventHandler<TicketClosedEv
             .ToListAsync();
 
         foreach (var alert in activeAlerts)
-            alert.Resolve();
+            alert.Expirer();
 
         await _db.SaveChangesAsync();
     }

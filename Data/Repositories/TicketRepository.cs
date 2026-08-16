@@ -44,6 +44,7 @@ public sealed class TicketRepository : ITicketRepository
             DemandeurDirection = t.DemandeurDirection,
             DateCloture = t.DateCloture,
             DureeSla = t.DureeSla,
+            DeadlineResolution = t.DeadlineResolution,
             EmailsSources = t.EmailsSources.Select(e => new EmailsSource
             {
                 Expediteur = e.Expediteur,

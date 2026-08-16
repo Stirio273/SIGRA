@@ -45,6 +45,7 @@ public class TicketAlertEvaluationService
     private async Task EvaluateRuleAsync(ITicketAlertRule rule)
     {
         var candidates = await rule.GetCandidates(_db).ToListAsync();
+        var idAdmin = await _db.Utilisateurs.Where(u => u.IdRoleNavigation.Libelle == "Administrateur").Select(u => u.IdUtilisateur).FirstOrDefaultAsync();
 
         _logger.LogInformation(
             "Règle {AlertType} : {Count} ticket(s) candidat(s)", rule.AlertType, candidates.Count);
@@ -66,8 +67,16 @@ public class TicketAlertEvaluationService
             var alert = AlerteTicket.Create(ticket.IdTicket, rule.AlertType);
             _db.AlerteTickets.Add(alert);
             await _db.SaveChangesAsync();
-
-            await _notificationService.SendAsync(0, ticket.IdTicket, "Alerte", rule.BuildMessage(ticket), rule.AlertType);
+            try
+            {
+                await _notificationService.SendAsync(idAdmin, ticket.IdTicket, "Alerte", rule.BuildMessage(ticket), rule.AlertType);
+                await _notificationService.SendAsync(ticket.IdTechnicienAssigne ?? 0, ticket.IdTicket, "Alerte", rule.BuildMessage(ticket), rule.AlertType);
+            }
+            catch (System.Exception e)
+            {
+                _logger.LogError("Erreur lors de l'envoi de la notification correspondant a l'alerte {alerte} sur le ticket {numeroTicket} vers l'utilisateur {idDestinataire} : {error}", 
+                rule.AlertType, ticket.NumeroTicket, ticket.IdTechnicienAssigne, e.Message);
+            }
         }
     }
 }

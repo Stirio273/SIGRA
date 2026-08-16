@@ -11,7 +11,7 @@ public interface INotificationService
         int idTicket,
         string title,
         string message,
-        TypesEvenementNotification eventType,
+        string eventType,
         Guid? resourceId = null,
         string? resourceType = null);
 

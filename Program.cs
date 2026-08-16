@@ -5,6 +5,7 @@ using QuestPDF.Infrastructure;
 using SIGRA.Data;
 using SIGRA.Data.Enums;
 using SIGRA.Data.Repositories;
+using SIGRA.Domain;
 using SIGRA.Domain.Options;
 using SIGRA.Domain.Rules;
 using SIGRA.Hubs;
@@ -35,13 +36,17 @@ builder.Services.Configure<BusinessHoursOptions>(
 
 builder.Services.AddSignalR();
 
-builder.Services.AddHangfire(config => config.UsePostgreSqlStorage(builder.Configuration["ConnectionStrings:DefaultConnection"]));
+builder.Services.AddHangfire(config => config
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UsePostgreSqlStorage(options =>
+    {
+        options.UseNpgsqlConnection(builder.Configuration["ConnectionStrings:HangfireConnection"]);
+    }));
+
 builder.Services.AddHangfireServer();
 
-RecurringJob.AddOrUpdate<TicketAlertEvaluationService>(
-    "ticket-alerts-evaluation",
-    service => service.EvaluateAllRulesAsync(),
-    "*/15 * * * *");
 
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IHolidayProvider, HolidayProvider>();
@@ -134,6 +139,25 @@ if (app.Environment.IsDevelopment())
         options.DocumentPath = "/openapi/v1.json";
     });
 }
+
+app.UseHangfireDashboard();
+
+using (var scope = app.Services.CreateScope())
+{
+    var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
+    
+    // Add or update your recurring job safely here
+    recurringJobManager.AddOrUpdate<TicketAlertEvaluationService>(
+        "ticket-alerts-evaluation",
+        service => service.EvaluateAllRulesAsync(),
+        "*/15 * * * *"
+    );
+}
+
+// RecurringJob.AddOrUpdate<TicketAlertEvaluationService>(
+//     "ticket-alerts-evaluation",
+//     service => service.EvaluateAllRulesAsync(),
+//     "*/15 * * * *");
 
 app.MapHub<NotificationHub>("/hubs/notifications");
 

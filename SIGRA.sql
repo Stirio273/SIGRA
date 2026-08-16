@@ -275,10 +275,10 @@ CREATE TABLE jours_feries (
 -- BLOC 8 : NOTIFICATIONS
 -- ============================================================================
 
-CREATE TABLE types_evenement_notification (
-    id_type_evenement   SERIAL PRIMARY KEY,
-    libelle             VARCHAR(150) NOT NULL UNIQUE
-);
+-- CREATE TABLE types_evenement_notification (
+--     id_type_evenement   SERIAL PRIMARY KEY,
+--     libelle             VARCHAR(150) NOT NULL UNIQUE
+-- );
 
 CREATE TABLE alerte_ticket(
     id                          SERIAL PRIMARY KEY,
@@ -294,13 +294,15 @@ CREATE UNIQUE INDEX idx_alerte_ticket_one_active_ticket
 
 
 CREATE TABLE notifications (
-    id_notification     SERIAL PRIMARY KEY,
-    id_destinataire      INTEGER NOT NULL REFERENCES utilisateurs(id_utilisateur),
-    id_ticket            INTEGER NOT NULL REFERENCES tickets(id_ticket),
-    id_type_evenement    INTEGER NOT NULL REFERENCES types_evenement_notification(id_type_evenement),
-    date_creation         TIMESTAMPTZ NOT NULL DEFAULT now(),
-    est_lue               BOOLEAN NOT NULL DEFAULT FALSE,
-    date_lecture          TIMESTAMPTZ,
+    id_notification         SERIAL PRIMARY KEY,
+    id_destinataire         INTEGER NOT NULL REFERENCES utilisateurs(id_utilisateur),
+    id_ticket               INTEGER NOT NULL REFERENCES tickets(id_ticket),
+    type_evenement          VARCHAR(255) NOT NULL,
+    titre                   VARCHAR(255),
+    message                 VARCHAR(255),
+    date_creation           TIMESTAMPTZ NOT NULL DEFAULT now(),
+    est_lue                 BOOLEAN NOT NULL DEFAULT FALSE,
+    date_lecture            TIMESTAMPTZ,
     CONSTRAINT chk_date_lecture_coherente
         CHECK (
             (est_lue = FALSE AND date_lecture IS NULL)
