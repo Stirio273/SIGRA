@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using SIGRA.Data;
 using SIGRA.Data.Models;
 using SIGRA.Domain;
@@ -38,8 +39,19 @@ public class NotifyTicketReopenedHandler : IDomainEventHandler<TicketReopenedEve
 
     public async Task HandleAsync(TicketReopenedEvent domainEvent)
     {
-        var ticket = await _db.Tickets.FindAsync(domainEvent.TicketId);
-        // await _notificationService.NotifyTicketReopenedAsync(ticket!, domainEvent.ReopenedByUserId);
+        // var ticket = await _db.Tickets.FindAsync(domainEvent.TicketId);
+        var admin = await _db.Utilisateurs.AsNoTracking().Where(u => u.IdRoleNavigation.Libelle == "Administrateur").Select(u => u.IdUtilisateur).FirstOrDefaultAsync();
+        await _notificationService.SendAsync(admin, domainEvent.TicketId, "Réouverture de ticket", $"", "TicketReopenedEvent");
+    }
+}
+
+public class NotifyTicketReassignedHandler : IDomainEventHandler<TicketReassignedEvent>
+{
+    private readonly INotificationService _notificationService;
+
+    public async Task HandleAsync(TicketReassignedEvent domainEvent)
+    {
+        await _notificationService.SendAsync(domainEvent.IdTechnicienAssigne, domainEvent.IdTicket, "Ticket Réassigné", $"Le ticket {domainEvent.NumeroTicket} vous a été réassigné", "TicketReassignedEvent");
     }
 }
 

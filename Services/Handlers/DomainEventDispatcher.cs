@@ -8,6 +8,13 @@ public interface IDomainEventDispatcher
 public class DomainEventDispatcher : IDomainEventDispatcher
 {
     private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<DomainEventDispatcher> _logger;
+
+    public DomainEventDispatcher(IServiceProvider serviceProvider, ILogger<DomainEventDispatcher> logger)
+    {
+        _serviceProvider = serviceProvider;
+        _logger = logger;
+    }
 
     public async Task DispatchAsync(IReadOnlyList<object> events)
     {
@@ -18,8 +25,17 @@ public class DomainEventDispatcher : IDomainEventDispatcher
 
             foreach (var handler in handlers)
             {
-                var method = handlerType.GetMethod("HandleAsync")!;
-                await (Task)method.Invoke(handler, new[] { domainEvent })!;
+                try
+                {
+                    var method = handlerType.GetMethod("HandleAsync")!;
+                    await (Task)method.Invoke(handler, new[] { domainEvent })!;
+                }
+                catch (System.Exception ex)
+                {
+                    _logger.LogError(ex,
+                        "Erreur dans le handler {HandlerType} pour l'événement {EventType}",
+                        handler.GetType().Name, domainEvent.GetType().Name);
+                }
             }
         }
     }

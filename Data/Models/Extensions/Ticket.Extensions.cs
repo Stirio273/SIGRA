@@ -22,7 +22,7 @@ public partial class Ticket
     public Result PasserStatutSuivant(TicketStatus target)
     {
         var verification = EnsureValidTransition(target);
-        if (verification != Result.Success())
+        if (verification.IsSuccess != true)
         {
             return verification;
         }
@@ -46,12 +46,26 @@ public partial class Ticket
         return Result.Success();
     }
 
-    public Result Ouvrir(DateTime deadlineResolution)
+    public Result Ouvrir()
     {
+        IdStatut = (int)TicketStatus.Opened;
+        DateChangementStatut = DateTime.UtcNow;
+        return Result.Success();
+    }
+
+    public Result Reouvrir(DateTime deadlineResolution, int idAuteur, string raison)
+    {
+        var verification = EnsureValidTransition((TicketStatus)IdStatut);
+        if (verification.IsSuccess != true)
+        {
+            return Result.Failure("Seul les tickets clôturés peuvent être réouvert", ErrorType.Unprocessable);
+        }
+        var dateClotureOriginal = DateCloture;
         IdStatut = (int)TicketStatus.Opened;
         DateChangementStatut = DateTime.UtcNow;
         DateCloture = null;
         DeadlineResolution = deadlineResolution;
+        _domainEvents.Add(new TicketReopenedEvent(IdTicket, raison, idAuteur, (DateTime)dateClotureOriginal, 0));
         return Result.Success();
     }
 
@@ -77,6 +91,7 @@ public partial class Ticket
             return Result.Failure("Justification is required for reassignment.", ErrorType.Conflict);
 
         IdTechnicienAssigne = newAssigneeId;
+        _domainEvents.Add(new TicketReassignedEvent(IdTicket, NumeroTicket, (int)newAssigneeId));
         return Result.Success();
     }
 

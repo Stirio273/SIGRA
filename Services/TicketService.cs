@@ -13,6 +13,7 @@ using SIGRA.Data.Repositories;
 using SIGRA.Domain;
 using SIGRA.Services.Helper;
 using SIGRA.Domain.Exceptions;
+using SIGRA.Services.Handlers;
 
 namespace SIGRA.Services;
 
@@ -29,7 +30,8 @@ public class TicketService : ITicketService
     private readonly IConfiguration _config;
     private readonly ILogger<TicketService> _logger;
     private readonly IUserAuthenticationService _userAuthenticationService;
-    private readonly INotificationService _notificationService;
+    // private readonly INotificationService _notificationService;
+    private readonly IDomainEventDispatcher _eventDispatcher;
 
     public TicketService(
         AppDbContext context,
@@ -43,7 +45,8 @@ public class TicketService : ITicketService
         IConfiguration config,
         ILogger<TicketService> logger,
         IUserAuthenticationService userAuthenticationService,
-        INotificationService notificationService)
+        // INotificationService notificationService)
+        IDomainEventDispatcher eventDispatcher)
     {
         _context = context;
         _businessTimeCalculator = businessTimeCalculator;
@@ -56,7 +59,8 @@ public class TicketService : ITicketService
         _config = config;
         _logger = logger;
         _userAuthenticationService = userAuthenticationService;
-        _notificationService = notificationService;
+        // _notificationService = notificationService;
+        _eventDispatcher = eventDispatcher;
     }
 
     public async Task ReopenTicketAsync(ReopenTicketRequest request, int idAuteur)
@@ -98,12 +102,7 @@ public class TicketService : ITicketService
             .AddBusinessTimeAsync(DateTime.UtcNow, reopenDuration);
 
         // 3) Mettre à jour l'état du ticket
-        ticket.Ouvrir(newResolutionDeadline);
-        // ticket.DateCloture = null;                          // Plus fermé
-        // ticket.DeadlineResolution = newResolutionDeadline; // Nouvelle deadline
-        // ticket.WasResolutionSlaBreached = false;          // Reset pour la nouvelle phase
-        // ticket.ReopenCount += 1;
-        // ticket.LastReopenedAt = DateTime.UtcNow;
+        ticket.Reouvrir(newResolutionDeadline, idAuteur, request.Reason);
 
         await _context.SaveChangesAsync();
 
@@ -112,7 +111,8 @@ public class TicketService : ITicketService
             ticket.IdTicket, idAuteur, request.Reason, newResolutionDeadline);
 
         // 4) Notifier les parties concernées
-        await _notificationService.SendAsync(idAuteur, ticket.IdTicket, "", "", "Réouverture ticket");
+        await _eventDispatcher.DispatchAsync(ticket.DomainEvents);
+        ticket.ClearDomainEvents();
     }
 
     public async Task<Ticket> GetFicheTicket(int idTicket)
@@ -583,13 +583,13 @@ public class TicketService : ITicketService
                 .SetProperty(b => b.IdTechnicienAssigne, technicienId)
                 .SetProperty(b => b.IdStatut, (int)TicketStatus.Opened));
 
-        await _notificationService.SendAsync(
-            userId: technicienId ?? 0,
-            idTicket: 0,
-            title: "Ticket assigné",
-            message: $"Des ticket vous ont été assigné.",
-            eventType: "Assignation ticket"
-            );
+        // await _notificationService.SendAsync(
+        //     userId: technicienId ?? 0,
+        //     idTicket: 0,
+        //     title: "Ticket assigné",
+        //     message: $"Des ticket vous ont été assigné.",
+        //     eventType: "Assignation ticket"
+        //     );
 
         return Result.Success();
     }
@@ -642,7 +642,11 @@ public class TicketService : ITicketService
         await _context.Reassignations.AddRangeAsync(reassignations);
 
         await _context.SaveChangesAsync();
-        await _notificationService.SendAsync((int)technicienId, tickets[0].IdTicket, "Ticket Réassigné", $"Les tickets {String.Join(", ", tickets.Select(t => t.NumeroTicket))} vous ont été réassignés", null);
+        foreach (var ticket in tickets)
+        {
+            await _eventDispatcher.DispatchAsync(ticket.DomainEvents);
+            ticket.ClearDomainEvents();
+        }
         return Result.Success();
     }
 
