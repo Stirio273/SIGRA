@@ -35,9 +35,25 @@ public class ReportService : IReportService
     // Évolution du respect des SLA
     public async Task<SlaComplianceReportDto> GetSlaComplianceAsync(
         DateTime from,
+        DateTime to,
+        int? idClasseService = null)
+    {
+        var slaComplianceReport = await _reportRepository.GetSlaComplianceAsync(from, to, idClasseService);
+        return slaComplianceReport;
+    }
+
+    // Temps moyen de résolution
+    public async Task<MeanResolutionTimeDto> GetMeanResolutionTimeAsync(
+        DateTime from,
         DateTime to)
     {
-        var slaComplianceReport = await _reportRepository.GetSlaComplianceAsync(from, to);
-        return slaComplianceReport;
+        var meanResolutionTime = await _reportRepository.GetMeanResolutionTimeAsync(from, to);
+        return meanResolutionTime;
+    }
+
+    public async Task<LastTwoWeeksReportDto> GetLastTwoWeeksAsync()
+    {
+        var lastTwoWeeks = await _reportRepository.GetLastTwoWeeksAsync();
+        return lastTwoWeeks;
     }
 }

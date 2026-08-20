@@ -471,18 +471,18 @@ public class TicketService : ITicketService
 
         _context.HistoriqueStatuts.Add(historiqueStatut);
 
-        ticket.IdApplication = req.IdApplication;
-        ticket.IdCriticite = req.IdCriticite;
+        // ticket.IdApplication = req.IdApplication;
+        // ticket.IdCriticite = req.IdCriticite;
         var autorisee = ticket.PasserStatutSuivant((TicketStatus)req.IdStatut);
-        if (autorisee != Result.Success())
+        if (autorisee.IsSuccess != true)
         {
             return autorisee;
         }
-        ticket.IdTechnicienAssigne = req.IdTechnicienAssigne;
-        ticket.DemandeurEmail = req.DemandeurEmail;
-        ticket.DemandeurDirection = req.DemandeurDirection;
-        ticket.DateCloture = req.DateCloture;
-        ticket.DureeSla = req.DureeSla;
+        // ticket.IdTechnicienAssigne = req.IdTechnicienAssigne;
+        // ticket.DemandeurEmail = req.DemandeurEmail;
+        // ticket.DemandeurDirection = req.DemandeurDirection;
+        // ticket.DateCloture = req.DateCloture;
+        // ticket.DureeSla = req.DureeSla;
 
         await _context.SaveChangesAsync();
         return Result.Success();

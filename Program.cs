@@ -89,6 +89,7 @@ builder.Services.AddScoped<TicketAlertEvaluationService>();
 builder.Services.AddScoped<IDomainEventHandler<TicketReopenedEvent>, RecordReopenHistoryHandler>();
 builder.Services.AddScoped<IDomainEventHandler<TicketReopenedEvent>, NotifyTicketReopenedHandler>();
 builder.Services.AddScoped<IDomainEventHandler<TicketReopenedEvent>, AlertOnRepeatedReopenHandler>();
+builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 builder.Services.AddSingleton<ImapMailService>();
 builder.Services.AddSingleton<ImapSyncService>();
 builder.Services.AddSingleton<IImapIdentityProvider, GmailIdentityProvider>();

@@ -56,10 +56,10 @@ public record UpdateTicketRequest(
     int? IdCriticite,
     int IdStatut,
     int? IdTechnicienAssigne,
-    string DemandeurEmail,
-    string DemandeurDirection,
+    string? DemandeurEmail,
+    string? DemandeurDirection,
     DateTime? DateCloture,
-    decimal DureeSla);
+    decimal? DureeSla);
 
 public record CreateDenyRequest(
     int IdTicket,
@@ -174,6 +174,9 @@ public class ReportQueryParameters
 
     public Result Validate()
     {
+        From = From.ToUniversalTime();
+        To = To.ToUniversalTime();
+
         if (From > To)
             return Result.Failure(
                 "La date de début doit être antérieure à la date de fin.", ErrorType.BadRequest);

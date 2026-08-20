@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using SIGRA.Data.Enums;
 using SIGRA.Data.Models;
 
 namespace SIGRA.Data;
@@ -51,6 +52,8 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<Statut> Statuts { get; set; }
 
     public virtual DbSet<Ticket> Tickets { get; set; }
+
+    public IQueryable<Ticket> RealTickets => Tickets.Where(t => t.IdStatut != (int)TicketStatus.Rejected);
 
     public virtual DbSet<TicketSlaPause> TicketSlaPauses { get; set; }
 

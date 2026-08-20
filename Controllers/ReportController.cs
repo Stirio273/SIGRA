@@ -20,12 +20,13 @@ public class ReportController : ControllerBase
         [FromQuery] DateTime from,
         [FromQuery] DateTime to)
     {
-        var validation = new ReportQueryParameters { From = from, To = to }.Validate();
+        var reportQuery = new ReportQueryParameters { From = from, To = to };
+        var validation = reportQuery.Validate();
 
         if (!validation.IsSuccess)
             return validation.ToHttpResult();
 
-        var result = await _reportService.GetWeeklyRequestsAsync(from, to);
+        var result = await _reportService.GetWeeklyRequestsAsync(reportQuery.From, reportQuery.To);
 
         // if (!result.IsSuccess)
         //     return result.ToHttpResult();
@@ -39,12 +40,13 @@ public class ReportController : ControllerBase
         [FromQuery] DateTime from,
         [FromQuery] DateTime to)
     {
-        var validation = new ReportQueryParameters { From = from, To = to }.Validate();
+        var reportQuery = new ReportQueryParameters { From = from, To = to };
+        var validation = reportQuery.Validate();
 
         if (!validation.IsSuccess)
             return validation.ToHttpResult();
 
-        var result = await _reportService.GetRequestsByApplicationAsync(from, to);
+        var result = await _reportService.GetRequestsByApplicationAsync(reportQuery.From, reportQuery.To);
 
         // if (!result.IsSuccess)
         //     return result.ToHttpResult();
@@ -56,17 +58,44 @@ public class ReportController : ControllerBase
     [HttpGet("sla-compliance")]
     public async Task<IActionResult> GetSlaCompliance(
         [FromQuery] DateTime from,
-        [FromQuery] DateTime to)
+        [FromQuery] DateTime to,
+        [FromQuery] int? idClasseService = null)
     {
-        var validation = new ReportQueryParameters { From = from, To = to }.Validate();
+        var reportQuery = new ReportQueryParameters { From = from, To = to };
+        var validation = reportQuery.Validate();
 
         if (!validation.IsSuccess)
             return validation.ToHttpResult();
 
-        var result = await _reportService.GetSlaComplianceAsync(from, to);
+        var result = await _reportService.GetSlaComplianceAsync(reportQuery.From, reportQuery.To, idClasseService);
 
         // if (!result.IsSuccess)
         //     return result.ToHttpResult();
+
+        return Ok(result);
+    }
+
+    // Temps moyen de résolution
+    [HttpGet("mean-resolution-time")]
+    public async Task<IActionResult> GetMeanResolutionTime(
+        [FromQuery] DateTime from,
+        [FromQuery] DateTime to)
+    {
+        var reportQuery = new ReportQueryParameters { From = from, To = to };
+        var validation = reportQuery.Validate();
+
+        if (!validation.IsSuccess)
+            return validation.ToHttpResult();
+
+        var result = await _reportService.GetMeanResolutionTimeAsync(reportQuery.From, reportQuery.To);
+
+        return Ok(result);
+    }
+
+    [HttpGet("last-two-weeks")]
+    public async Task<IActionResult> GetLastTwoWeeks()
+    {
+        var result = await _reportService.GetLastTwoWeeksAsync();
 
         return Ok(result);
     }

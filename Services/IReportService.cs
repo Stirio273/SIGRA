@@ -12,5 +12,12 @@ public interface IReportService
 
     Task<SlaComplianceReportDto> GetSlaComplianceAsync(
         DateTime from,
+        DateTime to,
+        int? idClasseService = null);
+
+    Task<MeanResolutionTimeDto> GetMeanResolutionTimeAsync(
+        DateTime from,
         DateTime to);
+
+    Task<LastTwoWeeksReportDto> GetLastTwoWeeksAsync();
 }

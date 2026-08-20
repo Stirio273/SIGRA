@@ -1,4 +1,5 @@
 using SIGRA.Data.Models;
+using SIGRA.Services;
 
 namespace SIGRA.Data.Repositories;
 
@@ -14,5 +15,12 @@ public interface IReportRepository
 
     Task<SlaComplianceReportDto> GetSlaComplianceAsync(
         DateTime from,
+        DateTime to,
+        int? idClasseService = null);
+
+    Task<MeanResolutionTimeDto> GetMeanResolutionTimeAsync(
+        DateTime from,
         DateTime to);
+
+    Task<LastTwoWeeksReportDto> GetLastTwoWeeksAsync();
 }

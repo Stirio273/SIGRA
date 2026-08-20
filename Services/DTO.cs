@@ -16,6 +16,7 @@ public class WeeklyRequestsReportDto
     public DateTime To { get; set; }
     public List<WeeklyRequestsEntryDto> Entries { get; set; } = new();
     public int Total { get; set; }
+    public int TotalSlaReached { get; set; }
 }
 
 public class WeeklyRequestsEntryDto
@@ -31,6 +32,32 @@ public class WeeklyRequestsEntryDto
 
     // Nombre de tickets
     public int Count { get; set; }
+
+    // Nombre de tickets ayant respecté le SLA
+    public int SlaReachedCount { get; set; }
+}
+
+public class LastTwoWeeksReportDto
+{
+    public DateTime From { get; set; }
+    public DateTime To { get; set; }
+    public List<LastTwoWeeksEntryDto> Entries { get; set; } = new();
+    public double? SlaRateEvolution { get; set; }
+    public int? TicketCountEvolution { get; set; }
+}
+
+public class LastTwoWeeksEntryDto
+{
+    public int WeekNumber { get; set; }
+    public int Year { get; set; }
+    public DateTime WeekStart { get; set; }
+    public int Count { get; set; }
+    public double SlaRate { get; set; }
+}
+
+public class MeanResolutionTimeDto
+{
+    public double MeanTime { get; set; }
 }
 
 public class RequestsByApplicationReportDto
