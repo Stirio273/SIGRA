@@ -167,6 +167,13 @@ public class NotificationDto
     public DateTime CreatedAt { get; set; }
 }
 
+public class TicketExportRequest
+{
+    public DateTime? From { get; set; }
+    public DateTime? To { get; set; }
+    public string Format { get; set; } = "csv";
+}
+
 public class ReportQueryParameters
 {
     public DateTime From { get; set; }
@@ -189,5 +196,29 @@ public class ReportQueryParameters
         return Result.Success();
     }
 }
+
+public record TicketExportRow(
+    string NumeroTicket,
+    string Statut,
+    string? Priorite,
+    string? Application,
+    string? Criticite,
+    string Demandeur,
+    string Direction,
+    string? AssigneA,
+    DateTime DateCreation,
+    decimal SlaHeures,
+    DateTime? DeadlineResolution,
+    DateTime? DateCloture,
+    string? SujetEmailInitial,
+    string? CorpsEmailInitial
+);
+
+public class CreateCommentRequest
+{
+    public string Contenu { get; set; } = default!;
+}
+
+public record CommentaireResponse(int IdCommentaire, int IdTicket, int IdAuteur, string AuteurNom, string AuteurPrenom, string Contenu, DateTime DateCreation);
 
 

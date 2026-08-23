@@ -15,4 +15,5 @@ public interface ITicketRepository
     Task DeleteAsync(int id, CancellationToken ct = default);
     Task<int?> GetIdStatutByDefaultAsync(CancellationToken ct = default);
     Task<Ticket?> GetFicheTicket(int idTicket, CancellationToken ct = default);
+    Task<IReadOnlyList<TicketExportRow>> GetTicketsForExportAsync(DateTime? from, DateTime? to, CancellationToken ct = default);
 }

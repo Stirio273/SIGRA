@@ -420,26 +420,11 @@ public class TicketService : ITicketService
         if (ticket == null)
             return Result.Failure("Ticket not found", ErrorType.NotFound);
 
-        // if (ticket.IdStatut != req.IdStatut)
-        // {
-        //     var autorisee = await _statutRepository.IsTransitionAutoriseeAsync(ticket.IdStatut, req.IdStatut);
-        //     if (!autorisee)
-        //         return false;
-        // }
-
-        // Passage en "attente client" - démarre une pause
-        if (req.IdStatut == (int)TicketStatus.Pending)
-        {
-            _context.TicketSlaPauses.Add(new TicketSlaPause
-            {
-                IdTicket = ticket.IdTicket,
-                PausedAt = DateTime.UtcNow
-            });
-        }
+        var targetStatus = (TicketStatus)req.IdStatut;
 
         // Sortie de "attente client" - termine la pause active
         if (ticket.IdStatut == (int)TicketStatus.Pending
-            && req.IdStatut != (int)TicketStatus.Pending)
+            && targetStatus != TicketStatus.Pending)
         {
             var activePause = await _context.TicketSlaPauses
                 .Where(p => p.IdTicket == ticket.IdTicket && p.ResumedAt == null)
@@ -454,10 +439,24 @@ public class TicketService : ITicketService
 
                 ticket.DeadlineResolution = await _businessTimeCalculator
                     .AddBusinessTimeAsync((DateTime)ticket.DeadlineResolution, (TimeSpan)pauseDuration);
-
-                // ticket.ResolutionDeadline = await _businessTimeCalculator
-                //     .AddBusinessTimeAsync(ticket.ResolutionDeadline, pauseDuration);
             }
+        }
+
+        // Passage en "attente client" - démarre une pause
+        if (targetStatus == TicketStatus.Pending)
+        {
+            _context.TicketSlaPauses.Add(new TicketSlaPause
+            {
+                IdTicket = ticket.IdTicket,
+                PausedAt = DateTime.UtcNow
+            });
+        }
+
+        if (!TicketStatusTransitions.IsValidTransition((TicketStatus)ticket.IdStatut, targetStatus))
+        {
+            return Result.Failure(
+                $"Transition invalide : impossible de passer de '{ticket.IdStatut}' à '{targetStatus}'.", 
+                ErrorType.Conflict);
         }
 
         var historiqueStatut = new HistoriqueStatut
@@ -471,18 +470,18 @@ public class TicketService : ITicketService
 
         _context.HistoriqueStatuts.Add(historiqueStatut);
 
-        // ticket.IdApplication = req.IdApplication;
-        // ticket.IdCriticite = req.IdCriticite;
-        var autorisee = ticket.PasserStatutSuivant((TicketStatus)req.IdStatut);
-        if (autorisee.IsSuccess != true)
+        var result = targetStatus switch
         {
-            return autorisee;
+            TicketStatus.Closed => ticket.Cloturer(),
+            TicketStatus.Opened => ticket.Ouvrir(),
+            TicketStatus.PendingReject => ticket.AttendreRejet(),
+            _ => ticket.PasserStatutSuivant(targetStatus)
+        };
+
+        if (result.IsSuccess != true)
+        {
+            return result;
         }
-        // ticket.IdTechnicienAssigne = req.IdTechnicienAssigne;
-        // ticket.DemandeurEmail = req.DemandeurEmail;
-        // ticket.DemandeurDirection = req.DemandeurDirection;
-        // ticket.DateCloture = req.DateCloture;
-        // ticket.DureeSla = req.DureeSla;
 
         await _context.SaveChangesAsync();
         return Result.Success();

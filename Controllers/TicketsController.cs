@@ -5,7 +5,9 @@ using SIGRA.Domain;
 using SIGRA.Domain.Exceptions;
 using SIGRA.Services;
 using System;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SIGRA.Controllers;
 
@@ -15,11 +17,15 @@ public class TicketsController : ControllerBase
 {
     private readonly ITicketService _ticketService;
     private readonly IUserAuthenticationService _userAuthenticationService;
+    private readonly ITicketExportService _ticketExportService;
+    private readonly ICommentaireService _commentaireService;
 
-    public TicketsController(ITicketService ticketService, IUserAuthenticationService userAuthenticationService)
+    public TicketsController(ITicketService ticketService, IUserAuthenticationService userAuthenticationService, ITicketExportService ticketExportService, ICommentaireService commentaireService)
     {
         _ticketService = ticketService;
         _userAuthenticationService = userAuthenticationService;
+        _ticketExportService = ticketExportService;
+        _commentaireService = commentaireService;
     }
 
     [HttpPost("{id}/reopen")]
@@ -159,6 +165,41 @@ public class TicketsController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("export")]
+    public async Task<IActionResult> ExportTickets([FromBody] TicketExportRequest req)
+    {
+        if (req.From.HasValue && req.To.HasValue)
+        {
+            if (req.From.Value > req.To.Value)
+                return BadRequest(new { message = "La date de début doit être antérieure à la date de fin." });
+
+            if ((req.To.Value - req.From.Value).TotalDays > 365)
+                return BadRequest(new { message = "La période ne peut pas dépasser 365 jours." });
+        }
+
+        var format = req.Format?.Trim().ToLowerInvariant() ?? "csv";
+
+        byte[] fileBytes;
+        try
+        {
+            fileBytes = await _ticketExportService.ExportTicketsAsync(req.From, req.To, format);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+
+        var fileName = format is "excel" or "xlsx"
+            ? $"tickets_{req.From:yyyyMMdd}_{req.To:yyyyMMdd}.xlsx"
+            : $"tickets_{req.From:yyyyMMdd}_{req.To:yyyyMMdd}.csv";
+
+        var contentType = format is "excel" or "xlsx"
+            ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            : "text/csv";
+
+        return File(fileBytes, contentType, fileName);
+    }
+
     [HttpGet("technician/{technicianUserGuid:guid}")]
     public async Task<IActionResult> GetByTechnician(Guid technicianUserGuid)
     {
@@ -214,6 +255,28 @@ public class TicketsController : ControllerBase
         return Ok(statuts.Select(s => new StatutSuivantPossibleResponse(s.IdStatut, s.Libelle)));
     }
 
+    [HttpGet("{id:int}/comments")]
+    public async Task<IActionResult> GetComments(int id)
+    {
+        var comments = await _commentaireService.GetByTicketIdAsync(id);
+        return Ok(comments.Select(ToCommentaireResponse));
+    }
+
+    [HttpPost("{id:int}/comments")]
+    public async Task<IActionResult> AddComment(int id, [FromBody] CreateCommentRequest req)
+    {
+        var username = User.Identity?.Name;
+        if (string.IsNullOrEmpty(username))
+            return Unauthorized();
+
+        var currentUser = await _userAuthenticationService.GetAuthorizedUserAsync(username);
+        if (currentUser == null)
+            return Unauthorized();
+
+        var commentaire = await _commentaireService.AddAsync(id, currentUser.IdUtilisateur, req.Contenu);
+        return CreatedAtAction(nameof(GetComments), new { id = id }, ToCommentaireResponse(commentaire));
+    }
+
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -247,5 +310,14 @@ public class TicketsController : ControllerBase
            item.CorpsEmail,
            item.DateReception,
            item.PiecesJointes
-    )).ToList() : null);
+     )).ToList() : null);
+
+    private static CommentaireResponse ToCommentaireResponse(Commentaire c) => new(
+        c.IdCommentaire,
+        c.IdTicket,
+        c.IdAuteur,
+        c.IdAuteurNavigation.Nom,
+        c.IdAuteurNavigation.Prenom,
+        c.Contenu,
+        c.DateCreation.ToLocalTime());
 }

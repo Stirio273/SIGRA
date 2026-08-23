@@ -199,4 +199,70 @@ public sealed class TicketRepository : ITicketRepository
             .Select(s => (int?)s.IdStatut)
             .FirstOrDefaultAsync(ct);
     }
+
+    public async Task<IReadOnlyList<TicketExportRow>> GetTicketsForExportAsync(DateTime? from, DateTime? to, CancellationToken ct = default)
+    {
+        var baseQuery = _context.RealTickets.AsNoTracking();
+
+        if (from.HasValue)
+            baseQuery = baseQuery.Where(t => t.DateCreation >= from.Value);
+
+        if (to.HasValue)
+            baseQuery = baseQuery.Where(t => t.DateCreation <= to.Value);
+
+        var tickets = await baseQuery
+            .Select(t => new
+            {
+                t.NumeroTicket,
+                Statut = t.IdStatutNavigation.Libelle,
+                Priorite = t.IdCriticiteNavigation != null ? t.IdCriticiteNavigation.Libelle : null,
+                Application = t.IdApplicationNavigation != null ? t.IdApplicationNavigation.Libelle : null,
+                Criticite = t.IdCriticiteNavigation != null ? t.IdCriticiteNavigation.Libelle : null,
+                t.DemandeurEmail,
+                t.DemandeurDirection,
+                AssigneA = t.IdTechnicienAssigneNavigation != null
+                    ? t.IdTechnicienAssigneNavigation.Nom + " " + t.IdTechnicienAssigneNavigation.Prenom
+                    : null,
+                t.DateCreation,
+                t.DureeSla,
+                t.DeadlineResolution,
+                t.DateCloture,
+                IdTicket = t.IdTicket
+            })
+            .OrderBy(t => t.DateCreation)
+            .ToListAsync(ct);
+
+        var ticketIds = tickets.Select(t => t.IdTicket).ToList();
+
+        var initialEmails = await _context.EmailsSources
+            .AsNoTracking()
+            .Where(e => ticketIds.Contains(e.IdTicket) && e.EstEmailInitial)
+            .GroupBy(e => e.IdTicket)
+            .Select(g => new
+            {
+                IdTicket = g.Key,
+                Sujet = g.Select(e => e.Objet).FirstOrDefault(),
+                Corps = g.Select(e => e.CorpsEmail).FirstOrDefault()
+            })
+            .ToDictionaryAsync(g => g.IdTicket, g => (g.Sujet, g.Corps), ct);
+
+        var rows = tickets.Select(t => new TicketExportRow(
+            NumeroTicket: t.NumeroTicket,
+            Statut: t.Statut,
+            Priorite: t.Priorite,
+            Application: t.Application,
+            Criticite: t.Criticite,
+            Demandeur: t.DemandeurEmail,
+            Direction: t.DemandeurDirection,
+            AssigneA: t.AssigneA,
+            DateCreation: t.DateCreation,
+            SlaHeures: t.DureeSla,
+            DeadlineResolution: t.DeadlineResolution,
+            DateCloture: t.DateCloture,
+            SujetEmailInitial: initialEmails.TryGetValue(t.IdTicket, out var email) ? email.Sujet : null,
+            CorpsEmailInitial: initialEmails.TryGetValue(t.IdTicket, out email) ? email.Corps : null
+        )).ToList();
+
+        return rows;
+    }
 }
