@@ -22,7 +22,7 @@ public sealed class ReportRepository : IReportRepository
     {
         var tickets = await _context.RealTickets
             .AsNoTracking()
-            .Where(x => x.DateCreation >= from && x.DateCreation <= to)
+            .Where(x => x.DateCreation >= from.ToUniversalTime() && x.DateCreation <= to.ToUniversalTime())
             .Select(x => new
             {
                 x.DateCreation,
@@ -68,11 +68,11 @@ public sealed class ReportRepository : IReportRepository
     {
         var total = await _context.RealTickets
             .AsNoTracking()
-            .CountAsync(x => x.DateCreation >= from && x.DateCreation <= to);
+            .CountAsync(x => x.DateCreation >= from.ToUniversalTime() && x.DateCreation <= to.ToUniversalTime());
 
         var entries = await _context.Tickets
             .AsNoTracking()
-            .Where(x => x.DateCreation >= from && x.DateCreation <= to && x.IdApplication != null)
+            .Where(x => x.DateCreation >= from.ToUniversalTime() && x.DateCreation <= to.ToUniversalTime() && x.IdApplication != null)
             .GroupBy(x => new
             {
                 x.IdApplicationNavigation.IdApplication,
@@ -108,7 +108,7 @@ public sealed class ReportRepository : IReportRepository
     {
         var query = _context.RealTickets
             .AsNoTracking()
-            .Where(x => x.DateCreation >= from && x.DateCreation <= to);
+            .Where(x => x.DateCreation >= from.ToUniversalTime() && x.DateCreation <= to.ToUniversalTime());
 
         if (idClasseService.HasValue)
             query = query.Where(x => x.IdApplicationNavigation.IdCs == idClasseService.Value);
@@ -165,7 +165,7 @@ public sealed class ReportRepository : IReportRepository
     {
         var closedTickets = await _context.RealTickets
             .AsNoTracking()
-            .Where(x => x.DateCreation >= from && x.DateCreation <= to && x.DateCloture != null)
+            .Where(x => x.DateCreation >= from.ToUniversalTime() && x.DateCreation <= to.ToUniversalTime() && x.DateCloture != null)
             .Select(x => new
             {
                 Duration = x.DateCloture.Value - x.DateCreation

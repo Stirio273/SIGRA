@@ -57,7 +57,7 @@ public class ReportBackgroundService : BackgroundService
         // Protection anti-doublon — même avec plusieurs instances
         var rapport = new Rapport
         {
-            DateDebutSemaine = weekStart,
+            DateDebutSemaine = weekStart.ToUniversalTime(),
             TypeRapport = "Hebdomadaire",
             DateEnvoie = DateTime.UtcNow
         };
@@ -114,7 +114,7 @@ public class ReportBackgroundService : BackgroundService
 
     private static DateTime GetCurrentOrLastMonday()
     {
-        var now = DateTime.UtcNow;
+        var now = DateTime.Now;
         var diff = (7 + (now.DayOfWeek - DayOfWeek.Monday)) % 7;
         return now.Date.AddDays(-diff);
     }

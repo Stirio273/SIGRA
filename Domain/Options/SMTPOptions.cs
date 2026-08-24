@@ -9,4 +9,5 @@ public class SMTPOptions
     public bool EnableSsl { get; set; } = true;
     public string FromAddress { get; set; } = default!;
     public string[] Recipients { get; set; } = Array.Empty<string>();
+    public bool UseOAuth2 { get; set; }
 }
