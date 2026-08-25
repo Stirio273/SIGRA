@@ -84,6 +84,8 @@ builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IWeeklyReportBuilder, WeeklyReportBuilder>();
 builder.Services.AddScoped<ChartGenerator>();
 builder.Services.AddScoped<IPdfReportGenerator, PdfReportGenerator>();
+builder.Services.AddSingleton<IWeeklyReportHtmlBuilder, WeeklyReportHtmlBuilder>();
+builder.Services.AddSingleton<IPdfReportGenerator, PlaywrightPdfGenerationService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ITicketAlertRule, WaitingTooLongRule>();
 builder.Services.AddScoped<ITicketAlertRule, EscalatedTooLongRule>();
@@ -149,7 +151,7 @@ app.UseHangfireDashboard();
 using (var scope = app.Services.CreateScope())
 {
     var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
-    
+
     // Add or update your recurring job safely here
     recurringJobManager.AddOrUpdate<TicketAlertEvaluationService>(
         "ticket-alerts-evaluation",

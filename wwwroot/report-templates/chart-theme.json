@@ -1,0 +1,10 @@
+{
+  "colors": {
+    "primary": "#2c5282",
+    "danger": "#c53030",
+    "success": "#2f855a",
+    "warning": "#dd6b20",
+    "neutral": "#718096"
+  },
+  "fontFamily": "'Segoe UI', Arial, sans-serif"
+}

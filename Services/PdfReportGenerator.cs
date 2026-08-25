@@ -258,4 +258,9 @@ public class PdfReportGenerator : IPdfReportGenerator
             .BorderColor(Colors.Grey.Lighten2)
             .Padding(6);
     }
+
+    public Task<byte[]> GenerateFromHtmlAsync(string html)
+    {
+        throw new NotImplementedException();
+    }
 }

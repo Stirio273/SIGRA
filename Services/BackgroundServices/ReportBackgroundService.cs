@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SIGRA.Data;
 using SIGRA.Data.Models;
+using SIGRA.Views;
 
 namespace SIGRA.Services;
 
@@ -8,13 +9,15 @@ public class ReportBackgroundService : BackgroundService
 {
     private readonly ILogger<ReportBackgroundService> _logger;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly WeeklyReportViewModelMapper _mapper;
 
     public ReportBackgroundService(
         ILogger<ReportBackgroundService> logger,
-        IServiceScopeFactory scopeFactory)
+        IServiceScopeFactory scopeFactory, WeeklyReportViewModelMapper mapper)
     {
         _logger = logger;
         _scopeFactory = scopeFactory;
+        _mapper = mapper;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -49,6 +52,7 @@ public class ReportBackgroundService : BackgroundService
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var reportBuilder = scope.ServiceProvider.GetRequiredService<IWeeklyReportBuilder>();
         var pdfGenerator = scope.ServiceProvider.GetRequiredService<IPdfReportGenerator>();
+        var htmlBuilder = scope.ServiceProvider.GetRequiredService<IWeeklyReportHtmlBuilder>();
         var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
 
         var weekStart = GetCurrentOrLastMonday();
@@ -82,6 +86,8 @@ public class ReportBackgroundService : BackgroundService
             _logger.LogInformation("Génération du rapport hebdomadaire...");
 
             var report = await reportBuilder.BuildAsync(weekStart, weekEnd);
+            var viewModel = _mapper.ToViewModel(report);
+            var html = await htmlBuilder.BuildAsync(viewModel);
             var pdfContent = pdfGenerator.GenerateWeeklyReport(report);
 
             await emailService.SendWeeklyReportAsync(pdfContent, report);
