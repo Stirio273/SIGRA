@@ -88,7 +88,7 @@ public class ReportBackgroundService : BackgroundService
             var report = await reportBuilder.BuildAsync(weekStart, weekEnd);
             var viewModel = _mapper.ToViewModel(report);
             var html = await htmlBuilder.BuildAsync(viewModel);
-            var pdfContent = pdfGenerator.GenerateWeeklyReport(report);
+            var pdfContent = await pdfGenerator.GenerateFromHtmlAsync(html);
 
             await emailService.SendWeeklyReportAsync(pdfContent, report);
 

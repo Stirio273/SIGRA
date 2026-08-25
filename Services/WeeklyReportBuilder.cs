@@ -19,6 +19,8 @@ public class WeeklyReportBuilder : IWeeklyReportBuilder
         var weeklyRequests = await _reportService.GetWeeklyRequestsAsync(weekStart, weekEnd);
         var byApplication = await _reportService.GetRequestsByApplicationAsync(weekStart, weekEnd);
         var slaCompliance = await _reportService.GetSlaComplianceAsync(weekStart, weekEnd);
+        var meanResolutionTime = await _reportService.GetMeanResolutionTimeAsync(weekStart, weekEnd);
+        var lastTwoWeeks = await _reportService.GetLastTwoWeeksAsync();
 
         return new WeeklyReportDto
         {
@@ -26,7 +28,9 @@ public class WeeklyReportBuilder : IWeeklyReportBuilder
             WeekEnd = weekEnd,
             WeeklyRequests = weeklyRequests,
             RequestsByApplication = byApplication,
-            SlaCompliance = slaCompliance
+            SlaCompliance = slaCompliance,
+            MeanResolutionTime = meanResolutionTime,
+            LastTwoWeeks = lastTwoWeeks
         };
     }
 }

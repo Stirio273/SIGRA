@@ -189,14 +189,15 @@ public sealed class ReportRepository : IReportRepository
         var currentWeek = ISOWeek.GetWeekOfYear(now);
         var currentWeekStart = ISOWeek.ToDateTime(currentYear, currentWeek, DayOfWeek.Monday);
 
-        var from = currentWeekStart.AddDays(-14).ToUniversalTime();
-        var to = currentWeekStart.AddDays(-1).ToUniversalTime();
+        var previousWeekStart = currentWeekStart.AddDays(-7);
+        var twoWeeksAgoStart = currentWeekStart.AddDays(-14);
 
-        var query = _context.RealTickets
+        var from = twoWeeksAgoStart.ToUniversalTime();
+        var to = previousWeekStart.AddDays(6).ToUniversalTime();
+
+        var tickets = await _context.RealTickets
             .AsNoTracking()
-            .Where(x => x.DateCreation >= from && x.DateCreation <= to);
-
-        var tickets = await query
+            .Where(x => x.DateCreation >= from && x.DateCreation <= to)
             .Select(x => new
             {
                 Week = ISOWeek.GetWeekOfYear(x.DateCreation),
@@ -206,32 +207,57 @@ public sealed class ReportRepository : IReportRepository
             })
             .ToListAsync();
 
-        var entries = tickets
+        var grouped = tickets
             .GroupBy(x => new { x.Week, x.Year })
-            .Select(g => new LastTwoWeeksEntryDto
+            .ToDictionary(g => (g.Key.Week, g.Key.Year), g => new
             {
-                WeekNumber = g.Key.Week,
-                Year = g.Key.Year,
-                WeekStart = ISOWeek.ToDateTime(g.Key.Year, g.Key.Week, DayOfWeek.Monday),
                 Count = g.Count(),
-                SlaRate = g.Count() == 0
-                    ? 0
-                    : Math.Round((double)g.Count(x => x.DateCloture != null && x.DateCloture <= x.DeadlineResolution) / g.Count() * 100, 2)
-            })
-            .OrderBy(x => x.WeekStart)
-            .ToList();
+                SlaReached = g.Count(x => x.DateCloture != null && x.DateCloture <= x.DeadlineResolution)
+            });
 
-        double? slaRateEvolution = null;
-        int? ticketCountEvolution = null;
+        static int WeekNumber(DateTime dt) => ISOWeek.GetWeekOfYear(dt);
+        static int WeekYear(DateTime dt) => ISOWeek.GetYear(dt);
 
-        if (entries.Count >= 2)
+        var weekA = (WeekNumber(twoWeeksAgoStart), WeekYear(twoWeeksAgoStart));
+        var weekB = (WeekNumber(previousWeekStart), WeekYear(previousWeekStart));
+
+        var entries = new List<LastTwoWeeksEntryDto>();
+
+        foreach (var week in new[] { weekA, weekB })
         {
-            var lastWeek = entries[entries.Count - 1];
-            var previousWeekEntry = entries[entries.Count - 2];
+            var weekStart = ISOWeek.ToDateTime(week.Item2, week.Item1, DayOfWeek.Monday);
 
-            slaRateEvolution = Math.Round(lastWeek.SlaRate - previousWeekEntry.SlaRate, 2);
-            ticketCountEvolution = lastWeek.Count - previousWeekEntry.Count;
+            if (grouped.TryGetValue(week, out var data))
+            {
+                entries.Add(new LastTwoWeeksEntryDto
+                {
+                    WeekNumber = week.Item1,
+                    Year = week.Item2,
+                    WeekStart = weekStart,
+                    Count = data.Count,
+                    SlaRate = data.Count == 0
+                        ? 0
+                        : Math.Round((double)data.SlaReached / data.Count * 100, 2)
+                });
+            }
+            else
+            {
+                entries.Add(new LastTwoWeeksEntryDto
+                {
+                    WeekNumber = week.Item1,
+                    Year = week.Item2,
+                    WeekStart = weekStart,
+                    Count = 0,
+                    SlaRate = 0
+                });
+            }
         }
+
+        var lastWeekEntry = entries[^1];
+        var previousWeekEntry = entries[^2];
+
+        var slaRateEvolution = Math.Round(lastWeekEntry.SlaRate - previousWeekEntry.SlaRate, 2);
+        var ticketCountEvolution = lastWeekEntry.Count - previousWeekEntry.Count;
 
         return new LastTwoWeeksReportDto
         {

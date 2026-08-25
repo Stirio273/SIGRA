@@ -115,5 +115,7 @@ public class WeeklyReportDto
     public WeeklyRequestsReportDto WeeklyRequests { get; set; } = default!;
     public RequestsByApplicationReportDto RequestsByApplication { get; set; } = default!;
     public SlaComplianceReportDto SlaCompliance { get; set; } = default!;
+    public MeanResolutionTimeDto MeanResolutionTime { get; set; } = default!;
+    public LastTwoWeeksReportDto LastTwoWeeks { get; set; } = default!;
 }
 

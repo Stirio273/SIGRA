@@ -13,6 +13,7 @@ using SIGRA.Middleware;
 using SIGRA.Services;
 using SIGRA.Services.Handlers;
 using SIGRA.Services.Providers;
+using SIGRA.Views;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -82,10 +83,8 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IWeeklyReportBuilder, WeeklyReportBuilder>();
-builder.Services.AddScoped<ChartGenerator>();
-builder.Services.AddScoped<IPdfReportGenerator, PdfReportGenerator>();
-builder.Services.AddSingleton<IWeeklyReportHtmlBuilder, WeeklyReportHtmlBuilder>();
-builder.Services.AddSingleton<IPdfReportGenerator, PlaywrightPdfGenerationService>();
+// builder.Services.AddScoped<ChartGenerator>();
+// builder.Services.AddScoped<IPdfReportGenerator, PdfReportGenerator>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ITicketAlertRule, WaitingTooLongRule>();
 builder.Services.AddScoped<ITicketAlertRule, EscalatedTooLongRule>();
@@ -95,6 +94,9 @@ builder.Services.AddScoped<IDomainEventHandler<TicketReopenedEvent>, RecordReope
 builder.Services.AddScoped<IDomainEventHandler<TicketReopenedEvent>, NotifyTicketReopenedHandler>();
 builder.Services.AddScoped<IDomainEventHandler<TicketReopenedEvent>, AlertOnRepeatedReopenHandler>();
 builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+builder.Services.AddSingleton<WeeklyReportViewModelMapper>();
+builder.Services.AddSingleton<IWeeklyReportHtmlBuilder, WeeklyReportHtmlBuilder>();
+builder.Services.AddSingleton<IPdfReportGenerator, PlaywrightPdfGenerationService>();
 builder.Services.AddSingleton<ImapMailService>();
 builder.Services.AddSingleton<ImapSyncService>();
 builder.Services.AddSingleton<IImapIdentityProvider, GmailIdentityProvider>();
@@ -170,6 +172,8 @@ app.MapHub<NotificationHub>("/hubs/notifications");
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseCors("sigra-client");
+
+app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 

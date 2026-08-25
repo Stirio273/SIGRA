@@ -61,6 +61,37 @@
         color: #4a5568;
         margin-bottom: 15px;
         }
+
+        .summary-section {
+        margin-bottom: 40px;
+        }
+
+        .summary-grid {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        }
+
+        .summary-box {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 15px 20px;
+        flex: 1;
+        min-width: 200px;
+        text-align: center;
+        }
+
+        .summary-box .value {
+        font-size: 20px;
+        font-weight: bold;
+        color: #2c5282;
+        }
+
+        .summary-box .label {
+        font-size: 13px;
+        color: #718096;
+        margin-top: 5px;
+        }
     </style>
 </head>
 
@@ -80,15 +111,69 @@
             <div class="value">@Model.SlaRespectedPercent%</div>
             <div class="label">SLA respecté</div>
         </div>
+        @if (Model.MeanResolutionTimeHours.HasValue)
+        {
+            <div class="stat-box">
+                <div class="value">@Model.MeanResolutionTimeHours.Value.ToString("0.0")h</div>
+                <div class="label">Temps moyen de résolution</div>
+            </div>
+        }
     </div>
 
+    <div class="summary-section">
+        <h2>Répartition par application</h2>
+        <div class="summary-grid">
+            <div class="summary-box">
+                <div class="value">@Model.ApplicationCount</div>
+                <div class="label">Applications concernées</div>
+            </div>
+            <div class="summary-box">
+                <div class="value">@Model.TopApplication</div>
+                <div class="label">Application la plus sollicitée (@Model.TopApplicationCount tickets)</div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.LastWeekSlaRate.HasValue && Model.PreviousWeekSlaRate.HasValue)
+    {
+        <div class="summary-section">
+            <h2>Évolution sur les deux dernières semaines</h2>
+            <div class="summary-grid">
+                <div class="summary-box">
+                    <div class="value">@Model.LastWeekTicketCount</div>
+                    <div class="label">Tickets semaine dernière</div>
+                </div>
+                <div class="summary-box">
+                    <div class="value">@Model.LastWeekSlaRate.Value.ToString("0.0")%</div>
+                    <div class="label">SLA semaine dernière</div>
+                </div>
+                <div class="summary-box">
+                    <div class="value">@Model.PreviousWeekSlaRate.Value.ToString("0.0")%</div>
+                    <div class="label">SLA semaine précédente</div>
+                </div>
+                <div class="summary-box">
+                    <div class="value" style="color: @(Model.SlaRateEvolution >= 0 ? "#2f855a" : "#c53030")">
+                        @(Model.SlaRateEvolution >= 0 ? "+" : "")@Model.SlaRateEvolution.GetValueOrDefault().ToString("0.0")%
+                    </div>
+                    <div class="label">Évolution SLA</div>
+                </div>
+                <div class="summary-box">
+                    <div class="value" style="color: @(Model.TicketCountEvolution >= 0 ? "#2f855a" : "#c53030")">
+                        @(Model.TicketCountEvolution >= 0 ? "+" : "")@Model.TicketCountEvolution
+                    </div>
+                    <div class="label">Évolution nombre de tickets</div>
+                </div>
+            </div>
+        </div>
+    }
+
     <div class="chart-section">
-        <h2>Répartition par priorité</h2>
+        <h2>Répartition par application</h2>
         <div class="chart-container"><canvas id="priorityChart"></canvas></div>
     </div>
 
     <div class="chart-section">
-        <h2>Volume quotidien de tickets créés</h2>
+        <h2>Volume hebdomadaire de tickets créés</h2>
         <div class="chart-container"><canvas id="volumeChart"></canvas></div>
     </div>
 
@@ -98,8 +183,7 @@
     </div>
 
     <script>
-        // ✅ Injecté par RazorLight, JSON garanti valide (pas d'échappement HTML cassé)
-        const chartData = @Html.Raw(Model.ChartDataJson);
+        const chartData = __CHART_DATA_JSON__;
 
         Chart.defaults.font.family = "'Segoe UI', Arial, sans-serif";
 
@@ -142,7 +226,6 @@
         options: { responsive: true, maintainAspectRatio: false }
         });
 
-        // ✅ Signal explicite pour Playwright
         window.chartsReady = true;
     </script>
 </body>
