@@ -221,4 +221,6 @@ public class CreateCommentRequest
 
 public record CommentaireResponse(int IdCommentaire, int IdTicket, int IdAuteur, string AuteurNom, string AuteurPrenom, string Contenu, DateTime DateCreation);
 
+public record AskAIRequest(string Message);
+
 

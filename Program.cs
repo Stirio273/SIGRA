@@ -94,6 +94,7 @@ builder.Services.AddScoped<IDomainEventHandler<TicketReopenedEvent>, RecordReope
 builder.Services.AddScoped<IDomainEventHandler<TicketReopenedEvent>, NotifyTicketReopenedHandler>();
 builder.Services.AddScoped<IDomainEventHandler<TicketReopenedEvent>, AlertOnRepeatedReopenHandler>();
 builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+builder.Services.AddScoped<IAISupportAssistant, PlaceholderAISupportAssistant>();
 builder.Services.AddSingleton<WeeklyReportViewModelMapper>();
 builder.Services.AddSingleton<IWeeklyReportHtmlBuilder, WeeklyReportHtmlBuilder>();
 builder.Services.AddSingleton<IPdfReportGenerator, PlaywrightPdfGenerationService>();
