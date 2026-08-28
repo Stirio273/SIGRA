@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using SIGRA.Services;
-using SIGRA.Domain;
+using SIGRA.Domain.AIsupport;
 
 namespace SIGRA.Controllers;
 
@@ -18,11 +18,18 @@ public class AISupportController : ControllerBase
     [HttpPost("{id}/ask")]
     public async Task<IActionResult> Ask(int id, AskAIRequest request)
     {
-        var aiRequest = new AISupportRequest
+        try
         {
-            TechnicianQuestion = request.Message
-        };
-        var response = _aiAssistantService.SuggestResponseAsync(id, aiRequest);
-        return Ok(response);
+            var aiRequest = new AISupportRequest
+            {
+                TechnicianQuestion = request.Message
+            };
+            var response = _aiAssistantService.SuggestResponseAsync(id, aiRequest);
+            return Ok(response);
+        }
+        catch (System.Exception e)
+        {
+            return NotFound(e.Message);
+        }
     }
 }

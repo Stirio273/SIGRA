@@ -1,4 +1,4 @@
-using SIGRA.Domain;
+using SIGRA.Domain.AIsupport;
 
 namespace SIGRA.Services;
 

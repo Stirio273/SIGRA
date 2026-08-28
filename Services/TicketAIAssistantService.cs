@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SIGRA.Data;
-using SIGRA.Domain;
+using SIGRA.Domain.AIsupport;
+using SIGRA.Services.Providers;
 
 namespace SIGRA.Services;
 
@@ -11,22 +12,19 @@ public interface IAIAssistantService
 
 public class TicketAIAssistantService : IAIAssistantService
 {
-    private readonly AppDbContext _db;
-    private readonly ITicketContextMapper _mapper;
+
+    private readonly ITicketContextProvider _provider;
     private readonly IAISupportAssistant _aiClient;
 
-    public TicketAIAssistantService(AppDbContext db, ITicketContextMapper mapper, IAISupportAssistant aiClient)
+    public TicketAIAssistantService(ITicketContextProvider provider, IAISupportAssistant aiClient)
     {
-        _db = db;
-        _mapper = mapper;
+        _provider = provider;
         _aiClient = aiClient;
     }
 
     public async Task<AISupportResponse> SuggestResponseAsync(int ticketId, AISupportRequest request)
     {
-        var ticket = await _db.Tickets.FirstOrDefaultAsync(t => t.IdTicket == ticketId);
-
-        var context = _mapper.Map(ticket);
+        var context = await _provider.GetForAiAssistanceAsync(ticketId);
         return await _aiClient.GetAssistanceAsync(context, request);
     }
 }

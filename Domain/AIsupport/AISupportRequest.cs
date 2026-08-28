@@ -1,4 +1,4 @@
-namespace SIGRA.Domain;
+namespace SIGRA.Domain.AIsupport;
 
 public sealed class AISupportRequest
 {
