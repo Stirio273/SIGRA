@@ -95,6 +95,8 @@ builder.Services.AddScoped<IDomainEventHandler<TicketReopenedEvent>, NotifyTicke
 builder.Services.AddScoped<IDomainEventHandler<TicketReopenedEvent>, AlertOnRepeatedReopenHandler>();
 builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 builder.Services.AddScoped<IAISupportAssistant, PlaceholderAISupportAssistant>();
+builder.Services.AddScoped<IAIAssistantService, TicketAIAssistantService>();
+builder.Services.AddScoped<ITicketContextProvider, TicketContextProvider>();
 builder.Services.AddSingleton<ITicketContentSanitizer, TicketContentSanitizer>();
 builder.Services.AddSingleton<WeeklyReportViewModelMapper>();
 builder.Services.AddSingleton<IWeeklyReportHtmlBuilder, WeeklyReportHtmlBuilder>();

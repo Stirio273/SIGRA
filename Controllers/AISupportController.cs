@@ -5,7 +5,7 @@ using SIGRA.Domain.AIsupport;
 namespace SIGRA.Controllers;
 
 [ApiController]
-[Route("api/tickets")]
+[Route("api/aisupport")]
 public class AISupportController : ControllerBase
 {
     private readonly IAIAssistantService _aiAssistantService;
@@ -24,8 +24,17 @@ public class AISupportController : ControllerBase
             {
                 TechnicianQuestion = request.Message
             };
-            var response = _aiAssistantService.SuggestResponseAsync(id, aiRequest);
-            return Ok(response);
+            var response = await _aiAssistantService.SuggestResponseAsync(id, aiRequest);
+
+            var condensed = string.Join("\n\n",
+                response.TicketUnderstanding,
+                response.SuggestedSteps.Count > 0 ? "Suggested Steps:\n" + string.Join("\n", response.SuggestedSteps.Select(s => "- " + s)) : null,
+                response.PossibleCauses.Count > 0 ? "Possible Causes:\n" + string.Join("\n", response.PossibleCauses.Select(c => "- " + c)) : null,
+                response.RecommendedEscalation,
+                response.LimitationOrUncertainty
+            );
+
+            return Ok(new { reply = condensed });
         }
         catch (System.Exception e)
         {
