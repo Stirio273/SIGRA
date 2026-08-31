@@ -14,7 +14,7 @@ public sealed class AISupportResponse
 
     public string? LimitationOrUncertainty { get; init; }
 
-    public IReadOnlyList<AISourceReference> Sources { get; init; }
+    public IReadOnlyList<AISourceReference> Sources { get; set; }
         = Array.Empty<AISourceReference>();
 }
 
