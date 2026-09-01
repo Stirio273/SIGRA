@@ -3,9 +3,9 @@ using SIGRA.Domain.AIsupport;
 
 namespace SIGRA.Services;
 
-public static class TicketPromptBuilder
+public class TicketPromptBuilder : IPromptBuilder
 {
-    public static string BuildSystemPrompt()
+    public string BuildSystemPrompt()
     {
         return """
             You are an internal support assistant helping an L2 technician
@@ -21,7 +21,7 @@ public static class TicketPromptBuilder
             """;
     }
 
-    public static string BuildUserPrompt(
+    public string BuildUserPrompt(
         TicketContext ticket,
         string technicianQuestion, IReadOnlyList<KnowledgeSearchResult> knowledgeResults)
     {

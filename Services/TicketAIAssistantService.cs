@@ -14,17 +14,17 @@ public class TicketAIAssistantService : IAIAssistantService
 {
 
     private readonly ITicketContextProvider _provider;
-    private readonly IAISupportAssistant _aiClient;
+    private readonly IAISupportOrchestrator _orchestrator;
 
-    public TicketAIAssistantService(ITicketContextProvider provider, IAISupportAssistant aiClient)
+    public TicketAIAssistantService(ITicketContextProvider provider, IAISupportOrchestrator orchestrator)
     {
         _provider = provider;
-        _aiClient = aiClient;
+        _orchestrator = orchestrator;
     }
 
     public async Task<AISupportResponse> SuggestResponseAsync(int ticketId, AISupportRequest request)
     {
         var context = await _provider.GetForAiAssistanceAsync(ticketId);
-        return await _aiClient.GetAssistanceAsync(context, request);
+        return await _orchestrator.HandleRequestAsync(context, request);
     }
 }

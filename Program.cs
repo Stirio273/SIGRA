@@ -94,11 +94,15 @@ builder.Services.AddScoped<IDomainEventHandler<TicketReopenedEvent>, RecordReope
 builder.Services.AddScoped<IDomainEventHandler<TicketReopenedEvent>, NotifyTicketReopenedHandler>();
 builder.Services.AddScoped<IDomainEventHandler<TicketReopenedEvent>, AlertOnRepeatedReopenHandler>();
 builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
-builder.Services.AddScoped<IAISupportAssistant, PlaceholderAISupportAssistant>();
+// builder.Services.AddScoped<IAISupportAssistant, PlaceholderAISupportAssistant>();
 builder.Services.AddScoped<IAIAssistantService, TicketAIAssistantService>();
 builder.Services.AddScoped<ITicketContextProvider, TicketContextProvider>();
 builder.Services.AddScoped<IKnowledgeRetriever, KeywordKnowledgeRetriever>();
 builder.Services.AddScoped<ILlmClient, MockLlmClient>();
+builder.Services.AddScoped<IAISupportOrchestrator, AiSupportOrchestrator>();
+builder.Services.AddScoped<IPromptBuilder, TicketPromptBuilder>();
+builder.Services.AddScoped<IAIResponseParser, JsonAiResponseParser>();
+builder.Services.AddScoped<ISourceAttacher, KnowledgeSourceAttacher>();
 builder.Services.AddSingleton<IKnowledgeDocumentStore, InMemoryKnowledgeDocumentStore>();
 builder.Services.AddSingleton<ITicketContentSanitizer, TicketContentSanitizer>();
 builder.Services.AddSingleton<WeeklyReportViewModelMapper>();
