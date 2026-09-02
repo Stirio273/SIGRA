@@ -45,7 +45,7 @@ public class TicketPromptBuilder : IPromptBuilder
             foreach (var comment in ticket.Comments)
             {
                 builder.AppendLine(
-                    $"- [{comment.AuthorRole ?? "Unknown"}] {comment.Content}");
+                    $"- [{"Unknown"}] {comment.Content}");
             }
         }
 

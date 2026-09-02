@@ -131,9 +131,13 @@ builder.Services.AddDataProtection();
 
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = "Mock";
-    options.DefaultChallengeScheme = "Mock";
+    options.DefaultAuthenticateScheme = "Fallback";
+    options.DefaultChallengeScheme = "Fallback";
 })
+.AddScheme<FallbackAuthenticationOptions, FallbackAuthenticationHandler>("Fallback", options =>
+{
+})
+.AddNegotiate()
 .AddScheme<MockAuthenticationOptions, MockAuthenticationHandler>("Mock", options =>
 {
     options.HeaderName = "X-Mock-User";
@@ -143,7 +147,7 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("ADAuthorizedUser", policy =>
     {
-        policy.AddAuthenticationSchemes("Mock");
+        policy.AddAuthenticationSchemes("Fallback");
         policy.RequireAuthenticatedUser();
     });
 });
@@ -191,6 +195,12 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorizedUserMiddleware();
 app.UseAuthorization();
+
+app.MapGet("/whoami", (HttpContext ctx) => Results.Ok(new
+{
+    User = ctx.User.Identity?.Name,
+    AuthType = ctx.User.Identity?.AuthenticationType
+}));
 
 app.MapControllers();
 
