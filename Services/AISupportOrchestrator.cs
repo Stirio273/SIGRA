@@ -4,14 +4,14 @@ namespace SIGRA.Services;
 
 public sealed class AiSupportOrchestrator : IAISupportOrchestrator
 {
-    private readonly IKnowledgeRetriever _knowledgeRetriever;
+    private readonly CompositeKnowledgeRetriever _knowledgeRetriever;
     private readonly IPromptBuilder _promptBuilder;
     private readonly ILlmClient _llmClient;
     private readonly IAIResponseParser _responseParser;
     private readonly ISourceAttacher _sourceAttacher;
 
     public AiSupportOrchestrator(
-        IKnowledgeRetriever knowledgeRetriever,
+        CompositeKnowledgeRetriever knowledgeRetriever,
         IPromptBuilder promptBuilder,
         ILlmClient llmClient,
         IAIResponseParser responseParser,

@@ -1,3 +1,5 @@
+using SIGRA.Data.Enums;
+
 namespace SIGRA.Domain.AIsupport;
 
 public sealed class KnowledgeSearchRequest
@@ -22,4 +24,5 @@ public sealed class KnowledgeSearchResult
     public double Score { get; init; }
 
     public string? SourceUrl { get; init; }
+    public required KnowledgeSourceType SourceType { get; init; }
 }

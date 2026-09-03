@@ -1,3 +1,4 @@
+using SIGRA.Data.Enums;
 using SIGRA.Domain.AIsupport;
 
 namespace SIGRA.Services;
@@ -35,7 +36,8 @@ public sealed class KeywordKnowledgeRetriever : IKnowledgeRetriever
                 Title = x.Document.Title,
                 Content = x.Document.Content,
                 Module = x.Document.Module,
-                Score = x.Score
+                Score = x.Score,
+                SourceType = KnowledgeSourceType.Documentation
             })
             .ToList();
 

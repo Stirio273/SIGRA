@@ -103,6 +103,7 @@ builder.Services.AddScoped<IAISupportOrchestrator, AiSupportOrchestrator>();
 builder.Services.AddScoped<IPromptBuilder, TicketPromptBuilder>();
 builder.Services.AddScoped<IAIResponseParser, JsonAiResponseParser>();
 builder.Services.AddScoped<ISourceAttacher, KnowledgeSourceAttacher>();
+builder.Services.AddScoped<CompositeKnowledgeRetriever>();
 builder.Services.AddSingleton<IKnowledgeDocumentStore, InMemoryKnowledgeDocumentStore>();
 builder.Services.AddSingleton<ITicketContentSanitizer, TicketContentSanitizer>();
 builder.Services.AddSingleton<WeeklyReportViewModelMapper>();
