@@ -6,7 +6,11 @@ public sealed class KnowledgeSearchRequest
 {
     public required string Query { get; init; }
 
-    public IReadOnlyList<string> AllowedModules { get; init; } = [];
+    public required int IdApplication { get; init; }
+
+    public int ExcludeTicketId { get; init; }
+
+    // public IReadOnlyList<string> AllowedModules { get; init; } = [];
 
     public int TopK { get; init; } = 5;
 }
@@ -18,6 +22,8 @@ public sealed class KnowledgeSearchResult
     public required string Title { get; init; }
 
     public required string Content { get; init; }
+
+    public required string Application { get; init; }
 
     public string? Module { get; init; }
 

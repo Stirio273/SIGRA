@@ -3,11 +3,11 @@ using SIGRA.Domain.AIsupport;
 
 namespace SIGRA.Services;
 
-public sealed class KeywordKnowledgeRetriever : IKnowledgeRetriever
+public sealed class KeywordDocumentRetriever : IKnowledgeRetriever
 {
     private readonly IKnowledgeDocumentStore _documentStore;
 
-    public KeywordKnowledgeRetriever(IKnowledgeDocumentStore documentStore)
+    public KeywordDocumentRetriever(IKnowledgeDocumentStore documentStore)
     {
         _documentStore = documentStore;
     }

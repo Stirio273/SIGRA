@@ -1,4 +1,5 @@
 using System.Text;
+using SIGRA.Data.Enums;
 using SIGRA.Domain.AIsupport;
 
 namespace SIGRA.Services;
@@ -58,16 +59,41 @@ public class TicketPromptBuilder : IPromptBuilder
 
             foreach (var result in knowledgeResults)
             {
-                builder.AppendLine($"[{result.SourceId}] {result.Title}");
+                var label = result.SourceType == KnowledgeSourceType.ResolvedTicket
+                    ? $"Past resolved ticket ({ticket.Application})"
+                    : $"Official {ticket.Application} documentation";
+
+                var resolutionNote = result.ResolutionType switch
+                {
+                    ResolutionType.Workaround => " (WORKAROUND ONLY — root cause not fixed)",
+                    ResolutionType.RootCauseFix => " (root cause fix)",
+                    _ => ""
+                };
+
+                var recurrenceNote = result.RecurrenceCount is > 2
+                    ? $" — this issue has recurred {result.RecurrenceCount} times."
+                    : "";
+
+                builder.AppendLine($"[{result.SourceId}] ({label}){resolutionNote}{recurrenceNote} {result.Title}");
                 builder.AppendLine(result.Content);
                 builder.AppendLine();
             }
 
-            builder.AppendLine("""
-            Use the internal knowledge above when relevant. 
-            Reference source IDs (e.g., [DOC-STOCK-001]) when you rely on them.
-            """);
+            builder.AppendLine($"""
+        Trust hierarchy for the sources above:
+        1. Official {ticket.Application} documentation — authoritative for standard {ticket.Application} behavior.
+        2. Past resolved tickets — reflect prior experience with {ticket.Application} only, 
+           not guaranteed correctness.
+
+        If a past resolved ticket is marked as a workaround and the issue has recurred 
+        multiple times without a root-cause fix, you must state this pattern explicitly 
+        to the technician, avoid presenting the workaround as a final solution, and set 
+        "recommendedEscalation" to suggest root-cause investigation.
+
+        Reference source IDs (e.g., [DOC-STOCK-001] or [INC-9931]) when used.
+        """);
         }
+
         else
         {
             builder.AppendLine();

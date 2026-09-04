@@ -33,7 +33,9 @@ public sealed class AiSupportOrchestrator : IAISupportOrchestrator
             new KnowledgeSearchRequest
             {
                 Query = $"{ticket.Title} {ticket.Description}",
-                AllowedModules = request.PreferredKnowledgeDomains,
+                // AllowedModules = request.PreferredKnowledgeDomains,
+                IdApplication = ticket.Application,
+                ExcludeTicketId = ticket.IdTicket,
                 TopK = 5
             },
             cancellationToken);
