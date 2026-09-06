@@ -19,9 +19,9 @@ public sealed class KeywordDocumentRetriever : IKnowledgeRetriever
         var queryTerms = Tokenize(request.Query);
 
         var scoredDocuments = _documentStore.GetAll()
-            .Where(doc => request.AllowedModules.Count == 0
-                || (doc.Module is not null
-                    && request.AllowedModules.Contains(doc.Module)))
+            // .Where(doc => request.AllowedModules.Count == 0
+            //     || (doc.Module is not null
+            //         && request.AllowedModules.Contains(doc.Module)))
             .Select(doc => new
             {
                 Document = doc,
@@ -34,6 +34,7 @@ public sealed class KeywordDocumentRetriever : IKnowledgeRetriever
             {
                 SourceId = x.Document.SourceId,
                 Title = x.Document.Title,
+                Application = request.Application.Libelle,
                 Content = x.Document.Content,
                 Module = x.Document.Module,
                 Score = x.Score,

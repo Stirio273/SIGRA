@@ -19,10 +19,10 @@ public sealed class KnowledgeSourceAttacher : ISourceAttacher
            })
            .ToList();
 
-        var recurring = knowledgeResults
-            .Where(r => r.RecurrenceCount is > 2 && r.ResolutionType == ResolutionType.Workaround)
-            .OrderByDescending(r => r.RecurrenceCount)
-            .FirstOrDefault();
+        // var recurring = knowledgeResults
+        //     .Where(r => r.RecurrenceCount is > 2 && r.ResolutionType == ResolutionType.Workaround)
+        //     .OrderByDescending(r => r.RecurrenceCount)
+        //     .FirstOrDefault();
 
         response.Sources = sources;
 

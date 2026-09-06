@@ -1,5 +1,7 @@
 using Hangfire;
 using Hangfire.PostgreSql;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
 using SIGRA.Data;
@@ -114,6 +116,7 @@ builder.Services.AddSingleton<IPdfReportGenerator, PlaywrightPdfGenerationServic
 builder.Services.AddSingleton<ImapMailService>();
 builder.Services.AddSingleton<ImapSyncService>();
 builder.Services.AddSingleton<IImapIdentityProvider, GmailIdentityProvider>();
+builder.Services.AddTransient<IClaimsTransformation, ProvisioningClaimsTransformation>();
 builder.Services.AddHostedService<ImapPollingService>();
 builder.Services.AddHostedService<ReportBackgroundService>();
 
@@ -140,7 +143,13 @@ builder.Services.AddAuthentication(options =>
 .AddScheme<FallbackAuthenticationOptions, FallbackAuthenticationHandler>("Fallback", options =>
 {
 })
-.AddNegotiate()
+.AddNegotiate(options =>
+{
+    options.EnableLdap(ldapSettings =>
+    {
+        ldapSettings.Domain = "dev.local";
+    });
+})
 .AddScheme<MockAuthenticationOptions, MockAuthenticationHandler>("Mock", options =>
 {
     options.HeaderName = "X-Mock-User";
@@ -148,11 +157,9 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("ADAuthorizedUser", policy =>
-    {
-        policy.AddAuthenticationSchemes("Fallback");
-        policy.RequireAuthenticatedUser();
-    });
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+    .RequireAuthenticatedUser()
+    .RequireRole(@"DEV\SIGRA-Autorises").Build();
 });
 
 var app = builder.Build();
@@ -196,7 +203,7 @@ app.UseStaticFiles();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
-app.UseAuthorizedUserMiddleware();
+// app.UseAuthorizedUserMiddleware();
 app.UseAuthorization();
 
 app.MapGet("/whoami", (HttpContext ctx) => Results.Ok(new

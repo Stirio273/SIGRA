@@ -55,8 +55,8 @@ public sealed class ResolvedTicketRepository : IResolvedTicketRepository
         {
             query = query.Where(t =>
                 keywords.Any(k =>
-                    EF.Functions.Like(t.Title, $"%{k}%") ||
-                    EF.Functions.Like(t.ResolutionNotes!, $"%{k}%")));
+                    EF.Functions.Like(t.NumeroTicket, $"%{k}%") ||
+                    EF.Functions.Like(t.DemandeurDirection!, $"%{k}%")));
         }
 
         var results = await query
@@ -65,8 +65,8 @@ public sealed class ResolvedTicketRepository : IResolvedTicketRepository
             .Select(t => new ResolvedTicketSummary
             {
                 IdTicket = t.IdTicket,
-                Title = t.Title,
-                ResolutionNotes = t.ResolutionNotes!,
+                Title = t.NumeroTicket,
+                ResolutionNotes = t.DemandeurEmail!,
                 Application = t.IdApplicationNavigation.Libelle,
                 // Module = t.CategoryName,
                 // ResolutionType = t.ResolutionType,

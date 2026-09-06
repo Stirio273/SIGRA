@@ -1,3 +1,4 @@
+using SIGRA.Data.Models;
 using SIGRA.Domain.AIsupport;
 
 namespace SIGRA.Services;
@@ -34,7 +35,9 @@ public sealed class AiSupportOrchestrator : IAISupportOrchestrator
             {
                 Query = $"{ticket.Title} {ticket.Description}",
                 // AllowedModules = request.PreferredKnowledgeDomains,
-                IdApplication = ticket.Application,
+                Application = new Application{
+                    Libelle = ticket.Application ?? ""
+                },
                 ExcludeTicketId = ticket.IdTicket,
                 TopK = 5
             },

@@ -29,7 +29,7 @@ public sealed class KeywordResolvedTicketRetriever : IKnowledgeRetriever
         var keywords = Tokenize(request.Query);
 
         var candidates = await _repository.GetCandidatesAsync(
-            request.IdApplication,
+            request.Application.IdApplication,
             keywords,
             // request.AllowedModules,
             request.ExcludeTicketId,
@@ -44,12 +44,12 @@ public sealed class KeywordResolvedTicketRetriever : IKnowledgeRetriever
             if (score <= 0) continue;
 
             int? recurrenceCount = null;
-            if (ticket.ProblemRecordId is not null)
-            {
-                var problem = await _problemLookup.GetAsync(
-                    ticket.ProblemRecordId, cancellationToken);
-                recurrenceCount = problem?.LinkedIncidentCount;
-            }
+            // if (ticket.ProblemRecordId is not null)
+            // {
+            //     var problem = await _problemLookup.GetAsync(
+            //         ticket.ProblemRecordId, cancellationToken);
+            //     recurrenceCount = problem?.LinkedIncidentCount;
+            // }
 
             scored.Add(new KnowledgeSearchResult
             {
@@ -86,5 +86,5 @@ public sealed class KeywordResolvedTicketRetriever : IKnowledgeRetriever
 
 public interface IProblemRecordLookup
 {
-    Task<ProblemRecord?> GetAsync(string problemRecordId, CancellationToken cancellationToken = default);
+    // Task<ProblemRecord?> GetAsync(string problemRecordId, CancellationToken cancellationToken = default);
 }

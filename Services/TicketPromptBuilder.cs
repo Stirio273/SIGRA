@@ -63,18 +63,18 @@ public class TicketPromptBuilder : IPromptBuilder
                     ? $"Past resolved ticket ({ticket.Application})"
                     : $"Official {ticket.Application} documentation";
 
-                var resolutionNote = result.ResolutionType switch
-                {
-                    ResolutionType.Workaround => " (WORKAROUND ONLY — root cause not fixed)",
-                    ResolutionType.RootCauseFix => " (root cause fix)",
-                    _ => ""
-                };
+                // var resolutionNote = result.ResolutionType switch
+                // {
+                //     ResolutionType.Workaround => " (WORKAROUND ONLY — root cause not fixed)",
+                //     ResolutionType.RootCauseFix => " (root cause fix)",
+                //     _ => ""
+                // };
 
-                var recurrenceNote = result.RecurrenceCount is > 2
-                    ? $" — this issue has recurred {result.RecurrenceCount} times."
-                    : "";
+                // var recurrenceNote = result.RecurrenceCount is > 2
+                //     ? $" — this issue has recurred {result.RecurrenceCount} times."
+                //     : "";
 
-                builder.AppendLine($"[{result.SourceId}] ({label}){resolutionNote}{recurrenceNote} {result.Title}");
+                // builder.AppendLine($"[{result.SourceId}] ({label}){resolutionNote}{recurrenceNote} {result.Title}");
                 builder.AppendLine(result.Content);
                 builder.AppendLine();
             }

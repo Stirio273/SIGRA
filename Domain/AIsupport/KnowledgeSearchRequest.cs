@@ -1,4 +1,5 @@
 using SIGRA.Data.Enums;
+using SIGRA.Data.Models;
 
 namespace SIGRA.Domain.AIsupport;
 
@@ -6,7 +7,7 @@ public sealed class KnowledgeSearchRequest
 {
     public required string Query { get; init; }
 
-    public required int IdApplication { get; init; }
+    public required Application Application { get; init; }
 
     public int ExcludeTicketId { get; init; }
 
