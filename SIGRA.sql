@@ -380,6 +380,34 @@ CREATE TABLE rapport
 );
 
 -- ============================================================================
+-- BLOC 11 : Assistant IA
+-- ============================================================================
+
+CREATE TABLE app_documents
+(
+    id                      SERIAL          PRIMARY KEY,
+    source_id               VARCHAR(255)    NOT NULL,
+    titre                   VARCHAR(255)    NOT NULL,
+    contenu                 TEXT            NOT NULL,
+    type_source             VARCHAR(255)    NOT NULL,
+    id_application          INTEGER REFERENCES applications(id_application),
+    embedding               VECTOR(384)          
+);
+
+CREATE INDEX ON app_documents USING ivfflat ("embedding" vector_cosine_ops) WITH (lists = 100);
+
+CREATE TABLE app_document_chunks (
+    id SERIAL PRIMARY KEY,
+    parent_source_id text NOT NULL,
+    chunk_index int NOT NULL,
+    content text NOT NULL,
+    embedding vector(384) NOT NULL
+);
+
+CREATE INDEX ON app_document_chunks USING ivfflat ("embedding" vector_cosine_ops) WITH (lists = 100);
+
+
+-- ============================================================================
 -- DONNÉES DE RÉFÉRENCE INITIALES
 -- ============================================================================
 INSERT INTO classes_service (code, libelle, duree_sla) VALUES ('CS1', 'CS1', 2) ('CS2', 'CS2', 4) ('CS3', 'CS3', 6) ('CS4', 'CS4', 8);

@@ -223,4 +223,15 @@ public record CommentaireResponse(int IdCommentaire, int IdTicket, int IdAuteur,
 
 public record AskAIRequest(string Message);
 
+public sealed class AddAppDocumentForm
+{
+    public IFormFile? File { get; init; }
+    public string? SourceId { get; init; }
+    public required string Title { get; init; }
+    public string? Module { get; init; }
+    public required KnowledgeSourceType SourceType { get; init; }
+    public required int IdApplication { get; init; }
+}
+
+
 

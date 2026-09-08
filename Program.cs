@@ -22,7 +22,7 @@ var builder = WebApplication.CreateBuilder(args);
 QuestPDF.Settings.License = LicenseType.Community;
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration["ConnectionStrings:DefaultConnection"], o => o.MapEnum<OAuthProvider>("oauth_provider")));
+    options.UseNpgsql(builder.Configuration["ConnectionStrings:DefaultConnection"], o => { o.MapEnum<OAuthProvider>("oauth_provider"); o.UseVector(); }));
 
 builder.Services.AddScoped<IUserAuthenticationService, UserAuthenticationService>();
 

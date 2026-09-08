@@ -16,8 +16,4 @@ public partial class Statut
     public virtual ICollection<HistoriqueStatut> HistoriqueStatutIdStatutSuivantNavigations { get; set; } = new List<HistoriqueStatut>();
 
     public virtual ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
-
-    public virtual ICollection<Statut> IdStatutDestinations { get; set; } = new List<Statut>();
-
-    public virtual ICollection<Statut> IdStatutOrigines { get; set; } = new List<Statut>();
 }

@@ -31,8 +31,6 @@ public partial class Ticket
 
     public DateTime? DateChangementStatut { get; set; }
 
-    public bool EstUtilisableParIA { get; set; }
-
     public virtual ICollection<AlerteTicket> AlerteTickets { get; set; } = new List<AlerteTicket>();
 
     public virtual ICollection<Commentaire> Commentaires { get; set; } = new List<Commentaire>();

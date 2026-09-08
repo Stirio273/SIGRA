@@ -11,7 +11,7 @@ public partial class Notification
 
     public int IdTicket { get; set; }
 
-    public string TypeEvenement { get; set; } = null!;
+    public int IdTypeEvenement { get; set; }
 
     public DateTime DateCreation { get; set; }
 
@@ -19,11 +19,9 @@ public partial class Notification
 
     public DateTime? DateLecture { get; set; }
 
-    public string? Titre { get; set; }
-
-    public string? Message { get; set; }
-
     public virtual Utilisateur IdDestinataireNavigation { get; set; } = null!;
 
     public virtual Ticket IdTicketNavigation { get; set; } = null!;
+
+    public virtual TypesEvenementNotification IdTypeEvenementNavigation { get; set; } = null!;
 }
