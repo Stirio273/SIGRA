@@ -391,14 +391,16 @@ CREATE TABLE app_documents
     contenu                 TEXT            NOT NULL,
     type_source             VARCHAR(255)    NOT NULL,
     id_application          INTEGER REFERENCES applications(id_application),
-    embedding               VECTOR(384)          
+    embedding               VECTOR(384),
+    nom_fichier             VARCHAR(255) NOT NULL,
+    chemin                  VARCHAR(500) NOT NULL
 );
 
 CREATE INDEX ON app_documents USING ivfflat ("embedding" vector_cosine_ops) WITH (lists = 100);
 
 CREATE TABLE app_document_chunks (
     id SERIAL PRIMARY KEY,
-    parent_source_id text NOT NULL,
+    parent_source_id VARCHAR(255) NOT NULL REFERENCES app_documents(source_id),
     chunk_index int NOT NULL,
     content text NOT NULL,
     embedding vector(384) NOT NULL
