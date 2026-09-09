@@ -27,8 +27,8 @@ public class UserAuthenticationService : IUserAuthenticationService
         {
             return null;
         }
-
-        var normalized = username.Trim().ToLower();
+        var samAccountName = username.Split('\\')[1];
+        var normalized = samAccountName.Trim().ToLower();
 
         return await _dbContext.Utilisateurs
             .AsNoTracking()

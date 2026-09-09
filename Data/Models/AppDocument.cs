@@ -17,5 +17,11 @@ public partial class AppDocument
 
     public int? IdApplication { get; set; }
 
+    public string NomFichier { get; set; } = null!;
+
+    public string Chemin { get; set; } = null!;
+
+    public virtual ICollection<AppDocumentChunk> AppDocumentChunks { get; set; } = new List<AppDocumentChunk>();
+
     public virtual Application? IdApplicationNavigation { get; set; }
 }

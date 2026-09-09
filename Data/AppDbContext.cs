@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using SIGRA.Data.Enums;
 using SIGRA.Data.Models;
 
 namespace SIGRA.Data;
@@ -34,7 +35,7 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<HistoriqueStatut> HistoriqueStatuts { get; set; }
 
-    public virtual DbSet<JoursFery> JoursFeries { get; set; }
+    public virtual DbSet<JoursFerie> JoursFeries { get; set; }
 
     public virtual DbSet<Notification> Notifications { get; set; }
 
@@ -58,9 +59,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<TicketSlaPause> TicketSlaPauses { get; set; }
 
-    public virtual DbSet<TypesEvenementNotification> TypesEvenementNotifications { get; set; }
-
     public virtual DbSet<Utilisateur> Utilisateurs { get; set; }
+    public IQueryable<Ticket> RealTickets => Tickets.Where(t => t.IdStatut != (int)TicketStatus.Rejected);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -99,9 +99,17 @@ public partial class AppDbContext : DbContext
 
             entity.ToTable("app_documents");
 
+            entity.HasIndex(e => e.SourceId, "app_documents_source_id_key").IsUnique();
+
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Chemin)
+                .HasMaxLength(500)
+                .HasColumnName("chemin");
             entity.Property(e => e.Contenu).HasColumnName("contenu");
             entity.Property(e => e.IdApplication).HasColumnName("id_application");
+            entity.Property(e => e.NomFichier)
+                .HasMaxLength(255)
+                .HasColumnName("nom_fichier");
             entity.Property(e => e.SourceId)
                 .HasMaxLength(255)
                 .HasColumnName("source_id");
@@ -128,8 +136,16 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.ChunkIndex).HasColumnName("chunk_index");
             entity.Property(e => e.Content).HasColumnName("content");
-            entity.Property(e => e.ParentSourceId).HasColumnName("parent_source_id");
+            entity.Property(e => e.ParentSourceId)
+                .HasMaxLength(255)
+                .HasColumnName("parent_source_id");
             entity.Property(e => e.Embedding).HasColumnType("vector(384)");
+
+            entity.HasOne(d => d.ParentSource).WithMany(p => p.AppDocumentChunks)
+                .HasPrincipalKey(p => p.SourceId)
+                .HasForeignKey(d => d.ParentSourceId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("app_document_chunks_parent_source_id_fkey");
         });
 
         modelBuilder.Entity<Application>(entity =>
@@ -174,8 +190,11 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("duree_sla");
             entity.Property(e => e.DureeSlaReouverture)
                 .HasPrecision(6, 2)
+                .HasDefaultValue(2m)
                 .HasColumnName("duree_sla_reouverture");
-            entity.Property(e => e.IdCriticite).HasColumnName("id_criticite");
+            entity.Property(e => e.IdCriticite)
+                .HasDefaultValue(5)
+                .HasColumnName("id_criticite");
             entity.Property(e => e.Libelle)
                 .HasMaxLength(100)
                 .HasColumnName("libelle");
@@ -366,7 +385,7 @@ public partial class AppDbContext : DbContext
                 .HasConstraintName("historique_statut_id_ticket_fkey");
         });
 
-        modelBuilder.Entity<JoursFery>(entity =>
+        modelBuilder.Entity<JoursFerie>(entity =>
         {
             entity.HasKey(e => e.IdJourFerie).HasName("jours_feries_pkey");
 
@@ -387,10 +406,6 @@ public partial class AppDbContext : DbContext
 
             entity.ToTable("notifications");
 
-            entity.HasIndex(e => new { e.IdDestinataire, e.EstLue }, "idx_notification_destinataire_non_lues").HasFilter("(est_lue = false)");
-
-            entity.HasIndex(e => e.IdTicket, "idx_notification_ticket");
-
             entity.Property(e => e.IdNotification).HasColumnName("id_notification");
             entity.Property(e => e.DateCreation)
                 .HasDefaultValueSql("now()")
@@ -399,7 +414,15 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.EstLue).HasColumnName("est_lue");
             entity.Property(e => e.IdDestinataire).HasColumnName("id_destinataire");
             entity.Property(e => e.IdTicket).HasColumnName("id_ticket");
-            entity.Property(e => e.IdTypeEvenement).HasColumnName("id_type_evenement");
+            entity.Property(e => e.Message)
+                .HasMaxLength(255)
+                .HasColumnName("message");
+            entity.Property(e => e.Titre)
+                .HasMaxLength(255)
+                .HasColumnName("titre");
+            entity.Property(e => e.TypeEvenement)
+                .HasMaxLength(255)
+                .HasColumnName("type_evenement");
 
             entity.HasOne(d => d.IdDestinataireNavigation).WithMany(p => p.Notifications)
                 .HasForeignKey(d => d.IdDestinataire)
@@ -410,11 +433,6 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(d => d.IdTicket)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("notifications_id_ticket_fkey");
-
-            entity.HasOne(d => d.IdTypeEvenementNavigation).WithMany(p => p.Notifications)
-                .HasForeignKey(d => d.IdTypeEvenement)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("notifications_id_type_evenement_fkey");
         });
 
         modelBuilder.Entity<PiecesJointe>(entity =>
@@ -504,8 +522,6 @@ public partial class AppDbContext : DbContext
 
             entity.ToTable("regles_criticite");
 
-            entity.HasIndex(e => e.IdCs, "regles_criticite_id_cs_key").IsUnique();
-
             entity.Property(e => e.IdRegleCriticite).HasColumnName("id_regle_criticite");
             entity.Property(e => e.IdCriticite).HasColumnName("id_criticite");
             entity.Property(e => e.IdCs).HasColumnName("id_cs");
@@ -515,8 +531,8 @@ public partial class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("regles_criticite_id_criticite_fkey");
 
-            entity.HasOne(d => d.IdCsNavigation).WithOne(p => p.ReglesCriticite)
-                .HasForeignKey<ReglesCriticite>(d => d.IdCs)
+            entity.HasOne(d => d.IdCsNavigation).WithMany(p => p.ReglesCriticites)
+                .HasForeignKey(d => d.IdCs)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("regles_criticite_id_cs_fkey");
         });
@@ -583,7 +599,6 @@ public partial class AppDbContext : DbContext
 
             entity.HasIndex(e => new { e.Email, e.Provider }, "uq_service_account_tokens_email_provider")
              .IsUnique();
-
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.AccessTokenExpiresAt).HasColumnName("access_token_expires_at");
             entity.Property(e => e.CreatedAt)
@@ -619,6 +634,44 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Libelle)
                 .HasMaxLength(50)
                 .HasColumnName("libelle");
+
+            entity.HasMany(d => d.IdStatutDestinations).WithMany(p => p.IdStatutOrigines)
+                .UsingEntity<Dictionary<string, object>>(
+                    "TransitionsAutorisee",
+                    r => r.HasOne<Statut>().WithMany()
+                        .HasForeignKey("IdStatutDestination")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("transitions_autorisees_id_statut_destination_fkey"),
+                    l => l.HasOne<Statut>().WithMany()
+                        .HasForeignKey("IdStatutOrigine")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("transitions_autorisees_id_statut_origine_fkey"),
+                    j =>
+                    {
+                        j.HasKey("IdStatutOrigine", "IdStatutDestination").HasName("transitions_autorisees_pkey");
+                        j.ToTable("transitions_autorisees");
+                        j.IndexerProperty<int>("IdStatutOrigine").HasColumnName("id_statut_origine");
+                        j.IndexerProperty<int>("IdStatutDestination").HasColumnName("id_statut_destination");
+                    });
+
+            entity.HasMany(d => d.IdStatutOrigines).WithMany(p => p.IdStatutDestinations)
+                .UsingEntity<Dictionary<string, object>>(
+                    "TransitionsAutorisee",
+                    r => r.HasOne<Statut>().WithMany()
+                        .HasForeignKey("IdStatutOrigine")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("transitions_autorisees_id_statut_origine_fkey"),
+                    l => l.HasOne<Statut>().WithMany()
+                        .HasForeignKey("IdStatutDestination")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("transitions_autorisees_id_statut_destination_fkey"),
+                    j =>
+                    {
+                        j.HasKey("IdStatutOrigine", "IdStatutDestination").HasName("transitions_autorisees_pkey");
+                        j.ToTable("transitions_autorisees");
+                        j.IndexerProperty<int>("IdStatutOrigine").HasColumnName("id_statut_origine");
+                        j.IndexerProperty<int>("IdStatutDestination").HasColumnName("id_statut_destination");
+                    });
         });
 
         modelBuilder.Entity<Ticket>(entity =>
@@ -700,20 +753,6 @@ public partial class AppDbContext : DbContext
                 .HasConstraintName("ticket_sla_pause_id_ticket_fkey");
         });
 
-        modelBuilder.Entity<TypesEvenementNotification>(entity =>
-        {
-            entity.HasKey(e => e.IdTypeEvenement).HasName("types_evenement_notification_pkey");
-
-            entity.ToTable("types_evenement_notification");
-
-            entity.HasIndex(e => e.Libelle, "types_evenement_notification_libelle_key").IsUnique();
-
-            entity.Property(e => e.IdTypeEvenement).HasColumnName("id_type_evenement");
-            entity.Property(e => e.Libelle)
-                .HasMaxLength(150)
-                .HasColumnName("libelle");
-        });
-
         modelBuilder.Entity<Utilisateur>(entity =>
         {
             entity.HasKey(e => e.IdUtilisateur).HasName("utilisateurs_pkey");
@@ -723,8 +762,6 @@ public partial class AppDbContext : DbContext
             entity.HasIndex(e => e.Actif, "idx_utilisateur_actif");
 
             entity.HasIndex(e => e.IdRole, "idx_utilisateur_role");
-
-            entity.HasIndex(e => e.UserGuid, "idx_utilisateur_user_guid").IsUnique();
 
             entity.HasIndex(e => e.Email, "utilisateurs_email_key").IsUnique();
 

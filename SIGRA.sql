@@ -386,7 +386,7 @@ CREATE TABLE rapport
 CREATE TABLE app_documents
 (
     id                      SERIAL          PRIMARY KEY,
-    source_id               VARCHAR(255)    NOT NULL,
+    source_id               VARCHAR(255)    NOT NULL UNIQUE,
     titre                   VARCHAR(255)    NOT NULL,
     contenu                 TEXT            NOT NULL,
     type_source             VARCHAR(255)    NOT NULL,

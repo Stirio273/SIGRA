@@ -22,20 +22,17 @@ public class AuthenticationController : ControllerBase
         var username = User.Identity?.Name ?? "Unknown";
         var user = await _authService.GetAuthorizedUserAsync(username);
 
-        // return Ok(new
-        // {
-        //     AdUsername = username,
-        //     Email = user?.Email,
-        //     Role = user?.IdRole,
-        //     Message = "Access granted"
-        // });
+        if (user == null)
+        {
+            return NotFound(new { Message = "User not found." });
+        }
 
         return Ok(new
         {
             UserGuid = user.UserGuid,
             User = User.Identity?.Name,
             Type = User.Identity?.AuthenticationType,
-            Role = user.IdRoleNavigation.Libelle
+            Role = user.IdRoleNavigation?.Libelle
         });
     }
 

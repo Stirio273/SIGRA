@@ -12,4 +12,6 @@ public partial class AppDocumentChunk
     public int ChunkIndex { get; set; }
 
     public string Content { get; set; } = null!;
+
+    public virtual AppDocument ParentSource { get; set; } = null!;
 }

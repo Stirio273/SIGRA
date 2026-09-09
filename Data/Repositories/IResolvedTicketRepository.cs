@@ -34,7 +34,7 @@ public sealed class ResolvedTicketRepository : IResolvedTicketRepository
     {
         var query = _dbContext.Tickets
             // .Where(t => t.IdStatut >= (int)TicketStatus.Solved)
-            .Where(t => t.EstUtilisableParIA)
+            // .Where(t => t.EstUtilisableParIA)
             .Where(t => t.IdApplication == idApplication); // scoping decision
                                                            // .Where(t => t.ResolutionNotes != null && t.ResolutionNotes != "");
 
