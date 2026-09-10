@@ -34,12 +34,12 @@ public sealed class TicketRepository : ITicketRepository
                 IdStatut = t.IdStatut,
                 Libelle = t.IdStatutNavigation.Libelle
             },
-            IdTechnicienAssigneNavigation = new Utilisateur
+            IdTechnicienAssigneNavigation = t.IdTechnicienAssigneNavigation != null ? new Utilisateur
             {
                 Nom = t.IdTechnicienAssigneNavigation.Nom,
                 Prenom = t.IdTechnicienAssigneNavigation.Prenom,
                 Email = t.IdTechnicienAssigneNavigation.Email
-            },
+            } : null,
             DemandeurEmail = t.DemandeurEmail,
             DemandeurDirection = t.DemandeurDirection,
             DateCloture = t.DateCloture,
@@ -147,10 +147,10 @@ public sealed class TicketRepository : ITicketRepository
             query = query.Where(t => t.IdCriticite == (int)request.Criticite.Value);
 
         if (!string.IsNullOrWhiteSpace(request.ApplicationName))
-            query = query.Where(t => t.IdApplicationNavigation.Libelle == request.ApplicationName);
+            query = query.Where(t => t.IdApplicationNavigation != null && t.IdApplicationNavigation.Libelle == request.ApplicationName);
 
         if (request.AssignedTechnician.HasValue)
-            query = query.Where(t => t.IdTechnicienAssigneNavigation.UserGuid == request.AssignedTechnician.Value);
+            query = query.Where(t => t.IdTechnicienAssigneNavigation != null && t.IdTechnicienAssigneNavigation.UserGuid == request.AssignedTechnician.Value);
 
         if (request.CreatedFrom.HasValue)
             query = query.Where(t => t.DateCreation >= request.CreatedFrom.Value.ToUniversalTime());
@@ -167,7 +167,7 @@ public sealed class TicketRepository : ITicketRepository
     private static IQueryable<Ticket> ApplySorting(
         IQueryable<Ticket> query, TicketSearchRequest request)
     {
-        Expression<Func<Ticket, object>> keySelector = request.SortBy?.ToLower() switch
+        Expression<Func<Ticket, object?>> keySelector = request.SortBy?.ToLower() switch
         {
             "numeroTicket" => t => t.NumeroTicket,
             "priority" => t => t.IdCriticite,

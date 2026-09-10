@@ -37,6 +37,7 @@ public sealed class SemanticDocumentRetriever : IKnowledgeRetriever
 
         var parentDocs = await _dbContext.AppDocuments
             .Where(d => results.Select(r => r.ParentSourceId).Contains(d.SourceId))
+            .Include(d => d.IdApplicationNavigation)
             .ToDictionaryAsync(d => d.SourceId, cancellationToken);
 
         return results.Select(r =>
@@ -50,7 +51,7 @@ public sealed class SemanticDocumentRetriever : IKnowledgeRetriever
                 // Module = doc.Module,
                 Score = 1 - r.Distance, // cosine distance -> similarity
                 SourceType = KnowledgeSourceType.Documentation,
-                Application = doc.IdApplicationNavigation.Libelle
+                Application = doc.IdApplicationNavigation?.Libelle ?? ""
             };
         }).ToList();
     }

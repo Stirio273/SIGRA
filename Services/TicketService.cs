@@ -95,7 +95,15 @@ public class TicketService : ITicketService
 
         // 2) Recalculer les deadlines SLA pour la nouvelle phase
         // var policy = await _slaPolicyProvider.GetPolicyAsync(ticket.Priority);
+        if (ticket.IdApplicationNavigation == null)
+        {
+            throw new ValidationException($"Le ticket {ticket.NumeroTicket} est associé à aucune application");
+        }
         var classeService = await _context.ClassesServices.AsNoTracking().FirstOrDefaultAsync(c => c.IdCs == ticket.IdApplicationNavigation.IdCs);
+        if (classeService == null)
+        {
+            throw new NotFoundException($"La classe de service associé à l'application {ticket.IdApplicationNavigation.Libelle} est introuvable");
+        }
         var reopenDuration = TimeSpan.FromHours((double)classeService.DureeSlaReouverture);// policy.ReopenResolutionTime ?? policy.ResolutionTime;
 
         var newResolutionDeadline = await _businessTimeCalculator
@@ -118,7 +126,7 @@ public class TicketService : ITicketService
     public async Task<Ticket> GetFicheTicket(int idTicket)
     {
         var ticket = await _ticketRepository.GetFicheTicket(idTicket);
-        return ticket;
+        return ticket ?? throw new NotFoundException($"Le ticket dont l'id est {idTicket} est introuvable");
     }
 
     public async Task TransferAsync(int ticketId, int idEntiteExterne, int idAuteur, string explication, bool estDefinitif)
@@ -146,7 +154,8 @@ public class TicketService : ITicketService
         if (ticket is null)
             throw new Exception("Ticket not found");
 
-        var rejet = await _context.Rejets.FirstOrDefaultAsync(r => r.IdTicket == ticketId && r.Decision == null, default);
+        var rejet = await _context.Rejets.FirstOrDefaultAsync(r => r.IdTicket == ticketId && r.Decision == null, default)
+        ?? throw new NotFoundException($"Aucune demande de rejet en cours concernant le ticket {ticket.NumeroTicket} n'a été trouvé");
 
         rejet = ticket.ValiderRejet(rejet, idValidateur, isRejected);
 
@@ -435,10 +444,13 @@ public class TicketService : ITicketService
                 activePause.ResumedAt = DateTime.UtcNow;
 
                 // Décaler les deadlines de la durée de la pause
-                var pauseDuration = activePause.ResumedAt.Value - activePause.PausedAt;
+                var pauseDuration = activePause.ResumedAt.Value - activePause.PausedAt ?? TimeSpan.Zero;
 
-                ticket.DeadlineResolution = await _businessTimeCalculator
-                    .AddBusinessTimeAsync((DateTime)ticket.DeadlineResolution, (TimeSpan)pauseDuration);
+                if (ticket.DeadlineResolution != null)
+                {
+                    ticket.DeadlineResolution = await _businessTimeCalculator
+                    .AddBusinessTimeAsync((DateTime)ticket.DeadlineResolution, pauseDuration);
+                }
             }
         }
 
@@ -455,7 +467,7 @@ public class TicketService : ITicketService
         if (!TicketStatusTransitions.IsValidTransition((TicketStatus)ticket.IdStatut, targetStatus))
         {
             return Result.Failure(
-                $"Transition invalide : impossible de passer de '{ticket.IdStatut}' à '{targetStatus}'.", 
+                $"Transition invalide : impossible de passer de '{ticket.IdStatut}' à '{targetStatus}'.",
                 ErrorType.Conflict);
         }
 
@@ -622,6 +634,7 @@ public class TicketService : ITicketService
 
         foreach (var ticket in tickets)
         {
+            var ancienTechnicien = ticket.IdTechnicienAssigne;
             var result = ticket.ReassignTo(technicienId, justification);
             if (!result.IsSuccess)
             {
@@ -630,8 +643,8 @@ public class TicketService : ITicketService
             reassignations.Add(new Reassignation
             {
                 IdTicket = ticket.IdTicket,
-                IdAncienAssigne = ticket.IdTechnicienAssigne,
-                IdNouvelAssigne = (int)technicienId,
+                IdAncienAssigne = ancienTechnicien,
+                IdNouvelAssigne = (int)ticket.IdTechnicienAssigne!,
                 Motif = justification,
                 IdAuteur = 0,
                 DateReassignation = DateTime.UtcNow

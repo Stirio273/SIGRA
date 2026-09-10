@@ -17,7 +17,12 @@ public class TicketSlaService : ITicketSlaService
     public async Task<DateTime> CalculateSlaAsync(Ticket ticket)
     {
         // var policy = await _slaPolicyProvider.GetPolicyAsync(ticket.Priority);
-        var resolutionTime = TimeSpan.FromHours((double)ticket.IdApplicationNavigation.IdCsNavigation.DureeSla);
+        var dureeSla = ticket.IdApplicationNavigation?.IdCsNavigation?.DureeSla;
+        if (dureeSla is null)
+        {
+            throw new InvalidOperationException($"La durée SLA {dureeSla} du ticket {ticket.NumeroTicket} est manquant");
+        }
+        var resolutionTime = TimeSpan.FromHours((double)dureeSla);
 
         // Deadlines calculées à partir de la création, en temps ouvré
         // var responseDeadline = await _businessTimeCalculator

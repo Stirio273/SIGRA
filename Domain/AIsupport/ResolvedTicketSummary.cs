@@ -4,7 +4,7 @@ public sealed class ResolvedTicketSummary
 {
     public required int IdTicket { get; init; }
 
-    public string Application { get; init; }
+    public required string Application { get; init; }
 
     public required string Title { get; init; }
 

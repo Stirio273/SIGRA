@@ -58,7 +58,11 @@ public partial class Ticket
         var verification = EnsureValidTransition((TicketStatus)IdStatut);
         if (verification.IsSuccess != true)
         {
-            return Result.Failure("Seul les tickets clôturés peuvent être réouvert", ErrorType.Unprocessable);
+            return Result.Failure($"Le ticket {NumeroTicket} n'est pas encore clôturé", ErrorType.Unprocessable);
+        }
+        if (DateCloture == null)
+        {
+            return Result.Failure($"La date de clôture du ticket {NumeroTicket} est manquant", ErrorType.Conflict);
         }
         var dateClotureOriginal = DateCloture;
         IdStatut = (int)TicketStatus.Opened;
@@ -84,6 +88,10 @@ public partial class Ticket
 
     public Result ReassignTo(int? newAssigneeId, string justification)
     {
+        if (newAssigneeId == null)
+        {
+            return Result.Failure($"La réassignation du ticket {NumeroTicket} vers le technicien {newAssigneeId} ne peut pas être traité", ErrorType.Unprocessable);
+        }
         if (IdTechnicienAssigne is null)
             return Result.Failure("Ticket is not assigned yet. Use assign instead.", ErrorType.Conflict);
 
