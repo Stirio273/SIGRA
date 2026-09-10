@@ -22,26 +22,36 @@ public class ReportBackgroundService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // Vérifie immédiatement au démarrage si un envoi a été manqué
-        await TryGenerateAndSendReportAsync(stoppingToken);
-
-        while (!stoppingToken.IsCancellationRequested)
+        try
         {
-            var delay = GetDelayUntilNextMonday8AM();
-
-            _logger.LogInformation(
-                "Prochain rapport hebdomadaire prévu dans {delay}.", delay);
-
-            try
-            {
-                await Task.Delay(delay, stoppingToken);
-            }
-            catch (TaskCanceledException)
-            {
-                break;
-            }
-
+             // Vérifie immédiatement au démarrage si un envoi a été manqué
             await TryGenerateAndSendReportAsync(stoppingToken);
+
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                var delay = GetDelayUntilNextMonday8AM();
+
+                _logger.LogInformation(
+                    "Prochain rapport hebdomadaire prévu dans {delay}.", delay);
+
+                try
+                {
+                    await Task.Delay(delay, stoppingToken);
+                }
+                catch (TaskCanceledException)
+                {
+                    break;
+                }
+
+                await TryGenerateAndSendReportAsync(stoppingToken);
+            }
+        }
+        catch (System.Exception e)
+        {
+            _logger.LogError(
+                "Erreur BackgroundService concernant le rapport hebdomadaire {message}",
+                e.Message);
+            return;
         }
     }
 

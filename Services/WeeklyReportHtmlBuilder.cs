@@ -16,8 +16,7 @@ public class WeeklyReportHtmlBuilder : IWeeklyReportHtmlBuilder
 
     public WeeklyReportHtmlBuilder()
     {
-        var projectRoot = GetProjectRoot();
-        var templatesPath = Path.Combine(projectRoot, "wwwroot", "report-templates");
+        var templatesPath = Path.Combine(AppContext.BaseDirectory, "wwwroot", "report-templates");
 
         _engine = new RazorLightEngineBuilder()
             .UseFileSystemProject(templatesPath)
@@ -26,18 +25,6 @@ public class WeeklyReportHtmlBuilder : IWeeklyReportHtmlBuilder
 
         _chartJsContent = File.ReadAllText(
             Path.Combine(templatesPath, "chart.umd.min.js"));
-    }
-
-    private static string GetProjectRoot()
-    {
-        var directory = AppContext.BaseDirectory;
-        while (directory != null)
-        {
-            if (File.Exists(Path.Combine(directory, "SIGRA.csproj")))
-                return directory;
-            directory = Directory.GetParent(directory)?.FullName;
-        }
-        throw new DirectoryNotFoundException("Project root not found");
     }
 
     public async Task<string> BuildAsync(WeeklyReportViewModel model)
