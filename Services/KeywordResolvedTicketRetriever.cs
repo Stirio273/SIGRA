@@ -43,7 +43,7 @@ public sealed class KeywordResolvedTicketRetriever : IKnowledgeRetriever
             var score = ComputeScore(ticket, keywords);
             if (score <= 0) continue;
 
-            int? recurrenceCount = null;
+            // int? recurrenceCount = null;
             // if (ticket.ProblemRecordId is not null)
             // {
             //     var problem = await _problemLookup.GetAsync(

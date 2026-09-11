@@ -32,8 +32,8 @@ public sealed class ResolvedTicketRepository : IResolvedTicketRepository
         int maxCandidates,
         CancellationToken cancellationToken = default)
     {
-        var query = _dbContext.Tickets
-            // .Where(t => t.IdStatut >= (int)TicketStatus.Solved)
+        var query = _dbContext.RealTickets
+            .Where(t => t.IdStatut == (int)TicketStatus.Closed)
             // .Where(t => t.EstUtilisableParIA)
             .Where(t => t.IdApplication == idApplication); // scoping decision
                                                            // .Where(t => t.ResolutionNotes != null && t.ResolutionNotes != "");
@@ -67,11 +67,11 @@ public sealed class ResolvedTicketRepository : IResolvedTicketRepository
                 IdTicket = t.IdTicket,
                 Title = t.NumeroTicket,
                 ResolutionNotes = t.DemandeurEmail!,
-                Application = t.IdApplicationNavigation.Libelle,
+                Application = t.IdApplicationNavigation != null ? t.IdApplicationNavigation.Libelle : "Non défini",
                 // Module = t.CategoryName,
                 // ResolutionType = t.ResolutionType,
                 // ProblemRecordId = t.ProblemRecordId,
-                ResolvedAt = (DateTimeOffset)t.DateCloture
+                ResolvedAt = (DateTimeOffset)t.DateCloture!
             })
             .ToListAsync(cancellationToken);
 

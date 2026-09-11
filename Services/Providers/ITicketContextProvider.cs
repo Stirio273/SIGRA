@@ -5,5 +5,5 @@ namespace SIGRA.Services.Providers;
 
 public interface ITicketContextProvider
 {
-    Task<TicketContext?> GetForAiAssistanceAsync(int idTicket, CancellationToken cancellationToken = default);
+    Task<TicketContext> GetForAiAssistanceAsync(int idTicket, CancellationToken cancellationToken = default);
 }

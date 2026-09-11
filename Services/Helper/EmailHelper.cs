@@ -9,14 +9,14 @@ public class EmailHelper
     {
         try
         {
-            var bodyType = message.Body.ContentType;
+            var bodyType = message.Body?.ContentType;
             var body = message.TextBody ?? message.HtmlBody ?? string.Empty;
 
             if (string.IsNullOrEmpty(body))
                 return string.Empty;
 
 
-            if (bodyType.IsMimeType("text", "html"))
+            if (bodyType != null && bodyType.IsMimeType("text", "html"))
             {
                 // Step 1: Remove HTML quote containers
                 var strippedHtml = HtmlEmailCleanerHelper.CleanHtmlBody(body);
@@ -46,5 +46,21 @@ public class EmailHelper
     {
         var lower = line.ToLowerInvariant();
         return lower.StartsWith("on ") && lower.Contains("wrote:");
+    }
+
+    public static string GetExtensionFromMimeType(string mimeType)
+    {
+        // Association basique pour les cas courants si le nom est null
+        return mimeType.ToLower() switch
+        {
+            "application/pdf" => ".pdf",
+            "image/jpeg" or "image/jpg" => ".jpg",
+            "image/png" => ".png",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" => ".xlsx",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document" => ".docx",
+            "text/plain" => ".txt",
+            "text/csv" => ".csv",
+            _ => ".dat" // Extension générique par défaut
+        };
     }
 }

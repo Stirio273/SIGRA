@@ -1,6 +1,8 @@
 using MailKit.Net.Imap;
 using MailKit.Security;
 using MimeKit;
+using SIGRA.Domain.Exceptions;
+using SIGRA.Services.Helper;
 using SIGRA.Services.Providers;
 
 namespace SIGRA.Services;
@@ -37,6 +39,8 @@ public class ImapMailService
         var useSslRaw = _config["Imap:UseSsl"];
         var secureOptionsRaw = _config["Imap:SecureSocketOptions"];
         var useOAuth2 = _config.GetValue<bool?>("Imap:UseOAuth2") ?? false;
+        var username = _config["Imap:Username"] ?? throw new NotFoundException("Username introuvable");
+        var password = _config["Imap:Password"];
 
         var safeHost = ResolveHost(providerKey, host);
         var (port, secureOptions) = ResolvePortAndSecureSocket(providerKey, portRaw, useSslRaw, secureOptionsRaw);
@@ -58,15 +62,17 @@ public class ImapMailService
                   ?? throw new InvalidOperationException("OAuth2 requires an IImapIdentityProvider or Imap:AccessToken.");
 
             var oauth2 = new SaslMechanismOAuth2(
-                _config["Imap:Username"] ?? string.Empty,
+                username ?? string.Empty,
                 accessToken);
 
             await client.AuthenticateAsync(oauth2, cancellationToken);
         }
         else
         {
-            var username = _config["Imap:Username"];
-            var password = _config["Imap:Password"];
+            if (password == null)
+            {
+                throw new InvalidOperationException("Le mot de passe pour la connexion IMAP doit être paramétré");
+            }
             await client.AuthenticateAsync(username, password, cancellationToken);
         }
 
@@ -96,7 +102,7 @@ public class ImapMailService
             .OfType<MimePart>()
             .Select(part =>
             {
-                var fileName = part.FileName;
+                var fileName = part.FileName ?? $"attachment_{Guid.NewGuid()}{EmailHelper.GetExtensionFromMimeType(part.ContentType.MimeType)}";
                 var contentType = part.ContentType?.MimeType ?? "application/octet-stream";
                 var size = part.ContentDisposition?.Size ?? 0;
                 return new MailAttachmentInfo(fileName, contentType, size);
@@ -117,7 +123,7 @@ public class ImapMailService
     {
         var body = message.TextBody ?? message.HtmlBody ?? string.Empty;
         return (
-            message.Subject,
+            message.Subject ?? "(Aucun objet)",
             message.From?.ToString() ?? string.Empty,
             message.Date.UtcDateTime,
             message.MessageId != null,

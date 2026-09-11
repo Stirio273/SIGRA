@@ -125,8 +125,8 @@ public class NotificationService : INotificationService
             .Select(x => new NotificationDto
             {
                 Id = x.IdNotification,
-                Title = x.Titre,
-                Message = x.Message,
+                Title = x.Titre ?? "Aucun titre",
+                Message = x.Message ?? "Aucun message",
                 EventType = x.TypeEvenement,
                 // ResourceId = x.ResourceId,
                 // ResourceType = x.ResourceType,

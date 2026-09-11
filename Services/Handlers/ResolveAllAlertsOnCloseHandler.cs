@@ -8,6 +8,11 @@ public class ResolveAllAlertsOnCloseHandler : IDomainEventHandler<TicketClosedEv
 {
     private readonly AppDbContext _db;
 
+    public ResolveAllAlertsOnCloseHandler(AppDbContext db)
+    {
+        _db = db;
+    }
+
     public async Task HandleAsync(TicketClosedEvent domainEvent)
     {
         var activeAlerts = await _db.AlerteTickets

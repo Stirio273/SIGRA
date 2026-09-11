@@ -25,6 +25,10 @@ public class DomainEventDispatcher : IDomainEventDispatcher
 
             foreach (var handler in handlers)
             {
+                if (handler is null)
+                {
+                    continue;
+                }
                 try
                 {
                     var method = handlerType.GetMethod("HandleAsync")!;

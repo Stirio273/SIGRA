@@ -9,7 +9,7 @@ public sealed class DocxTextExtractor : IFileTextExtractor
     {
         using var wordDoc = DocumentFormat.OpenXml.Packaging.WordprocessingDocument.Open(fileStream, false);
 
-        var body = wordDoc.MainDocumentPart?.Document.Body;
+        var body = wordDoc.MainDocumentPart?.Document?.Body;
         var text = body?.InnerText ?? string.Empty;
 
         return Task.FromResult(string.IsNullOrWhiteSpace(text)

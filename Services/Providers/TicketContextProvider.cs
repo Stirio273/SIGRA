@@ -16,13 +16,13 @@ public class TicketContextProvider : ITicketContextProvider
         _sanitizer = sanitizer;
     }
 
-    public async Task<TicketContext?> GetForAiAssistanceAsync(int idTicket, CancellationToken cancellationToken = default)
+    public async Task<TicketContext> GetForAiAssistanceAsync(int idTicket, CancellationToken cancellationToken = default)
     {
         var ticket = await _db.Tickets
             .AsNoTracking()
             .Include(t => t.IdApplicationNavigation)
-                .ThenInclude(a => a.IdCsNavigation)
-                    .ThenInclude(cs => cs.IdCriticiteNavigation)
+                .ThenInclude(a => a!.IdCsNavigation)
+            // .ThenInclude(cs => cs.IdCriticiteNavigation)
             .Include(t => t.IdCriticiteNavigation)
             .Include(t => t.IdStatutNavigation)
             .FirstOrDefaultAsync(t => t.IdTicket == idTicket, cancellationToken);

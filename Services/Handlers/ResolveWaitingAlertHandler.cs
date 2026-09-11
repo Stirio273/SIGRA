@@ -8,6 +8,11 @@ public class ResolveWaitingAlertHandler : IDomainEventHandler<TicketResumedEvent
 {
     private readonly AppDbContext _db;
 
+    public ResolveWaitingAlertHandler(AppDbContext db)
+    {
+        _db = db;
+    }
+
     public async Task HandleAsync(TicketResumedEvent domainEvent)
     {
         await ResolveAlertAsync(domainEvent.TicketId, "WaitingTooLong48h");

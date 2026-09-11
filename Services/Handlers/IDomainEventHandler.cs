@@ -17,6 +17,11 @@ public class RecordReopenHistoryHandler : IDomainEventHandler<TicketReopenedEven
 {
     private readonly AppDbContext _db;
 
+    public RecordReopenHistoryHandler(AppDbContext db)
+    {
+        _db = db;
+    }
+
     public async Task HandleAsync(TicketReopenedEvent domainEvent)
     {
         _db.HistoriqueStatuts.Add(new HistoriqueStatut
@@ -37,6 +42,12 @@ public class NotifyTicketReopenedHandler : IDomainEventHandler<TicketReopenedEve
     private readonly INotificationService _notificationService;
     private readonly AppDbContext _db;
 
+    public NotifyTicketReopenedHandler(INotificationService notificationService, AppDbContext db)
+    {
+        _notificationService = notificationService;
+        _db = db;
+    }
+
     public async Task HandleAsync(TicketReopenedEvent domainEvent)
     {
         // var ticket = await _db.Tickets.FindAsync(domainEvent.TicketId);
@@ -49,6 +60,11 @@ public class NotifyTicketReassignedHandler : IDomainEventHandler<TicketReassigne
 {
     private readonly INotificationService _notificationService;
 
+    public NotifyTicketReassignedHandler(INotificationService notificationService)
+    {
+        _notificationService = notificationService;
+    }
+
     public async Task HandleAsync(TicketReassignedEvent domainEvent)
     {
         await _notificationService.SendAsync(domainEvent.IdTechnicienAssigne, domainEvent.IdTicket, "Ticket Réassigné", $"Le ticket {domainEvent.NumeroTicket} vous a été réassigné", "TicketReassignedEvent");
@@ -58,6 +74,11 @@ public class NotifyTicketReassignedHandler : IDomainEventHandler<TicketReassigne
 public class AlertOnRepeatedReopenHandler : IDomainEventHandler<TicketReopenedEvent>
 {
     private readonly IHubContext<NotificationHub> _hubContext;
+
+    public AlertOnRepeatedReopenHandler(IHubContext<NotificationHub> hubContext)
+    {
+        _hubContext = hubContext;
+    }
 
     public async Task HandleAsync(TicketReopenedEvent domainEvent)
     {

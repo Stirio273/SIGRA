@@ -330,6 +330,10 @@ public class TicketService : ITicketService
             {
                 try
                 {
+                    if (part.Content == null)
+                    {
+                        continue;
+                    }
                     fileUrl = await _storageService.UploadFromEmailAsync((MimeContent)part.Content, attachment.FileName, attachment.ContentType, ticketDir);
                     var pieceJointe = new PiecesJointe
                     {

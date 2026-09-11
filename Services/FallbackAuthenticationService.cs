@@ -17,11 +17,8 @@ public class FallbackAuthenticationHandler : AuthenticationHandler<FallbackAuthe
         IOptionsMonitor<FallbackAuthenticationOptions> options,
         ILoggerFactory logger,
         UrlEncoder encoder,
-#pragma warning disable CS0618
-        ISystemClock clock,
-#pragma warning restore CS0618
         IAuthenticationService authenticationService)
-        : base(options, logger, encoder, clock)
+        : base(options, logger, encoder)
     {
         _authenticationService = authenticationService;
     }

@@ -75,8 +75,8 @@ public sealed class ReportRepository : IReportRepository
             .Where(x => x.DateCreation >= from.ToUniversalTime() && x.DateCreation <= to.ToUniversalTime() && x.IdApplication != null)
             .GroupBy(x => new
             {
-                x.IdApplicationNavigation.IdApplication,
-                x.IdApplicationNavigation.Libelle
+                IdApplication = x.IdApplicationNavigation != null ? x.IdApplicationNavigation.IdApplication : 0,
+                Libelle = x.IdApplicationNavigation != null ? x.IdApplicationNavigation.Libelle : "Non défini"
             })
             .Select(g => new RequestsByApplicationEntryDto
             {
@@ -111,7 +111,7 @@ public sealed class ReportRepository : IReportRepository
             .Where(x => x.DateCreation >= from.ToUniversalTime() && x.DateCreation <= to.ToUniversalTime());
 
         if (idClasseService.HasValue)
-            query = query.Where(x => x.IdApplicationNavigation.IdCs == idClasseService.Value);
+            query = query.Where(x => x.IdApplicationNavigation != null && x.IdApplicationNavigation.IdCs == idClasseService.Value);
 
         var tickets = await query
             .Select(x => new
@@ -168,7 +168,9 @@ public sealed class ReportRepository : IReportRepository
             .Where(x => x.DateCreation >= from.ToUniversalTime() && x.DateCreation <= to.ToUniversalTime() && x.DateCloture != null)
             .Select(x => new
             {
-                Duration = x.DateCloture.Value - x.DateCreation
+                // "!" sûr ici : la clause Where ci-dessus garantit
+                // que DateCloture n'est jamais null à ce stade
+                Duration = x.DateCloture!.Value - x.DateCreation
             })
             .ToListAsync();
 
