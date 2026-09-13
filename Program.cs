@@ -150,10 +150,13 @@ builder.Services.AddAuthentication(options =>
 })
 .AddNegotiate(options =>
 {
-    options.EnableLdap(ldapSettings =>
+    if (!builder.Environment.IsDevelopment())
     {
-        ldapSettings.Domain = "dev.local";
-    });
+        options.EnableLdap(ldapSettings =>
+        {
+            ldapSettings.Domain = "dev.local";
+        });
+    }
 })
 .AddScheme<MockAuthenticationOptions, MockAuthenticationHandler>("Mock", options =>
 {
@@ -162,9 +165,19 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization(options =>
 {
-    options.FallbackPolicy = new AuthorizationPolicyBuilder()
-    .RequireAuthenticatedUser()
-    .RequireRole(@"DEV\SIGRA-Autorises").Build();
+    if (builder.Environment.IsDevelopment())
+    {
+        options.FallbackPolicy = new AuthorizationPolicyBuilder()
+            .RequireAuthenticatedUser()
+            .Build();
+    }
+    else
+    {
+        options.FallbackPolicy = new AuthorizationPolicyBuilder()
+            .RequireAuthenticatedUser()
+            .RequireRole(@"DEV\SIGRA-Autorises")
+            .Build();
+    }
 });
 
 var app = builder.Build();

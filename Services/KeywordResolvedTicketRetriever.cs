@@ -9,16 +9,16 @@ namespace SIGRA.Services;
 public sealed class KeywordResolvedTicketRetriever : IKnowledgeRetriever
 {
     private readonly IResolvedTicketRepository _repository;
-    private readonly IProblemRecordLookup _problemLookup;
+    // private readonly IProblemRecordLookup _problemLookup;
     private readonly ITicketContentSanitizer _sanitizer;
 
     public KeywordResolvedTicketRetriever(
         IResolvedTicketRepository repository,
-        IProblemRecordLookup problemLookup,
+        // IProblemRecordLookup problemLookup,
         ITicketContentSanitizer sanitizer)
     {
         _repository = repository;
-        _problemLookup = problemLookup;
+        // _problemLookup = problemLookup;
         _sanitizer = sanitizer;
     }
 

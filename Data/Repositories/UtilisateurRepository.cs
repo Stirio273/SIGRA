@@ -25,7 +25,27 @@ public sealed class UtilisateurRepository : IUtilisateurRepository
 
     public async Task<IReadOnlyList<Utilisateur>> GetAllAsync(CancellationToken ct = default)
     {
-        return await _context.Utilisateurs.ToListAsync(ct);
+        return await _context.Utilisateurs
+            .AsNoTracking()
+            .Select(u => new Utilisateur
+            {
+                IdUtilisateur = u.IdUtilisateur,
+                IdentifiantAd = u.IdentifiantAd,
+                Nom = u.Nom,
+                Prenom = u.Prenom,
+                Email = u.Email,
+                Actif = u.Actif,
+                DateDesactivation = u.DateDesactivation,
+                DateSynchronisation = u.DateSynchronisation,
+                IdRole = u.IdRole,
+                UserGuid = u.UserGuid,
+                IdRoleNavigation = new Role
+                {
+                    IdRole = u.IdRoleNavigation.IdRole,
+                    Libelle = u.IdRoleNavigation.Libelle
+                }
+            })
+            .ToListAsync(ct);
     }
 
     public async Task<Utilisateur?> GetByIdAsync(int id, CancellationToken ct = default)

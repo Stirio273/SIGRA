@@ -76,6 +76,6 @@ public class UtilisateursController : ControllerBase
         u.Actif,
         u.DateDesactivation,
         u.DateSynchronisation,
-        u.IdRole,
+        u.IdRoleNavigation,
         u.UserGuid);
 }

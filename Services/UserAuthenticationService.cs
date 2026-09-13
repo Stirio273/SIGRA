@@ -27,7 +27,11 @@ public class UserAuthenticationService : IUserAuthenticationService
         {
             return null;
         }
-        var samAccountName = username.Split('\\')[1];
+        var samAccountName = username;
+        if (username.Split('\\').Length > 1)
+        {
+            samAccountName = username.Split('\\')[1];
+        }
         var normalized = samAccountName.Trim().ToLower();
 
         return await _dbContext.Utilisateurs

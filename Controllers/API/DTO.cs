@@ -37,7 +37,7 @@ public record JoursFerieResponse(int IdJourFerie, DateOnly Date, string Libelle)
 
 public record CreateUtilisateurRequest(string Email, int IdRole);
 public record UpdateUtilisateurRequest(string IdentifiantAd, string Nom, string Prenom, string Email, int IdRole, bool Actif, DateTime? DateDesactivation);
-public record UtilisateurResponse(int IdUtilisateur, string IdentifiantAd, string Nom, string Prenom, string Email, bool Actif, DateTime? DateDesactivation, DateTime DateSynchronisation, int IdRole, Guid UserGuid);
+public record UtilisateurResponse(int IdUtilisateur, string IdentifiantAd, string Nom, string Prenom, string Email, bool Actif, DateTime? DateDesactivation, DateTime DateSynchronisation, Role Role, Guid UserGuid);
 public record TechnicienResponse(string Nom, string Prenom, string Email, Guid UserGuid);
 
 public record CreateTicketRequest(

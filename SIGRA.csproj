@@ -6,12 +6,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>ddb8a8ec-d3bb-4d6b-880c-40bd70b890c1</UserSecretsId>
     <PreserveCompilationContext>true</PreserveCompilationContext>
-    <EnableDefaultContentItems>false</EnableDefaultContentItems>
+    <!-- <EnableDefaultContentItems>false</EnableDefaultContentItems> -->
   </PropertyGroup>
 
   <ItemGroup>
     <Content Include="wwwroot\**\*" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="appsettings.json" CopyToPublishDirectory="PreserveNewest" />
+    <Content Update="Data\imap-seen-uids.txt" CopyToPublishDirectory="PreserveNewest" />
+    <Content Update="Data\imap-failed-uids.txt" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
