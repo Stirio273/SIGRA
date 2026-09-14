@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using SIGRA.Data.Enums;
 using SIGRA.Data.Models;
 using SIGRA.Services;
 
@@ -40,13 +41,13 @@ public class AppDocumentController : ControllerBase
 
         var document = new AppDocument
         {
-            SourceId = string.IsNullOrWhiteSpace(form.SourceId)
-                ? Path.GetFileNameWithoutExtension(form.File.FileName)
-                : form.SourceId,
-            Titre = form.Title,
+            SourceId = Guid.NewGuid().ToString("N"),
+            Titre = string.IsNullOrWhiteSpace(form.Title)
+            ? Path.GetFileNameWithoutExtension(form.File.FileName)
+            : form.Title,
             Contenu = extractionResult.PlainText!,
             // Module = form.Module,
-            TypeSource = form.SourceType.ToString(),
+            TypeSource = KnowledgeSourceType.Documentation.ToString(),
             IdApplication = form.IdApplication,
             // OriginalFileName = form.File.FileName
         };
