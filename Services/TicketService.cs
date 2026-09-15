@@ -14,6 +14,7 @@ using SIGRA.Domain;
 using SIGRA.Services.Helper;
 using SIGRA.Domain.Exceptions;
 using SIGRA.Services.Handlers;
+using Pgvector;
 
 namespace SIGRA.Services;
 
@@ -32,6 +33,10 @@ public class TicketService : ITicketService
     private readonly IUserAuthenticationService _userAuthenticationService;
     // private readonly INotificationService _notificationService;
     private readonly IDomainEventDispatcher _eventDispatcher;
+    private readonly IEmbeddingService _embeddingService;
+
+    private const double RecurrenceSimilarityThreshold = 0.92;
+    private const int MinimumResolutionNotesLength = 20;
 
     public TicketService(
         AppDbContext context,
@@ -503,15 +508,71 @@ public class TicketService : ITicketService
         return Result.Success();
     }
 
-    public async Task<Result> CloseAsync(int id)
+    public async Task<Result> CloseAsync(int id, CancellationToken cancellationToken = default)
     {
         var ticket = await _context.Tickets.FindAsync(id);
         if (ticket == null)
             return Result.Failure("Ticket not found", ErrorType.NotFound);
 
         ticket.Cloturer();
+        // Step 1: recurrence detection — always attempted, based only on
+        // the problem description, never on resolution notes.
+        await DetectRecurrenceAsync(ticket);
+
+        // Step 2: knowledge-base content — only if resolution notes are
+        // actually usable.
+        PrepareKnowledgeBaseContent(ticket);
         await _context.SaveChangesAsync();
         return Result.Success();
+    }
+
+    private async Task DetectRecurrenceAsync(Ticket ticket, CancellationToken cancellationToken)
+    {
+        var descriptionInput = $"{ticket.Title}\n{ticket.Description}";
+        var descriptionEmbedding = await _embeddingService.EmbedAsync(descriptionInput, cancellationToken);
+        ticket.DescriptionEmbedding = new Vector(descriptionEmbedding);
+
+        var priorTicket = await FindLikelyRecurrenceAsync(ticket, descriptionEmbedding, cancellationToken);
+        if (priorTicket is not null)
+        {
+            priorTicket.RecurrenceCount += 1;
+            // priorTicket.PreviousResolutionProvenIneffective = true;
+            ticket.LinkedPriorTicketId = priorTicket.Id;
+        }
+    }
+
+    private void PrepareKnowledgeBaseContent(Ticket ticket)
+    {
+        var hasUsableContent = !string.IsNullOrWhiteSpace(ticket.ResolutionNotes)
+            && ticket.ResolutionNotes.Trim().Length >= MinimumResolutionNotesLength;
+
+        if (!hasUsableContent)
+        {
+            ticket.ResolutionEmbedding = null;
+            ticket.ExcludedFromAiKnowledgeBase = true;
+            return;
+        }
+
+        // Note: resolution embedding itself is computed separately,
+        // by whatever indexes it for retrieval (see below).
+    }
+
+    private async Task<Ticket?> FindLikelyRecurrenceAsync(
+       Ticket currentTicket, float[] descriptionEmbedding, CancellationToken cancellationToken)
+    {
+        var vector = new Vector(descriptionEmbedding);
+
+        var candidate = await _context.Tickets
+            .Where(t => t.IdStatut == (int)TicketStatus.Closed && t.IdTicket != currentTicket.IdTicket)
+            .Where(t => t.DescriptionEmbedding != null)
+            .Select(t => new { Ticket = t, Distance = t.DescriptionEmbedding!.CosineDistance(vector) })
+            .OrderBy(t => t.Distance)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (candidate is null) return null;
+
+        var similarity = 1 - candidate.Distance;
+        return similarity >= RecurrenceSimilarityThreshold ? candidate.Ticket : null;
     }
 
     public async Task<bool> DeleteAsync(int id)

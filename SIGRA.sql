@@ -104,20 +104,26 @@ CREATE UNIQUE INDEX uq_statut_defaut
 CREATE SEQUENCE seq_tickets_numero_ticket START 1 INCREMENT 1;
 
 CREATE TABLE tickets (
-    id_ticket               SERIAL PRIMARY KEY,
-    numero_ticket           VARCHAR(30) NOT NULL UNIQUE,
-    date_creation            TIMESTAMPTZ NOT NULL DEFAULT now(),
-    id_application           INTEGER REFERENCES applications(id_application),
+    id_ticket                       SERIAL PRIMARY KEY,
+    numero_ticket                   VARCHAR(30) NOT NULL UNIQUE,
+    date_creation                   TIMESTAMPTZ NOT NULL DEFAULT now(),
+    id_application                  INTEGER REFERENCES applications(id_application),
     -- id_type_demande          INTEGER REFERENCES types_demande(id_type_demande),
-    id_criticite             INTEGER REFERENCES criticites(id_criticite),
-    id_statut                INTEGER NOT NULL REFERENCES statuts(id_statut),
-    id_technicien_assigne    INTEGER REFERENCES utilisateurs(id_utilisateur),
-    demandeur_email          VARCHAR(255) NOT NULL,
-    demandeur_direction      VARCHAR(150) NOT NULL,
-    date_cloture             TIMESTAMPTZ,
-    duree_sla                NUMERIC(6,2) NOT NULL,
-    deadline_resolution      TIMESTAMPTZ,
-    date_changement_statut   TIMESTAMPTZ,
+    id_criticite                    INTEGER REFERENCES criticites(id_criticite),
+    id_statut                       INTEGER NOT NULL REFERENCES statuts(id_statut),
+    id_technicien_assigne           INTEGER REFERENCES utilisateurs(id_utilisateur),
+    demandeur_email                 VARCHAR(255) NOT NULL,
+    demandeur_direction             VARCHAR(150) NOT NULL,
+    date_cloture                    TIMESTAMPTZ,
+    duree_sla                       NUMERIC(6,2) NOT NULL,
+    deadline_resolution             TIMESTAMPTZ,
+    date_changement_statut          TIMESTAMPTZ,
+    cause_racine_identifie          VARCHAR(30) NOT NULL,
+    exclure_connaissances_IA        BOOLEAN NOT NULL,
+    description_embedding           VECTOR(1536),
+    nombre_recurrence               INTEGER,
+    id_ticket_lie_meme_cas          INTEGER REFERENCES tickets(id_ticket),
+
     CONSTRAINT chk_date_cloture_coherente
         CHECK (date_cloture IS NULL OR date_cloture >= date_creation)
 );
@@ -196,7 +202,8 @@ CREATE TABLE commentaires (
     date_creation       TIMESTAMPTZ NOT NULL DEFAULT now(),
     est_note_resolution BOOLEAN NOT NULL DEFAULT FALSE,
     -- Colonne générée pour la recherche plein texte (français)
-    contenu_tsv         TSVECTOR GENERATED ALWAYS AS (to_tsvector('french', contenu)) STORED
+    contenu_tsv         TSVECTOR GENERATED ALWAYS AS (to_tsvector('french', contenu)) STORED,
+    embedding_contenu   VECTOR(1536)
 );
 
 CREATE INDEX idx_commentaire_ticket ON commentaires(id_ticket);

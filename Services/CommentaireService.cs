@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Pgvector;
 using SIGRA.Data;
 using SIGRA.Data.Models;
 using SIGRA.Data.Repositories;
@@ -10,12 +11,14 @@ namespace SIGRA.Services;
 public class CommentaireService : ICommentaireService
 {
     private readonly ICommentaireRepository _commentaireRepository;
+    private readonly IEmbeddingService _embeddingService;
     private readonly AppDbContext _context;
     private readonly ILogger<CommentaireService> _logger;
 
-    public CommentaireService(ICommentaireRepository commentaireRepository, AppDbContext context, ILogger<CommentaireService> logger)
+    public CommentaireService(ICommentaireRepository commentaireRepository, IEmbeddingService embeddingService, AppDbContext context, ILogger<CommentaireService> logger)
     {
         _commentaireRepository = commentaireRepository;
+        _embeddingService = embeddingService;
         _context = context;
         _logger = logger;
     }
@@ -45,6 +48,12 @@ public class CommentaireService : ICommentaireService
             Contenu = contenu.Trim(),
             DateCreation = DateTime.UtcNow
         };
+
+        if (ticket.ExcludedFromAiKnowledgeBase == false && commentaire.EstNoteResolution)
+        {
+            var embedding = await _embeddingService.EmbedAsync(commentaire.Contenu, default);
+            commentaire.EmbeddingContenu = new Vector(embedding);
+        }
 
         await _commentaireRepository.AddAsync(commentaire);
         return commentaire;

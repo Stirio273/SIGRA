@@ -9,18 +9,18 @@ public sealed class SemanticResolvedTicketRetriever : IKnowledgeRetriever
 {
     private readonly AppDbContext _dbContext;
     private readonly IEmbeddingService _embeddingService;
-    private readonly IProblemRecordLookup _problemLookup;
+    // private readonly IProblemRecordLookup _problemLookup;
     private readonly ITicketContentSanitizer _sanitizer;
 
     public SemanticResolvedTicketRetriever(
         AppDbContext dbContext,
         IEmbeddingService embeddingService,
-        IProblemRecordLookup problemLookup,
+        // IProblemRecordLookup problemLookup,
         ITicketContentSanitizer sanitizer)
     {
         _dbContext = dbContext;
         _embeddingService = embeddingService;
-        _problemLookup = problemLookup;
+        // _problemLookup = problemLookup;
         _sanitizer = sanitizer;
     }
 
