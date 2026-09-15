@@ -15,6 +15,7 @@ using SIGRA.Services.Helper;
 using SIGRA.Domain.Exceptions;
 using SIGRA.Services.Handlers;
 using Pgvector;
+using Pgvector.EntityFrameworkCore;
 
 namespace SIGRA.Services;
 
@@ -51,6 +52,7 @@ public class TicketService : ITicketService
         ILogger<TicketService> logger,
         IUserAuthenticationService userAuthenticationService,
         // INotificationService notificationService)
+        IEmbeddingService embeddingService,
         IDomainEventDispatcher eventDispatcher)
     {
         _context = context;
@@ -65,6 +67,7 @@ public class TicketService : ITicketService
         _logger = logger;
         _userAuthenticationService = userAuthenticationService;
         // _notificationService = notificationService;
+        _embeddingService = embeddingService;
         _eventDispatcher = eventDispatcher;
     }
 
@@ -515,47 +518,51 @@ public class TicketService : ITicketService
             return Result.Failure("Ticket not found", ErrorType.NotFound);
 
         ticket.Cloturer();
-        // Step 1: recurrence detection — always attempted, based only on
-        // the problem description, never on resolution notes.
-        await DetectRecurrenceAsync(ticket);
-
-        // Step 2: knowledge-base content — only if resolution notes are
-        // actually usable.
-        PrepareKnowledgeBaseContent(ticket);
+        await DetectRecurrenceAsync(ticket, cancellationToken);
+        // await PrepareKnowledgeBaseContent(ticket, cancellationToken);
         await _context.SaveChangesAsync();
         return Result.Success();
     }
 
     private async Task DetectRecurrenceAsync(Ticket ticket, CancellationToken cancellationToken)
     {
-        var descriptionInput = $"{ticket.Title}\n{ticket.Description}";
+        var emails = await _context.EmailsSources
+            .Where(e => e.IdTicket == ticket.IdTicket)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        var title = emails.FirstOrDefault(e => e.EstEmailInitial)?.Objet ?? string.Empty;
+        var description = string.Join("\n", emails.Select(e => e.CorpsEmail));
+
+        var descriptionInput = $"{title}\n{description}";
         var descriptionEmbedding = await _embeddingService.EmbedAsync(descriptionInput, cancellationToken);
         ticket.DescriptionEmbedding = new Vector(descriptionEmbedding);
 
         var priorTicket = await FindLikelyRecurrenceAsync(ticket, descriptionEmbedding, cancellationToken);
         if (priorTicket is not null)
         {
-            priorTicket.RecurrenceCount += 1;
-            // priorTicket.PreviousResolutionProvenIneffective = true;
-            ticket.LinkedPriorTicketId = priorTicket.Id;
+            priorTicket.NombreRecurrence += 1;
+            ticket.IdTicketLieMemeCas = priorTicket.IdTicket;
         }
     }
 
-    private void PrepareKnowledgeBaseContent(Ticket ticket)
-    {
-        var hasUsableContent = !string.IsNullOrWhiteSpace(ticket.ResolutionNotes)
-            && ticket.ResolutionNotes.Trim().Length >= MinimumResolutionNotesLength;
+    // private async Task PrepareKnowledgeBaseContent(Ticket ticket, CancellationToken cancellationToken = default)
+    // {
+    //     var resolutionNotes = await _context.Commentaires
+    //         .Where(c => c.IdTicket == ticket.IdTicket && c.EstNoteResolution)
+    //         .ToListAsync(cancellationToken);
 
-        if (!hasUsableContent)
-        {
-            ticket.ResolutionEmbedding = null;
-            ticket.ExcludedFromAiKnowledgeBase = true;
-            return;
-        }
+    //     var content = string.Join("\n", resolutionNotes);
+    //     var hasUsableContent = !string.IsNullOrWhiteSpace(content)
+    //         && content.Trim().Length >= MinimumResolutionNotesLength;
 
-        // Note: resolution embedding itself is computed separately,
-        // by whatever indexes it for retrieval (see below).
-    }
+    //     if (!hasUsableContent)
+    //     {
+    //         // ticket.ResolutionEmbedding = null;
+    //         ticket.ExclureConnaissancesIa = true;
+    //         return;
+    //     }
+    // }
 
     private async Task<Ticket?> FindLikelyRecurrenceAsync(
        Ticket currentTicket, float[] descriptionEmbedding, CancellationToken cancellationToken)

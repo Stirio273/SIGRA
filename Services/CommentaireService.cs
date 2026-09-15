@@ -49,7 +49,7 @@ public class CommentaireService : ICommentaireService
             DateCreation = DateTime.UtcNow
         };
 
-        if (ticket.ExcludedFromAiKnowledgeBase == false && commentaire.EstNoteResolution)
+        if (ticket.ExclureConnaissancesIa == false && commentaire.EstNoteResolution)
         {
             var embedding = await _embeddingService.EmbedAsync(commentaire.Contenu, default);
             commentaire.EmbeddingContenu = new Vector(embedding);

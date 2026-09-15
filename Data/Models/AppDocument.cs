@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Pgvector;
 
 namespace SIGRA.Data.Models;
 
@@ -16,6 +17,8 @@ public partial class AppDocument
     public string TypeSource { get; set; } = null!;
 
     public int? IdApplication { get; set; }
+
+    public Vector? Embedding { get; set; }
 
     public string NomFichier { get; set; } = null!;
 

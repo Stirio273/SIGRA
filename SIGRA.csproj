@@ -10,8 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="wwwroot\**\*" CopyToPublishDirectory="PreserveNewest" />
-    <Content Include="appsettings.json" CopyToPublishDirectory="PreserveNewest" />
+    <!-- <Content Include="wwwroot\**\*" CopyToPublishDirectory="PreserveNewest" /> -->
+    <!-- <Content Include="appsettings.json" CopyToPublishDirectory="PreserveNewest" /> -->
     <Content Update="Data\imap-seen-uids.txt" CopyToPublishDirectory="PreserveNewest" />
     <Content Update="Data\imap-failed-uids.txt" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>

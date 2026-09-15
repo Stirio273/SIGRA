@@ -60,6 +60,7 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<TicketSlaPause> TicketSlaPauses { get; set; }
 
     public virtual DbSet<Utilisateur> Utilisateurs { get; set; }
+    
     public IQueryable<Ticket> RealTickets => Tickets.Where(t => t.IdStatut != (int)TicketStatus.Rejected);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -99,6 +100,11 @@ public partial class AppDbContext : DbContext
 
             entity.ToTable("app_documents");
 
+            entity.HasIndex(e => e.Embedding, "app_documents_embedding_idx")
+                .HasMethod("ivfflat")
+                .HasOperators(new[] { "vector_cosine_ops" })
+                .HasAnnotation("Npgsql:StorageParameter:lists", "100");
+
             entity.HasIndex(e => e.SourceId, "app_documents_source_id_key").IsUnique();
 
             entity.Property(e => e.Id).HasColumnName("id");
@@ -106,6 +112,9 @@ public partial class AppDbContext : DbContext
                 .HasMaxLength(500)
                 .HasColumnName("chemin");
             entity.Property(e => e.Contenu).HasColumnName("contenu");
+            entity.Property(e => e.Embedding)
+                .HasMaxLength(384)
+                .HasColumnName("embedding");
             entity.Property(e => e.IdApplication).HasColumnName("id_application");
             entity.Property(e => e.NomFichier)
                 .HasMaxLength(255)
@@ -119,8 +128,6 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.TypeSource)
                 .HasMaxLength(255)
                 .HasColumnName("type_source");
-            entity.Property(e => e.Embedding)
-                .HasColumnType("vector(384)");
 
             entity.HasOne(d => d.IdApplicationNavigation).WithMany(p => p.AppDocuments)
                 .HasForeignKey(d => d.IdApplication)
@@ -133,13 +140,20 @@ public partial class AppDbContext : DbContext
 
             entity.ToTable("app_document_chunks");
 
+            entity.HasIndex(e => e.Embedding, "app_document_chunks_embedding_idx")
+                .HasMethod("ivfflat")
+                .HasOperators(new[] { "vector_cosine_ops" })
+                .HasAnnotation("Npgsql:StorageParameter:lists", "100");
+
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.ChunkIndex).HasColumnName("chunk_index");
             entity.Property(e => e.Content).HasColumnName("content");
+            entity.Property(e => e.Embedding)
+                .HasMaxLength(384)
+                .HasColumnName("embedding");
             entity.Property(e => e.ParentSourceId)
                 .HasMaxLength(255)
                 .HasColumnName("parent_source_id");
-            entity.Property(e => e.Embedding).HasColumnType("vector(384)");
 
             entity.HasOne(d => d.ParentSource).WithMany(p => p.AppDocumentChunks)
                 .HasPrincipalKey(p => p.SourceId)
@@ -213,6 +227,11 @@ public partial class AppDbContext : DbContext
 
             entity.HasIndex(e => e.ContenuTsv, "idx_commentaire_contenu_tsv").HasMethod("gin");
 
+            entity.HasIndex(e => e.EmbeddingContenu, "idx_commentaire_embedding_contenu")
+                .HasMethod("ivfflat")
+                .HasOperators(new[] { "vector_cosine_ops" })
+                .HasAnnotation("Npgsql:StorageParameter:lists", "100");
+
             entity.HasIndex(e => e.EstNoteResolution, "idx_commentaire_note_resolution").HasFilter("(est_note_resolution = true)");
 
             entity.HasIndex(e => e.IdTicket, "idx_commentaire_ticket");
@@ -225,6 +244,9 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.DateCreation)
                 .HasDefaultValueSql("now()")
                 .HasColumnName("date_creation");
+            entity.Property(e => e.EmbeddingContenu)
+                .HasMaxLength(1536)
+                .HasColumnName("embedding_contenu");
             entity.Property(e => e.EstNoteResolution).HasColumnName("est_note_resolution");
             entity.Property(e => e.IdAuteur).HasColumnName("id_auteur");
             entity.Property(e => e.IdTicket).HasColumnName("id_ticket");
@@ -599,6 +621,7 @@ public partial class AppDbContext : DbContext
 
             entity.HasIndex(e => new { e.Email, e.Provider }, "uq_service_account_tokens_email_provider")
              .IsUnique();
+             
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.AccessTokenExpiresAt).HasColumnName("access_token_expires_at");
             entity.Property(e => e.CreatedAt)
@@ -690,9 +713,24 @@ public partial class AppDbContext : DbContext
 
             entity.HasIndex(e => e.IdTechnicienAssigne, "idx_ticket_technicien_assigne");
 
+            entity.HasIndex(e => e.CauseRacineIdentifie, "idx_tickets_cause_racine_identifie");
+
+            entity.HasIndex(e => e.DescriptionEmbedding, "idx_tickets_description_embedding")
+                .HasMethod("ivfflat")
+                .HasOperators(new[] { "vector_cosine_ops" })
+                .HasAnnotation("Npgsql:StorageParameter:lists", "100");
+
+            entity.HasIndex(e => e.ExclureConnaissancesIa, "idx_tickets_exclure_connaissances_ia").HasFilter("(exclure_connaissances_ia = true)");
+
+            entity.HasIndex(e => e.IdTicketLieMemeCas, "idx_tickets_id_ticket_lie_meme_cas");
+
             entity.HasIndex(e => e.NumeroTicket, "tickets_numero_ticket_key").IsUnique();
 
             entity.Property(e => e.IdTicket).HasColumnName("id_ticket");
+            entity.Property(e => e.CauseRacineIdentifie)
+                .HasMaxLength(30)
+                .HasDefaultValueSql("''::character varying")
+                .HasColumnName("cause_racine_identifie");
             entity.Property(e => e.DateChangementStatut).HasColumnName("date_changement_statut");
             entity.Property(e => e.DateCloture).HasColumnName("date_cloture");
             entity.Property(e => e.DateCreation)
@@ -705,13 +743,19 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.DemandeurEmail)
                 .HasMaxLength(255)
                 .HasColumnName("demandeur_email");
+            entity.Property(e => e.DescriptionEmbedding)
+                .HasMaxLength(1536)
+                .HasColumnName("description_embedding");
             entity.Property(e => e.DureeSla)
                 .HasPrecision(6, 2)
                 .HasColumnName("duree_sla");
+            entity.Property(e => e.ExclureConnaissancesIa).HasColumnName("exclure_connaissances_ia");
             entity.Property(e => e.IdApplication).HasColumnName("id_application");
             entity.Property(e => e.IdCriticite).HasColumnName("id_criticite");
             entity.Property(e => e.IdStatut).HasColumnName("id_statut");
             entity.Property(e => e.IdTechnicienAssigne).HasColumnName("id_technicien_assigne");
+            entity.Property(e => e.IdTicketLieMemeCas).HasColumnName("id_ticket_lie_meme_cas");
+            entity.Property(e => e.NombreRecurrence).HasColumnName("nombre_recurrence");
             entity.Property(e => e.NumeroTicket)
                 .HasMaxLength(30)
                 .HasColumnName("numero_ticket");
@@ -732,6 +776,10 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.IdTechnicienAssigneNavigation).WithMany(p => p.Tickets)
                 .HasForeignKey(d => d.IdTechnicienAssigne)
                 .HasConstraintName("tickets_id_technicien_assigne_fkey");
+
+            entity.HasOne(d => d.IdTicketLieMemeCasNavigation).WithMany(p => p.InverseIdTicketLieMemeCasNavigation)
+                .HasForeignKey(d => d.IdTicketLieMemeCas)
+                .HasConstraintName("tickets_id_ticket_lie_meme_cas_fkey");
         });
 
         modelBuilder.Entity<TicketSlaPause>(entity =>

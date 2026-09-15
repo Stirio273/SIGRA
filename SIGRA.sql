@@ -134,6 +134,16 @@ CREATE INDEX idx_ticket_technicien_assigne ON tickets(id_technicien_assigne);
 CREATE INDEX idx_ticket_application ON tickets(id_application);
 CREATE INDEX idx_ticket_criticite ON tickets(id_criticite);
 CREATE INDEX idx_ticket_date_creation ON tickets(date_creation);
+CREATE INDEX idx_tickets_id_ticket_lie_meme_cas
+    ON tickets(id_ticket_lie_meme_cas);
+CREATE INDEX idx_tickets_description_embedding
+    ON tickets USING ivfflat (description_embedding vector_cosine_ops)
+    WITH (lists = 100);
+CREATE INDEX idx_tickets_exclure_connaissances_IA
+    ON tickets(exclure_connaissances_IA)
+    WHERE exclure_connaissances_IA = TRUE;
+CREATE INDEX idx_tickets_cause_racine_identifie
+    ON tickets(cause_racine_identifie);
 
 CREATE TABLE historique_statut (
     id_historique           SERIAL PRIMARY KEY,
@@ -209,6 +219,9 @@ CREATE TABLE commentaires (
 CREATE INDEX idx_commentaire_ticket ON commentaires(id_ticket);
 CREATE INDEX idx_commentaire_note_resolution ON commentaires(est_note_resolution) WHERE est_note_resolution = TRUE;
 CREATE INDEX idx_commentaire_contenu_tsv ON commentaires USING GIN(contenu_tsv);
+CREATE INDEX idx_commentaire_embedding_contenu
+    ON commentaires USING ivfflat (embedding_contenu vector_cosine_ops)
+    WITH (lists = 100);
 
 -- ============================================================================
 -- BLOC 6 : REJET, RÉASSIGNATION & ESCALADE

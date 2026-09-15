@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Pgvector;
 
 namespace SIGRA.Data.Models;
 
@@ -31,6 +32,16 @@ public partial class Ticket
 
     public DateTime? DateChangementStatut { get; set; }
 
+    public string CauseRacineIdentifie { get; set; } = null!;
+
+    public bool ExclureConnaissancesIa { get; set; }
+
+    public Vector? DescriptionEmbedding { get; set; }
+
+    public int? NombreRecurrence { get; set; }
+
+    public int? IdTicketLieMemeCas { get; set; }
+
     public virtual ICollection<AlerteTicket> AlerteTickets { get; set; } = new List<AlerteTicket>();
 
     public virtual ICollection<Commentaire> Commentaires { get; set; } = new List<Commentaire>();
@@ -48,6 +59,10 @@ public partial class Ticket
     public virtual Statut IdStatutNavigation { get; set; } = null!;
 
     public virtual Utilisateur? IdTechnicienAssigneNavigation { get; set; }
+
+    public virtual Ticket? IdTicketLieMemeCasNavigation { get; set; }
+
+    public virtual ICollection<Ticket> InverseIdTicketLieMemeCasNavigation { get; set; } = new List<Ticket>();
 
     public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 

@@ -1,4 +1,6 @@
 using Pgvector;
+using Pgvector.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SIGRA.Data;
 using SIGRA.Data.Enums;
 using SIGRA.Domain.AIsupport;
@@ -31,51 +33,43 @@ public sealed class SemanticResolvedTicketRetriever : IKnowledgeRetriever
         var queryEmbedding = new Vector(await _embeddingService.EmbedAsync(request.Query, cancellationToken));
 
         var query = _dbContext.Tickets
-            .Where(t => t.IdStatut == (int)TicketStatus.Closed);
-        // .Where(t => !t.ExcludedFromAiKnowledgeBase)
-        // .Where(t => t.ResolutionEmbedding != null);
+            .Where(t => t.IdStatut == (int)TicketStatus.Closed)
+            .Where(t => !t.ExclureConnaissancesIa)
+            .Where(t => t.Commentaires.Any(c => c.EstNoteResolution && c.EmbeddingContenu != null));
 
         if (request.ExcludeTicketId != 0)
             query = query.Where(t => t.IdTicket != request.ExcludeTicketId);
 
         var candidates = await query
-            // .OrderBy(t => t.ResolutionEmbedding!.CosineDistance(queryEmbedding))
+            .SelectMany(
+                t => t.Commentaires.Where(c => c.EstNoteResolution && c.EmbeddingContenu != null),
+                (t, c) => new
+                {
+                    t.IdTicket,
+                    t.NumeroTicket,
+                    t.IdApplication,
+                    ApplicationName = t.IdApplicationNavigation != null ? t.IdApplicationNavigation.Libelle : null,
+                    Content = c.Contenu,
+                    Distance = c.EmbeddingContenu!.CosineDistance(queryEmbedding),
+                    Title = t.EmailsSources.FirstOrDefault(e => e.EstEmailInitial) != null ? t.EmailsSources.FirstOrDefault(e => e.EstEmailInitial)!.Objet : null
+                })
+            .OrderBy(x => x.Distance)
             .Take(request.TopK)
-            .Select(t => new
-            {
-                t.IdTicket,
-                t.NumeroTicket,
-                // t.ResolutionNotes,
-                // t.CategoryName,
-                t.IdApplication,
-                // t.ResolutionType,
-                // t.ProblemRecordId,
-                Distance = t.Commentaires.FirstOrDefault(c => c.EstNoteResolution)?.ContenuTsv!.CosineDistance(queryEmbedding)
-            })
             .ToListAsync(cancellationToken);
 
         var results = new List<KnowledgeSearchResult>();
 
         foreach (var ticket in candidates)
         {
-            // int? recurrenceCount = null;
-            // if (ticket.ProblemRecordId is not null)
-            // {
-            //     var problem = await _problemLookup.GetAsync(ticket.ProblemRecordId, cancellationToken);
-            //     recurrenceCount = problem?.LinkedIncidentCount;
-            // }
-
             results.Add(new KnowledgeSearchResult
             {
-                SourceId = ticket.Id,
-                Title = $"Resolved ticket: {ticket.Title}",
-                Content = _sanitizer.Sanitize(ticket.ResolutionNotes!),
-                Module = ticket.CategoryName,
+                SourceId = ticket.IdTicket.ToString(),
+                Title = $"Resolved ticket: {ticket.Title ?? ticket.NumeroTicket}",
+                Content = _sanitizer.Sanitize(ticket.Content),
+                Module = null,
                 Score = 1 - ticket.Distance,
                 SourceType = KnowledgeSourceType.ResolvedTicket,
-                Application = ticket.ApplicationArea,
-                // ResolutionType = ticket.ResolutionType,
-                // RecurrenceCount = recurrenceCount
+                Application = ticket.ApplicationName ?? "Indeterminée"
             });
         }
 

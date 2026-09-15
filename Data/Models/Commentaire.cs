@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NpgsqlTypes;
+using Pgvector;
 
 namespace SIGRA.Data.Models;
 
@@ -19,6 +20,8 @@ public partial class Commentaire
     public bool EstNoteResolution { get; set; }
 
     public NpgsqlTsVector? ContenuTsv { get; set; }
+
+    public Vector? EmbeddingContenu { get; set; }
 
     public virtual Utilisateur IdAuteurNavigation { get; set; } = null!;
 
