@@ -29,12 +29,13 @@ public class TicketService : ITicketService
     private readonly IEmailsSourceRepository _emailSourceRepository;
     private readonly IPiecesJointeRepository _pieceJointeRepository;
     private readonly IStorageService _storageService;
-    private readonly IConfiguration _config;
+    // private readonly IConfiguration _config;
     private readonly ILogger<TicketService> _logger;
     private readonly IUserAuthenticationService _userAuthenticationService;
     // private readonly INotificationService _notificationService;
     private readonly IDomainEventDispatcher _eventDispatcher;
     private readonly IEmbeddingService _embeddingService;
+    private readonly ITicketContentSanitizer _sanitizer;
 
     private const double RecurrenceSimilarityThreshold = 0.92;
     private const int MinimumResolutionNotesLength = 20;
@@ -53,6 +54,7 @@ public class TicketService : ITicketService
         IUserAuthenticationService userAuthenticationService,
         // INotificationService notificationService)
         IEmbeddingService embeddingService,
+        ITicketContentSanitizer sanitizer,
         IDomainEventDispatcher eventDispatcher)
     {
         _context = context;
@@ -63,11 +65,12 @@ public class TicketService : ITicketService
         _emailSourceRepository = emailSourceRepository;
         _pieceJointeRepository = pieceJointeRepository;
         _storageService = storageService;
-        _config = config;
+        // _config = config;
         _logger = logger;
         _userAuthenticationService = userAuthenticationService;
         // _notificationService = notificationService;
         _embeddingService = embeddingService;
+        _sanitizer = sanitizer;
         _eventDispatcher = eventDispatcher;
     }
 
@@ -535,7 +538,7 @@ public class TicketService : ITicketService
         var description = string.Join("\n", emails.Select(e => e.CorpsEmail));
 
         var descriptionInput = $"{title}\n{description}";
-        var descriptionEmbedding = await _embeddingService.EmbedAsync(descriptionInput, cancellationToken);
+        var descriptionEmbedding = await _embeddingService.EmbedAsync(_sanitizer.Sanitize(descriptionInput), cancellationToken);
         ticket.DescriptionEmbedding = new Vector(descriptionEmbedding);
 
         var priorTicket = await FindLikelyRecurrenceAsync(ticket, descriptionEmbedding, cancellationToken);
