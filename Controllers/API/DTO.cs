@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using SIGRA.Data.Enums;
 using SIGRA.Data.Models;
+using SIGRA.Date.Enums;
 using SIGRA.Domain;
 
 namespace SIGRA.Controllers;
@@ -232,6 +233,12 @@ public sealed class AddAppDocumentForm
     // public required KnowledgeSourceType SourceType { get; init; }
     public required int IdApplication { get; init; }
 }
+
+public sealed class CloseTicketRequest
+{
+    public required RootCauseConfidence RootCauseConfidence { get; init; }
+}
+
 
 
 

@@ -16,6 +16,7 @@ using SIGRA.Domain.Exceptions;
 using SIGRA.Services.Handlers;
 using Pgvector;
 using Pgvector.EntityFrameworkCore;
+using SIGRA.Date.Enums;
 
 namespace SIGRA.Services;
 
@@ -499,7 +500,7 @@ public class TicketService : ITicketService
 
         var result = targetStatus switch
         {
-            TicketStatus.Closed => ticket.Cloturer(),
+            // TicketStatus.Closed => ticket.Cloturer(),
             TicketStatus.Opened => ticket.Ouvrir(),
             TicketStatus.PendingReject => ticket.AttendreRejet(),
             _ => ticket.PasserStatutSuivant(targetStatus)
@@ -514,13 +515,13 @@ public class TicketService : ITicketService
         return Result.Success();
     }
 
-    public async Task<Result> CloseAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Result> CloseAsync(int id, RootCauseConfidence causeConfidence, CancellationToken cancellationToken = default)
     {
         var ticket = await _context.Tickets.FindAsync(id);
         if (ticket == null)
             return Result.Failure("Ticket not found", ErrorType.NotFound);
 
-        ticket.Cloturer();
+        ticket.Cloturer(causeConfidence);
         await DetectRecurrenceAsync(ticket, cancellationToken);
         // await PrepareKnowledgeBaseContent(ticket, cancellationToken);
         await _context.SaveChangesAsync();
@@ -563,6 +564,11 @@ public class TicketService : ITicketService
     //     {
     //         // ticket.ResolutionEmbedding = null;
     //         ticket.ExclureConnaissancesIa = true;
+
+    //         // _logger.LogInformation(
+    //         //    "Ticket {TicketNumero} excluded from AI knowledge base: resolution notes below minimum length ({Length} < {MinimumLength}).",
+    //         //    ticket.NumeroTicket, content.Trim().Length, MinimumResolutionNotesLength);
+
     //         return;
     //     }
     // }

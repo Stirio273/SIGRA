@@ -1,5 +1,6 @@
 using SIGRA.Data.Enums;
 using SIGRA.Data.Models;
+using SIGRA.Date.Enums;
 
 namespace SIGRA.Domain.AIsupport;
 
@@ -31,5 +32,10 @@ public sealed class KnowledgeSearchResult
     public double Score { get; init; }
 
     public string? SourceUrl { get; init; }
+
     public required KnowledgeSourceType SourceType { get; init; }
+
+    public RootCauseConfidence? RootCauseConfidence { get; init; }
+
+    public int? RecurrenceCount { get; init; }
 }

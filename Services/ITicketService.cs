@@ -1,6 +1,7 @@
 using MimeKit;
 using SIGRA.Controllers;
 using SIGRA.Data.Models;
+using SIGRA.Date.Enums;
 using SIGRA.Domain;
 
 namespace SIGRA.Services;
@@ -25,7 +26,7 @@ public interface ITicketService
     Task<Result> ReassignAsync(IEnumerable<int> ticketIds, Guid? technicianUserGuid, string justification);
     Task<bool> DeleteAsync(int id);
     Task<Result> AskRejectAsync(int ticketId, int idAuteur, string justificatif);
-    Task<Result> CloseAsync(int id, CancellationToken cancellationToken = default);
+    Task<Result> CloseAsync(int id, RootCauseConfidence causeConfidence, CancellationToken cancellationToken = default);
     Task<PendingRejectResponse?> GetPendingRejectAsync(int ticketId);
     Task<bool> RespondRejectDemandAsync(int ticketId, int idValidateur, bool isRejected);
     Task TransferAsync(int ticketId, int idEntiteExterne, int idAuteur, string explication, bool estDefinitif);

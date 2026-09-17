@@ -119,7 +119,7 @@ CREATE TABLE tickets (
     deadline_resolution             TIMESTAMPTZ,
     date_changement_statut          TIMESTAMPTZ,
     cause_racine_identifie          VARCHAR(30) NOT NULL,
-    exclure_connaissances_IA        BOOLEAN NOT NULL,
+    exclure_connaissances_IA        BOOLEAN NOT NULL DEFAULT true,
     description_embedding           VECTOR(1536),
     nombre_recurrence               INTEGER,
     id_ticket_lie_meme_cas          INTEGER REFERENCES tickets(id_ticket),
@@ -211,6 +211,7 @@ CREATE TABLE commentaires (
     contenu             TEXT NOT NULL,
     date_creation       TIMESTAMPTZ NOT NULL DEFAULT now(),
     est_note_resolution BOOLEAN NOT NULL DEFAULT FALSE,
+    -- sanitized_content   TEXT NOT NULL,
     -- Colonne générée pour la recherche plein texte (français)
     contenu_tsv         TSVECTOR GENERATED ALWAYS AS (to_tsvector('french', contenu)) STORED,
     embedding_contenu   VECTOR(1536)

@@ -1,4 +1,5 @@
 using SIGRA.Data.Enums;
+using SIGRA.Date.Enums;
 using SIGRA.Domain;
 
 namespace SIGRA.Data.Models;
@@ -73,7 +74,7 @@ public partial class Ticket
         return Result.Success();
     }
 
-    public Result Cloturer()
+    public Result Cloturer(RootCauseConfidence causeConfidence)
     {
         if (this.IdStatut == (int)TicketStatus.Closed)
         {
@@ -82,6 +83,7 @@ public partial class Ticket
         this.IdStatut = (int)TicketStatus.Closed;
         DateChangementStatut = DateTime.UtcNow;
         this.DateCloture = DateTime.UtcNow;
+        CauseRacineIdentifie = causeConfidence;
         // _domainEvents.Add(new TicketClosedEvent(IdTicket, WasResolutionSlaBreached));
         return Result.Success();
     }

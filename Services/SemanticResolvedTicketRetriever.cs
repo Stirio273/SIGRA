@@ -48,6 +48,8 @@ public sealed class SemanticResolvedTicketRetriever : IKnowledgeRetriever
                     t.IdTicket,
                     t.NumeroTicket,
                     t.IdApplication,
+                    t.CauseRacineIdentifie,
+                    t.NombreRecurrence,
                     ApplicationName = t.IdApplicationNavigation != null ? t.IdApplicationNavigation.Libelle : null,
                     Content = c.Contenu,
                     Distance = c.EmbeddingContenu!.CosineDistance(queryEmbedding),
@@ -69,7 +71,9 @@ public sealed class SemanticResolvedTicketRetriever : IKnowledgeRetriever
                 Module = null,
                 Score = 1 - ticket.Distance,
                 SourceType = KnowledgeSourceType.ResolvedTicket,
-                Application = ticket.ApplicationName ?? "Indeterminée"
+                Application = ticket.ApplicationName ?? "Indeterminée",
+                RootCauseConfidence = ticket.CauseRacineIdentifie,
+                RecurrenceCount = ticket.NombreRecurrence
             });
         }
 
