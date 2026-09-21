@@ -6,18 +6,32 @@ public sealed class KnowledgeSourceAttacher : ISourceAttacher
 {
     public AISupportResponse Attach(
         AISupportResponse response,
-        IReadOnlyList<KnowledgeSearchResult> knowledgeResults)
+        IReadOnlyList<KnowledgeSearchResult> documentationResults,
+        IReadOnlyList<KnowledgeSearchResult> ticketResults)
     {
-        var sources = knowledgeResults
+        var sourcesDocs = documentationResults
            .Select(result => new AISourceReference
            {
-               SourceType = result.SourceType.ToString(),
+               SourceType = "Doc",
                SourceId = result.SourceId,
                Title = result.Title,
                Excerpt = Truncate(result.Content, 200),
                RelevanceScore = result.Score
            })
            .ToList();
+
+        var sourcesPastTickets = ticketResults
+           .Select(result => new AISourceReference
+           {
+               SourceType = "Resolved tickets",
+               SourceId = result.SourceId,
+               Title = result.Title,
+               Excerpt = Truncate(result.Content, 200),
+               RelevanceScore = result.Score
+           })
+           .ToList();
+
+        var sources = sourcesDocs.Concat(sourcesPastTickets).ToList();
 
         // var recurring = knowledgeResults
         //     .Where(r => r.RecurrenceCount is > 2 && r.ResolutionType == ResolutionType.Workaround)

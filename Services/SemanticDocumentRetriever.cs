@@ -7,7 +7,7 @@ using SIGRA.Domain.AIsupport;
 
 namespace SIGRA.Services;
 
-public sealed class SemanticDocumentRetriever : IKnowledgeRetriever
+public sealed class SemanticDocumentRetriever : IDocumentationKnowledgeRetriever
 {
     private readonly AppDbContext _dbContext;
     private readonly IEmbeddingService _embeddingService;
@@ -18,7 +18,7 @@ public sealed class SemanticDocumentRetriever : IKnowledgeRetriever
         _embeddingService = embeddingService;
     }
 
-    public async Task<IReadOnlyList<KnowledgeSearchResult>> SearchAsync(
+    public async Task<IReadOnlyList<KnowledgeSearchResult>> SearchDocumentationAsync(
         KnowledgeSearchRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -50,7 +50,6 @@ public sealed class SemanticDocumentRetriever : IKnowledgeRetriever
                 Content = r.Content,
                 // Module = doc.Module,
                 Score = 1 - r.Distance, // cosine distance -> similarity
-                SourceType = KnowledgeSourceType.Documentation,
                 Application = doc.IdApplicationNavigation?.Libelle ?? ""
             };
         }).ToList();

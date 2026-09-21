@@ -6,5 +6,6 @@ public interface ISourceAttacher
 {
     AISupportResponse Attach(
         AISupportResponse response,
-        IReadOnlyList<KnowledgeSearchResult> knowledgeResults);
+        IReadOnlyList<KnowledgeSearchResult> documentationResults,
+        IReadOnlyList<KnowledgeSearchResult> ticketResults);
 }

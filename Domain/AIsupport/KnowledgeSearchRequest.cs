@@ -33,8 +33,6 @@ public sealed class KnowledgeSearchResult
 
     public string? SourceUrl { get; init; }
 
-    public required KnowledgeSourceType SourceType { get; init; }
-
     public RootCauseConfidence? RootCauseConfidence { get; init; }
 
     public int? RecurrenceCount { get; init; }

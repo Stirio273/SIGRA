@@ -9,5 +9,6 @@ public interface IPromptBuilder
     string BuildUserPrompt(
         TicketContext ticket,
         string technicianQuestion,
-        IReadOnlyList<KnowledgeSearchResult> knowledgeResults);
+        IReadOnlyList<KnowledgeSearchResult> documentationResults,
+        IReadOnlyList<KnowledgeSearchResult> ticketResults);
 }

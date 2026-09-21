@@ -47,7 +47,7 @@ public class AppDocumentController : ControllerBase
             : form.Title,
             Contenu = extractionResult.PlainText!,
             // Module = form.Module,
-            TypeSource = KnowledgeSourceType.Documentation.ToString(),
+            // TypeSource = KnowledgeSourceType.Documentation.ToString(),
             IdApplication = form.IdApplication,
             // OriginalFileName = form.File.FileName
         };

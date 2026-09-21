@@ -1,5 +1,6 @@
 using System.Text;
 using SIGRA.Data.Enums;
+using SIGRA.Date.Enums;
 using SIGRA.Domain.AIsupport;
 
 namespace SIGRA.Services;
@@ -24,7 +25,8 @@ public class TicketPromptBuilder : IPromptBuilder
 
     public string BuildUserPrompt(
         TicketContext ticket,
-        string technicianQuestion, IReadOnlyList<KnowledgeSearchResult> knowledgeResults)
+        string technicianQuestion, IReadOnlyList<KnowledgeSearchResult> documentationResults,
+        IReadOnlyList<KnowledgeSearchResult> ticketResults)
     {
         var builder = new StringBuilder();
 
@@ -52,16 +54,14 @@ public class TicketPromptBuilder : IPromptBuilder
 
         builder.AppendLine();
 
-        if (knowledgeResults.Count > 0)
+        if (documentationResults.Count > 0 || ticketResults.Count > 0)
         {
             builder.AppendLine();
             builder.AppendLine("Relevant internal knowledge:");
 
-            foreach (var result in knowledgeResults)
+            foreach (var result in documentationResults)
             {
-                var label = result.SourceType == KnowledgeSourceType.ResolvedTicket
-                    ? $"Past resolved ticket ({ticket.Application})"
-                    : $"Official {ticket.Application} documentation";
+                var label = $"Official {ticket.Application} documentation";
 
                 // var resolutionNote = result.ResolutionType switch
                 // {
@@ -70,11 +70,31 @@ public class TicketPromptBuilder : IPromptBuilder
                 //     _ => ""
                 // };
 
-                // var recurrenceNote = result.RecurrenceCount is > 2
-                //     ? $" — this issue has recurred {result.RecurrenceCount} times."
-                //     : "";
+                var recurrenceNote = result.RecurrenceCount is > 2
+                    ? $" — this issue has recurred {result.RecurrenceCount} times."
+                    : "";
 
-                // builder.AppendLine($"[{result.SourceId}] ({label}){resolutionNote}{recurrenceNote} {result.Title}");
+                builder.AppendLine($"[{result.SourceId}] ({label}){recurrenceNote} {result.Title}");
+                builder.AppendLine(result.Content);
+                builder.AppendLine();
+            }
+
+            foreach (var result in ticketResults)
+            {
+                var label = $"Past resolved ticket ({ticket.Application})";
+
+                var resolutionNote = result.RootCauseConfidence switch
+                {
+                    RootCauseConfidence.QuickFixNoRootCauseFound => " (WORKAROUND ONLY — root cause not fixed)",
+                    RootCauseConfidence.RootCauseIdentified => " (root cause fix)",
+                    _ => ""
+                };
+
+                var recurrenceNote = result.RecurrenceCount is > 2
+                    ? $" — this issue has recurred {result.RecurrenceCount} times."
+                    : "";
+
+                builder.AppendLine($"[{result.SourceId}] ({label}){resolutionNote}{recurrenceNote} {result.Title}");
                 builder.AppendLine(result.Content);
                 builder.AppendLine();
             }

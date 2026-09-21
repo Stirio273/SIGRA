@@ -4,10 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using SIGRA.Data;
 using SIGRA.Data.Enums;
 using SIGRA.Domain.AIsupport;
+using SIGRA.Date.Enums;
 
 namespace SIGRA.Services;
 
-public sealed class SemanticResolvedTicketRetriever : IKnowledgeRetriever
+public sealed class SemanticResolvedTicketRetriever : IResolvedTicketKnowledgeRetriever
 {
     private readonly AppDbContext _dbContext;
     private readonly IEmbeddingService _embeddingService;
@@ -26,7 +27,7 @@ public sealed class SemanticResolvedTicketRetriever : IKnowledgeRetriever
         _sanitizer = sanitizer;
     }
 
-    public async Task<IReadOnlyList<KnowledgeSearchResult>> SearchAsync(
+    public async Task<IReadOnlyList<KnowledgeSearchResult>> SearchResolvedTicketsAsync(
         KnowledgeSearchRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -70,9 +71,8 @@ public sealed class SemanticResolvedTicketRetriever : IKnowledgeRetriever
                 Content = _sanitizer.Sanitize(ticket.Content),
                 Module = null,
                 Score = 1 - ticket.Distance,
-                SourceType = KnowledgeSourceType.ResolvedTicket,
                 Application = ticket.ApplicationName ?? "Indeterminée",
-                RootCauseConfidence = ticket.CauseRacineIdentifie,
+                RootCauseConfidence = Enum.Parse<RootCauseConfidence>(ticket.CauseRacineIdentifie),
                 RecurrenceCount = ticket.NombreRecurrence
             });
         }

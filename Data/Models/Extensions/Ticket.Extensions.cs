@@ -83,7 +83,7 @@ public partial class Ticket
         this.IdStatut = (int)TicketStatus.Closed;
         DateChangementStatut = DateTime.UtcNow;
         this.DateCloture = DateTime.UtcNow;
-        CauseRacineIdentifie = causeConfidence;
+        CauseRacineIdentifie = causeConfidence.ToString();
         // _domainEvents.Add(new TicketClosedEvent(IdTicket, WasResolutionSlaBreached));
         return Result.Success();
     }

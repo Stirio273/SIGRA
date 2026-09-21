@@ -6,7 +6,7 @@ using SIGRA.Domain.AIsupport;
 namespace SIGRA.Services;
 
 
-public sealed class KeywordResolvedTicketRetriever : IKnowledgeRetriever
+public sealed class KeywordResolvedTicketRetriever : IResolvedTicketKnowledgeRetriever
 {
     private readonly IResolvedTicketRepository _repository;
     // private readonly IProblemRecordLookup _problemLookup;
@@ -22,7 +22,7 @@ public sealed class KeywordResolvedTicketRetriever : IKnowledgeRetriever
         _sanitizer = sanitizer;
     }
 
-    public async Task<IReadOnlyList<KnowledgeSearchResult>> SearchAsync(
+    public async Task<IReadOnlyList<KnowledgeSearchResult>> SearchResolvedTicketsAsync(
         KnowledgeSearchRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -58,7 +58,6 @@ public sealed class KeywordResolvedTicketRetriever : IKnowledgeRetriever
                 Content = _sanitizer.Sanitize(ticket.ResolutionNotes),
                 Module = ticket.Module,
                 Score = score,
-                SourceType = KnowledgeSourceType.ResolvedTicket,
                 Application = ticket.Application
                 // ResolutionType = ticket.ResolutionType,
                 // RecurrenceCount = recurrenceCount

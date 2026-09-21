@@ -3,7 +3,7 @@ using SIGRA.Domain.AIsupport;
 
 namespace SIGRA.Services;
 
-public sealed class KeywordDocumentRetriever : IKnowledgeRetriever
+public sealed class KeywordDocumentRetriever : IDocumentationKnowledgeRetriever
 {
     private readonly IKnowledgeDocumentStore _documentStore;
 
@@ -12,7 +12,7 @@ public sealed class KeywordDocumentRetriever : IKnowledgeRetriever
         _documentStore = documentStore;
     }
 
-    public Task<IReadOnlyList<KnowledgeSearchResult>> SearchAsync(
+    public Task<IReadOnlyList<KnowledgeSearchResult>> SearchDocumentationAsync(
         KnowledgeSearchRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -37,8 +37,7 @@ public sealed class KeywordDocumentRetriever : IKnowledgeRetriever
                 Application = request.Application.Libelle,
                 Content = x.Document.Content,
                 Module = x.Document.Module,
-                Score = x.Score,
-                SourceType = KnowledgeSourceType.Documentation
+                Score = x.Score
             })
             .ToList();
 
