@@ -34,7 +34,7 @@ public partial class Ticket
 
     public string CauseRacineIdentifie { get; set; } = null!;
 
-    public bool ExclureConnaissancesIa { get; set; } = true;
+    public bool ExclureConnaissancesIa { get; set; }
 
     public Vector? DescriptionEmbedding { get; set; }
 

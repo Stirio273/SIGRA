@@ -29,7 +29,7 @@ public sealed class DocumentEmbeddingIndexer
         // Remove any existing chunks first, in case this is a re-index 
         // of a document whose content changed (chunk count may differ).
         var existingChunks = _dbContext.AppDocumentChunks
-            .Where(c => c.ParentSourceId == document.SourceId);
+            .Where(c => c.ParentId == document.Id);
 
         _dbContext.AppDocumentChunks.RemoveRange(existingChunks);
 
@@ -41,7 +41,7 @@ public sealed class DocumentEmbeddingIndexer
 
             _dbContext.AppDocumentChunks.Add(new AppDocumentChunk
             {
-                ParentSourceId = document.SourceId,
+                ParentId = document.Id,
                 ChunkIndex = i,
                 Content = chunks[i],
                 Embedding = new Vector(embedding)

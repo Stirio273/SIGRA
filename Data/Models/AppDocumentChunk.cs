@@ -8,7 +8,7 @@ public partial class AppDocumentChunk
 {
     public int Id { get; set; }
 
-    public string ParentSourceId { get; set; } = null!;
+    public int ParentId { get; set; }
 
     public int ChunkIndex { get; set; }
 
@@ -16,5 +16,5 @@ public partial class AppDocumentChunk
 
     public Vector Embedding { get; set; } = null!;
 
-    public virtual AppDocument ParentSource { get; set; } = null!;
+    public virtual AppDocument Parent { get; set; } = null!;
 }

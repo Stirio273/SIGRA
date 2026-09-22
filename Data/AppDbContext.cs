@@ -60,7 +60,7 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<TicketSlaPause> TicketSlaPauses { get; set; }
 
     public virtual DbSet<Utilisateur> Utilisateurs { get; set; }
-    
+
     public IQueryable<Ticket> RealTickets => Tickets.Where(t => t.IdStatut != (int)TicketStatus.Rejected);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -100,34 +100,18 @@ public partial class AppDbContext : DbContext
 
             entity.ToTable("app_documents");
 
-            entity.HasIndex(e => e.Embedding, "app_documents_embedding_idx")
-                .HasMethod("ivfflat")
-                .HasOperators(new[] { "vector_cosine_ops" })
-                .HasAnnotation("Npgsql:StorageParameter:lists", "100");
-
-            entity.HasIndex(e => e.SourceId, "app_documents_source_id_key").IsUnique();
-
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Chemin)
                 .HasMaxLength(500)
                 .HasColumnName("chemin");
             entity.Property(e => e.Contenu).HasColumnName("contenu");
-            entity.Property(e => e.Embedding)
-                .HasMaxLength(384)
-                .HasColumnName("embedding");
             entity.Property(e => e.IdApplication).HasColumnName("id_application");
             entity.Property(e => e.NomFichier)
                 .HasMaxLength(255)
                 .HasColumnName("nom_fichier");
-            entity.Property(e => e.SourceId)
-                .HasMaxLength(255)
-                .HasColumnName("source_id");
             entity.Property(e => e.Titre)
                 .HasMaxLength(255)
                 .HasColumnName("titre");
-            entity.Property(e => e.TypeSource)
-                .HasMaxLength(255)
-                .HasColumnName("type_source");
 
             entity.HasOne(d => d.IdApplicationNavigation).WithMany(p => p.AppDocuments)
                 .HasForeignKey(d => d.IdApplication)
@@ -151,15 +135,12 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Embedding)
                 .HasMaxLength(384)
                 .HasColumnName("embedding");
-            entity.Property(e => e.ParentSourceId)
-                .HasMaxLength(255)
-                .HasColumnName("parent_source_id");
+            entity.Property(e => e.ParentId).HasColumnName("parent_id");
 
-            entity.HasOne(d => d.ParentSource).WithMany(p => p.AppDocumentChunks)
-                .HasPrincipalKey(p => p.SourceId)
-                .HasForeignKey(d => d.ParentSourceId)
+            entity.HasOne(d => d.Parent).WithMany(p => p.AppDocumentChunks)
+                .HasForeignKey(d => d.ParentId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("app_document_chunks_parent_source_id_fkey");
+                .HasConstraintName("app_document_chunks_parent_id_fkey");
         });
 
         modelBuilder.Entity<Application>(entity =>
@@ -204,11 +185,8 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("duree_sla");
             entity.Property(e => e.DureeSlaReouverture)
                 .HasPrecision(6, 2)
-                .HasDefaultValue(2m)
                 .HasColumnName("duree_sla_reouverture");
-            entity.Property(e => e.IdCriticite)
-                .HasDefaultValue(5)
-                .HasColumnName("id_criticite");
+            entity.Property(e => e.IdCriticite).HasColumnName("id_criticite");
             entity.Property(e => e.Libelle)
                 .HasMaxLength(100)
                 .HasColumnName("libelle");
@@ -428,6 +406,10 @@ public partial class AppDbContext : DbContext
 
             entity.ToTable("notifications");
 
+            entity.HasIndex(e => new { e.IdDestinataire, e.EstLue }, "idx_notification_destinataire_non_lues").HasFilter("(est_lue = false)");
+
+            entity.HasIndex(e => e.IdTicket, "idx_notification_ticket");
+
             entity.Property(e => e.IdNotification).HasColumnName("id_notification");
             entity.Property(e => e.DateCreation)
                 .HasDefaultValueSql("now()")
@@ -544,6 +526,8 @@ public partial class AppDbContext : DbContext
 
             entity.ToTable("regles_criticite");
 
+            entity.HasIndex(e => e.IdCs, "regles_criticite_id_cs_key").IsUnique();
+
             entity.Property(e => e.IdRegleCriticite).HasColumnName("id_regle_criticite");
             entity.Property(e => e.IdCriticite).HasColumnName("id_criticite");
             entity.Property(e => e.IdCs).HasColumnName("id_cs");
@@ -553,8 +537,8 @@ public partial class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("regles_criticite_id_criticite_fkey");
 
-            entity.HasOne(d => d.IdCsNavigation).WithMany(p => p.ReglesCriticites)
-                .HasForeignKey(d => d.IdCs)
+            entity.HasOne(d => d.IdCsNavigation).WithOne(p => p.ReglesCriticite)
+                .HasForeignKey<ReglesCriticite>(d => d.IdCs)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("regles_criticite_id_cs_fkey");
         });
@@ -621,7 +605,7 @@ public partial class AppDbContext : DbContext
 
             entity.HasIndex(e => new { e.Email, e.Provider }, "uq_service_account_tokens_email_provider")
              .IsUnique();
-             
+
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.AccessTokenExpiresAt).HasColumnName("access_token_expires_at");
             entity.Property(e => e.CreatedAt)
@@ -657,44 +641,6 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Libelle)
                 .HasMaxLength(50)
                 .HasColumnName("libelle");
-
-            entity.HasMany(d => d.IdStatutDestinations).WithMany(p => p.IdStatutOrigines)
-                .UsingEntity<Dictionary<string, object>>(
-                    "TransitionsAutorisee",
-                    r => r.HasOne<Statut>().WithMany()
-                        .HasForeignKey("IdStatutDestination")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("transitions_autorisees_id_statut_destination_fkey"),
-                    l => l.HasOne<Statut>().WithMany()
-                        .HasForeignKey("IdStatutOrigine")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("transitions_autorisees_id_statut_origine_fkey"),
-                    j =>
-                    {
-                        j.HasKey("IdStatutOrigine", "IdStatutDestination").HasName("transitions_autorisees_pkey");
-                        j.ToTable("transitions_autorisees");
-                        j.IndexerProperty<int>("IdStatutOrigine").HasColumnName("id_statut_origine");
-                        j.IndexerProperty<int>("IdStatutDestination").HasColumnName("id_statut_destination");
-                    });
-
-            entity.HasMany(d => d.IdStatutOrigines).WithMany(p => p.IdStatutDestinations)
-                .UsingEntity<Dictionary<string, object>>(
-                    "TransitionsAutorisee",
-                    r => r.HasOne<Statut>().WithMany()
-                        .HasForeignKey("IdStatutOrigine")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("transitions_autorisees_id_statut_origine_fkey"),
-                    l => l.HasOne<Statut>().WithMany()
-                        .HasForeignKey("IdStatutDestination")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("transitions_autorisees_id_statut_destination_fkey"),
-                    j =>
-                    {
-                        j.HasKey("IdStatutOrigine", "IdStatutDestination").HasName("transitions_autorisees_pkey");
-                        j.ToTable("transitions_autorisees");
-                        j.IndexerProperty<int>("IdStatutOrigine").HasColumnName("id_statut_origine");
-                        j.IndexerProperty<int>("IdStatutDestination").HasColumnName("id_statut_destination");
-                    });
         });
 
         modelBuilder.Entity<Ticket>(entity =>
@@ -729,7 +675,6 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.IdTicket).HasColumnName("id_ticket");
             entity.Property(e => e.CauseRacineIdentifie)
                 .HasMaxLength(30)
-                .HasDefaultValueSql("''::character varying")
                 .HasColumnName("cause_racine_identifie");
             entity.Property(e => e.DateChangementStatut).HasColumnName("date_changement_statut");
             entity.Property(e => e.DateCloture).HasColumnName("date_cloture");
@@ -749,7 +694,9 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.DureeSla)
                 .HasPrecision(6, 2)
                 .HasColumnName("duree_sla");
-            entity.Property(e => e.ExclureConnaissancesIa).HasColumnName("exclure_connaissances_ia");
+            entity.Property(e => e.ExclureConnaissancesIa)
+                .HasDefaultValue(true)
+                .HasColumnName("exclure_connaissances_ia");
             entity.Property(e => e.IdApplication).HasColumnName("id_application");
             entity.Property(e => e.IdCriticite).HasColumnName("id_criticite");
             entity.Property(e => e.IdStatut).HasColumnName("id_statut");
@@ -810,6 +757,8 @@ public partial class AppDbContext : DbContext
             entity.HasIndex(e => e.Actif, "idx_utilisateur_actif");
 
             entity.HasIndex(e => e.IdRole, "idx_utilisateur_role");
+
+            entity.HasIndex(e => e.UserGuid, "idx_utilisateur_user_guid").IsUnique();
 
             entity.HasIndex(e => e.Email, "utilisateurs_email_key").IsUnique();
 

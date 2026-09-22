@@ -35,6 +35,7 @@ public sealed class SemanticResolvedTicketRetriever : IResolvedTicketKnowledgeRe
 
         var query = _dbContext.Tickets
             .Where(t => t.IdStatut == (int)TicketStatus.Closed)
+            .Where(t => t.IdApplication == request.Application.IdApplication)
             .Where(t => !t.ExclureConnaissancesIa)
             .Where(t => t.Commentaires.Any(c => c.EstNoteResolution && c.EmbeddingContenu != null));
 
@@ -66,7 +67,7 @@ public sealed class SemanticResolvedTicketRetriever : IResolvedTicketKnowledgeRe
         {
             results.Add(new KnowledgeSearchResult
             {
-                SourceId = ticket.IdTicket.ToString(),
+                SourceId = ticket.NumeroTicket,
                 Title = $"Resolved ticket: {ticket.Title ?? ticket.NumeroTicket}",
                 Content = _sanitizer.Sanitize(ticket.Content),
                 Module = null,

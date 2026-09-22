@@ -41,7 +41,6 @@ public class AppDocumentController : ControllerBase
 
         var document = new AppDocument
         {
-            SourceId = Guid.NewGuid().ToString("N"),
             Titre = string.IsNullOrWhiteSpace(form.Title)
             ? Path.GetFileNameWithoutExtension(form.File.FileName)
             : form.Title,
@@ -54,7 +53,7 @@ public class AppDocumentController : ControllerBase
 
         await _appDocumentService.AddApplicationDocument(document);
 
-        return Ok(new { document.SourceId });
+        return Ok(new { document.Id });
     }
 
 }

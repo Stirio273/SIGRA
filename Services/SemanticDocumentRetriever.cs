@@ -25,32 +25,34 @@ public sealed class SemanticDocumentRetriever : IDocumentationKnowledgeRetriever
         var queryEmbedding = new Vector(await _embeddingService.EmbedAsync(request.Query, cancellationToken));
 
         var results = await _dbContext.AppDocumentChunks
-            .OrderBy(c => c.Embedding!.CosineDistance(queryEmbedding))
-            .Take(request.TopK)
+            .Where(c => c.Parent.IdApplication == request.Application.IdApplication)
             .Select(c => new
             {
-                c.ParentSourceId,
+                c.ParentId,
                 c.Content,
                 Distance = c.Embedding!.CosineDistance(queryEmbedding)
             })
+            .OrderBy(c => c.Distance)
+            .Take(request.TopK)
             .ToListAsync(cancellationToken);
 
         var parentDocs = await _dbContext.AppDocuments
-            .Where(d => results.Select(r => r.ParentSourceId).Contains(d.SourceId))
+            .Where(d => results.Select(r => r.ParentId).Contains(d.Id))
             .Include(d => d.IdApplicationNavigation)
-            .ToDictionaryAsync(d => d.SourceId, cancellationToken);
+            .ToDictionaryAsync(d => d.Id, cancellationToken);
 
         return results.Select(r =>
         {
-            var doc = parentDocs[r.ParentSourceId];
+            var doc = parentDocs[r.ParentId];
             return new KnowledgeSearchResult
             {
-                SourceId = doc.SourceId,
+                SourceId = $"{doc.IdApplicationNavigation?.Libelle}-DOCS-{doc.Id}",
                 Title = doc.Titre,
                 Content = r.Content,
                 // Module = doc.Module,
                 Score = 1 - r.Distance, // cosine distance -> similarity
-                Application = doc.IdApplicationNavigation?.Libelle ?? ""
+                SourceUrl = doc.Chemin,
+                Application = doc.IdApplicationNavigation?.Libelle ?? "Indeterminée"
             };
         }).ToList();
     }

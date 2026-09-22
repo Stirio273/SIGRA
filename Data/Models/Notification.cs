@@ -13,15 +13,15 @@ public partial class Notification
 
     public string TypeEvenement { get; set; } = null!;
 
+    public string? Titre { get; set; }
+
+    public string? Message { get; set; }
+
     public DateTime DateCreation { get; set; }
 
     public bool EstLue { get; set; }
 
     public DateTime? DateLecture { get; set; }
-
-    public string? Titre { get; set; }
-
-    public string? Message { get; set; }
 
     public virtual Utilisateur IdDestinataireNavigation { get; set; } = null!;
 
