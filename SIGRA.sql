@@ -424,7 +424,7 @@ CREATE TABLE app_document_chunks (
     parent_id INTEGER NOT NULL REFERENCES app_documents(id),
     chunk_index int NOT NULL,
     content text NOT NULL,
-    embedding vector(384) NOT NULL
+    embedding vector(1024) NOT NULL
 );
 
 CREATE INDEX ON app_document_chunks USING ivfflat ("embedding" vector_cosine_ops) WITH (lists = 100);

@@ -6,11 +6,16 @@ public sealed class MockEmbeddingService : IEmbeddingService
 
     public Task<float[]> EmbedAsync(string text, CancellationToken cancellationToken = default)
     {
-        // Deterministic pseudo-embedding for testing pipeline wiring only —
-        // not semantically meaningful.
         var rng = new Random(text.GetHashCode());
         var vector = new float[Dimensions];
         for (var i = 0; i < Dimensions; i++) vector[i] = (float)rng.NextDouble();
         return Task.FromResult(vector);
+    }
+
+    public async Task<float[][]> EmbedBatchAsync(IEnumerable<string> texts, CancellationToken cancellationToken = default)
+    {
+        var tasks = texts.Select(t => EmbedAsync(t, cancellationToken)).ToArray();
+        var embeddings = await Task.WhenAll(tasks);
+        return embeddings;
     }
 }

@@ -133,7 +133,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.ChunkIndex).HasColumnName("chunk_index");
             entity.Property(e => e.Content).HasColumnName("content");
             entity.Property(e => e.Embedding)
-                .HasMaxLength(384)
+                .HasMaxLength(1024)
                 .HasColumnName("embedding");
             entity.Property(e => e.ParentId).HasColumnName("parent_id");
 

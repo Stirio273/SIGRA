@@ -26,8 +26,6 @@ public sealed class DocumentEmbeddingIndexer
     /// </summary>
     public async Task IndexAsync(AppDocument document, CancellationToken cancellationToken = default)
     {
-        // Remove any existing chunks first, in case this is a re-index 
-        // of a document whose content changed (chunk count may differ).
         var existingChunks = _dbContext.AppDocumentChunks
             .Where(c => c.ParentId == document.Id);
 
@@ -35,16 +33,26 @@ public sealed class DocumentEmbeddingIndexer
 
         var chunks = _chunker.Chunk(document.Contenu);
 
+        if (chunks.Count == 0)
+        {
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            return;
+        }
+
+        var embeddings = await _embeddingService.EmbedBatchAsync(chunks, cancellationToken);
+
+        if (embeddings.Length != chunks.Count)
+            throw new InvalidOperationException(
+                $"Embedding service returned {embeddings.Length} embeddings for {chunks.Count} chunks.");
+
         for (var i = 0; i < chunks.Count; i++)
         {
-            var embedding = await _embeddingService.EmbedAsync(chunks[i], cancellationToken);
-
             _dbContext.AppDocumentChunks.Add(new AppDocumentChunk
             {
                 ParentId = document.Id,
                 ChunkIndex = i,
                 Content = chunks[i],
-                Embedding = new Vector(embedding)
+                Embedding = new Vector(embeddings[i])
             });
         }
 

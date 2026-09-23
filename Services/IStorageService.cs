@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using MimeKit;
 
 namespace SIGRA.Services;
@@ -9,6 +10,8 @@ public interface IStorageService
         string fileName,
         string contentType,
         string folder);
+
+    Task<string> UploadAsync(IFormFile file, string folder);
 
     Task DeleteAsync(string fileUrl);
     Task<Stream> DownloadAsync(string relativePath);

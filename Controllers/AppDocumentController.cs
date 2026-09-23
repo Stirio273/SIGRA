@@ -11,11 +11,13 @@ public class AppDocumentController : ControllerBase
 {
     private readonly TextExtractionService _textExtractionService;
     private readonly AppDocumentService _appDocumentService;
+    private readonly IStorageService _storageService;
 
-    public AppDocumentController(TextExtractionService textExtractionService, AppDocumentService appDocumentService)
+    public AppDocumentController(TextExtractionService textExtractionService, AppDocumentService appDocumentService, IStorageService storageService)
     {
         _textExtractionService = textExtractionService;
         _appDocumentService = appDocumentService;
+        _storageService = storageService;
     }
 
     [HttpPost]
@@ -39,16 +41,17 @@ public class AppDocumentController : ControllerBase
             });
         }
 
+        var fileUrl = await _storageService.UploadAsync(form.File, "application-documents");
+
         var document = new AppDocument
         {
             Titre = string.IsNullOrWhiteSpace(form.Title)
             ? Path.GetFileNameWithoutExtension(form.File.FileName)
             : form.Title,
             Contenu = extractionResult.PlainText!,
-            // Module = form.Module,
-            // TypeSource = KnowledgeSourceType.Documentation.ToString(),
+            NomFichier = form.File.FileName,
+            Chemin = fileUrl,
             IdApplication = form.IdApplication,
-            // OriginalFileName = form.File.FileName
         };
 
         await _appDocumentService.AddApplicationDocument(document);

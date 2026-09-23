@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using SIGRA.Domain.Exceptions;
@@ -30,7 +31,6 @@ public class FileSystemStorageService : IStorageService
         var uniqueFileName = $"{Guid.NewGuid()}_{fileName}";
         var filePath = Path.Combine(folderPath, uniqueFileName);
 
-        // Écriture du Stream peu importe sa source
         using var outputStream = File.Create(filePath);
         mimeContent.DecodeTo(outputStream);
 
@@ -39,9 +39,24 @@ public class FileSystemStorageService : IStorageService
         return $"{_options.BaseUrl}/{folder}/{uniqueFileName}";
     }
 
+    public async Task<string> UploadAsync(IFormFile file, string folder)
+    {
+        var folderPath = Path.Combine(_options.BasePath, folder);
+        Directory.CreateDirectory(folderPath);
+
+        var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+        var filePath = Path.Combine(folderPath, uniqueFileName);
+
+        await using var stream = File.Create(filePath);
+        await file.CopyToAsync(stream);
+
+        _logger.LogInformation("Fichier uploadé : {FilePath}", filePath);
+
+        return $"{_options.BaseUrl}/{folder}/{uniqueFileName}";
+    }
+
     public async Task DeleteAsync(string fileUrl)
     {
-        // Reconvertir l'URL en chemin local
         var relativePath = fileUrl.Replace(_options.BaseUrl, "");
         var filePath = Path.Combine(_options.BasePath, relativePath);
 

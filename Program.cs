@@ -30,12 +30,15 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 builder.Services.AddHttpClient();
+builder.Services.AddHttpClient<IEmbeddingService, HttpEmbeddingService>();
 
 builder.Services.Configure<SMTPOptions>(
     builder.Configuration.GetSection("Smtp"));
 builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection("Storage"));
 builder.Services.Configure<BusinessHoursOptions>(
     builder.Configuration.GetSection("BusinessHours"));
+builder.Services.Configure<EmbeddingServiceOptions>(
+    builder.Configuration.GetSection("EmbeddingService"));
 
 builder.Services.AddSignalR();
 
@@ -110,6 +113,8 @@ builder.Services.AddScoped<ISourceAttacher, KnowledgeSourceAttacher>();
 builder.Services.AddScoped<IFileTextExtractor, PlainTextExtractor>();
 builder.Services.AddScoped<IFileTextExtractor, DocxTextExtractor>();
 builder.Services.AddScoped<TextExtractionService>();
+builder.Services.AddScoped<DocumentEmbeddingIndexer>();
+builder.Services.AddScoped<AppDocumentService>();
 builder.Services.AddScoped<SimpleTextChunker>();
 builder.Services.AddScoped<IDocumentChunker, ParagraphAwareTextChunker>();
 builder.Services.AddSingleton<IKnowledgeDocumentStore, InMemoryKnowledgeDocumentStore>();
