@@ -10,6 +10,7 @@ public sealed class HttpEmbeddingService : IEmbeddingService
     private readonly HttpClient _httpClient;
     private readonly EmbeddingServiceOptions _options;
     private readonly ILogger<HttpEmbeddingService> _logger;
+    private const string ModelName = "bge-m3";
 
     public int Dimensions { get; }
 
@@ -34,8 +35,10 @@ public sealed class HttpEmbeddingService : IEmbeddingService
 
     public async Task<float[]> EmbedAsync(string text, CancellationToken cancellationToken = default)
     {
+        var request = new { model = ModelName, prompt = text };
+
         using var response = await SendWithRetryAsync(
-            () => _httpClient.PostAsJsonAsync("embed", new { text = text }, cancellationToken),
+            () => _httpClient.PostAsJsonAsync("api/embeddings", request, cancellationToken),
             cancellationToken);
 
         response.EnsureSuccessStatusCode();
@@ -50,8 +53,11 @@ public sealed class HttpEmbeddingService : IEmbeddingService
         if (textList.Count == 0)
             return Array.Empty<float[]>();
 
+
+        var request = new { model = ModelName, input = textList };
+
         using var response = await SendWithRetryAsync(
-            () => _httpClient.PostAsJsonAsync("embed/batch", new { texts = textList }, cancellationToken),
+            () => _httpClient.PostAsJsonAsync("/api/embed", request, cancellationToken),
             cancellationToken);
 
         response.EnsureSuccessStatusCode();

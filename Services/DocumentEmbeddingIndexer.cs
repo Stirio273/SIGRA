@@ -39,21 +39,24 @@ public sealed class DocumentEmbeddingIndexer
             return;
         }
 
-        var embeddings = await _embeddingService.EmbedBatchAsync(chunks, cancellationToken);
-
-        if (embeddings.Length != chunks.Count)
-            throw new InvalidOperationException(
-                $"Embedding service returned {embeddings.Length} embeddings for {chunks.Count} chunks.");
-
-        for (var i = 0; i < chunks.Count; i++)
+        foreach (var group in chunks.Chunk(batchSize))
         {
-            _dbContext.AppDocumentChunks.Add(new AppDocumentChunk
+            var embeddings = await _embeddingService.EmbedBatchAsync(chunks, cancellationToken);
+
+            if (embeddings.Length != group.Count)
+                throw new InvalidOperationException(
+                    $"Embedding service returned {embeddings.Length} embeddings for {group.Count} chunks.");
+
+            for (var i = 0; i < group.Count; i++)
             {
-                ParentId = document.Id,
-                ChunkIndex = i,
-                Content = chunks[i],
-                Embedding = new Vector(embeddings[i])
-            });
+                _dbContext.AppDocumentChunks.Add(new AppDocumentChunk
+                {
+                    ParentId = document.Id,
+                    ChunkIndex = i,
+                    Content = group[i],
+                    Embedding = new Vector(embeddings[i])
+                });
+            }
         }
 
         await _dbContext.SaveChangesAsync(cancellationToken);

@@ -53,8 +53,8 @@ public sealed class SemanticResolvedTicketRetriever : IResolvedTicketKnowledgeRe
                     t.CauseRacineIdentifie,
                     t.NombreRecurrence,
                     ApplicationName = t.IdApplicationNavigation != null ? t.IdApplicationNavigation.Libelle : null,
-                    Content = c.Contenu,
-                    Distance = c.EmbeddingContenu!.CosineDistance(queryEmbedding),
+                    Resolution = c.Contenu,
+                    Distance = t.DescriptionEmbedding!.CosineDistance(queryEmbedding),
                     Title = t.EmailsSources.FirstOrDefault(e => e.EstEmailInitial) != null ? t.EmailsSources.FirstOrDefault(e => e.EstEmailInitial)!.Objet : null
                 })
             .OrderBy(x => x.Distance)
@@ -69,7 +69,7 @@ public sealed class SemanticResolvedTicketRetriever : IResolvedTicketKnowledgeRe
             {
                 SourceId = ticket.NumeroTicket,
                 Title = $"Resolved ticket: {ticket.Title ?? ticket.NumeroTicket}",
-                Content = _sanitizer.Sanitize(ticket.Content),
+                Content = _sanitizer.Sanitize(ticket.Resolution),
                 Module = null,
                 Score = 1 - ticket.Distance,
                 Application = ticket.ApplicationName ?? "Indeterminée",
