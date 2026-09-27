@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SIGRA.Data;
 using SIGRA.Data.Enums;
 using SIGRA.Data.Models;
 using SIGRA.Services;
@@ -12,12 +14,14 @@ public class AppDocumentController : ControllerBase
     private readonly TextExtractionService _textExtractionService;
     private readonly AppDocumentService _appDocumentService;
     private readonly IStorageService _storageService;
+    private readonly AppDbContext _dbContext;
 
-    public AppDocumentController(TextExtractionService textExtractionService, AppDocumentService appDocumentService, IStorageService storageService)
+    public AppDocumentController(TextExtractionService textExtractionService, AppDocumentService appDocumentService, IStorageService storageService, AppDbContext dbContext)
     {
         _textExtractionService = textExtractionService;
         _appDocumentService = appDocumentService;
         _storageService = storageService;
+        _dbContext = dbContext;
     }
 
     [HttpPost]
@@ -59,4 +63,24 @@ public class AppDocumentController : ControllerBase
         return Ok(new { document.Id });
     }
 
+    [HttpGet("{idApplication:int}")]
+    public async Task<IActionResult> GetAll(int idApplication, CancellationToken cancellationToken)
+    {
+        var documents = await _dbContext.AppDocuments
+            .Where(d => d.IdApplication == idApplication)
+            .OrderByDescending(d => d.Id)
+            .Select(d => new
+            {
+                d.Id,
+                d.Titre,
+                d.NomFichier,
+                d.Chemin,
+                d.IdApplication,
+                ApplicationName = d.IdApplicationNavigation != null ? d.IdApplicationNavigation.Libelle : null,
+                ChunkCount = d.AppDocumentChunks.Count
+            })
+            .ToListAsync(cancellationToken);
+
+        return Ok(documents);
+    }
 }

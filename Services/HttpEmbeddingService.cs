@@ -44,13 +44,13 @@ public sealed class HttpEmbeddingService : IEmbeddingService
         response.EnsureSuccessStatusCode();
 
         var payload = await DeserializeAsync<EmbedSingleResponse>(response.Content, cancellationToken);
-        return payload?.Embedding ?? throw new InvalidOperationException("Empty embedding response from embedding service.");
+        return payload?.embedding ?? throw new InvalidOperationException("Empty embedding response from embedding service.");
     }
 
     public async Task<float[][]> EmbedBatchAsync(IEnumerable<string> texts, CancellationToken cancellationToken = default)
     {
-        var textList = texts.ToList();
-        if (textList.Count == 0)
+        var textList = texts.ToArray();
+        if (textList.Length == 0)
             return Array.Empty<float[]>();
 
 
@@ -62,8 +62,13 @@ public sealed class HttpEmbeddingService : IEmbeddingService
 
         response.EnsureSuccessStatusCode();
 
-        var payload = await DeserializeAsync<EmbedBatchResponse>(response.Content, cancellationToken);
-        return payload?.Embeddings ?? throw new InvalidOperationException("Empty batch embedding response from embedding service.");
+        var raw = await response.Content.ReadAsStringAsync(cancellationToken);
+        _logger.LogInformation("Embed batch raw response: {Raw}", raw);
+        var payload = JsonSerializer.Deserialize<EmbedBatchResponse>(raw);
+        _logger.LogInformation("Deserialized payload null? {IsNull}", payload is null);
+
+        // var payload = await DeserializeAsync<EmbedBatchResponse>(response.Content, cancellationToken);
+        return payload?.embeddings ?? throw new InvalidOperationException("Empty batch embedding response from embedding service.");
     }
 
     private async Task<HttpResponseMessage> SendWithRetryAsync(
@@ -94,5 +99,5 @@ public sealed class HttpEmbeddingService : IEmbeddingService
     }
 }
 
-internal record EmbedSingleResponse(float[] Embedding);
-internal record EmbedBatchResponse(float[][] Embeddings);
+internal record EmbedSingleResponse(float[] embedding);
+internal record EmbedBatchResponse(float[][] embeddings);

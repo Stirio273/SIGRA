@@ -118,7 +118,7 @@ CREATE TABLE tickets (
     duree_sla                       NUMERIC(6,2) NOT NULL,
     deadline_resolution             TIMESTAMPTZ,
     date_changement_statut          TIMESTAMPTZ,
-    cause_racine_identifie          VARCHAR(30) NOT NULL,
+    cause_racine_identifie          VARCHAR(30),
     exclure_connaissances_IA        BOOLEAN NOT NULL DEFAULT true,
     description_embedding           VECTOR(1536),
     nombre_recurrence               INTEGER,

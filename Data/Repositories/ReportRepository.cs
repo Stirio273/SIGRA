@@ -20,9 +20,12 @@ public sealed class ReportRepository : IReportRepository
         DateTime from,
         DateTime to)
     {
+        var fromUtc = from.ToUniversalTime();
+        var toUtc = to.ToUniversalTime();
+
         var tickets = await _context.RealTickets
             .AsNoTracking()
-            .Where(x => x.DateCreation >= from.ToUniversalTime() && x.DateCreation <= to.ToUniversalTime())
+            .Where(x => x.DateCreation >= fromUtc && x.DateCreation <= toUtc)
             .Select(x => new
             {
                 x.DateCreation,
@@ -31,23 +34,55 @@ public sealed class ReportRepository : IReportRepository
             })
             .ToListAsync();
 
-        // Groupement par semaine en mémoire
-        var entries = tickets
+        var grouped = tickets
             .GroupBy(x => new
             {
                 Week = ISOWeek.GetWeekOfYear(x.DateCreation),
                 Year = ISOWeek.GetYear(x.DateCreation)
             })
-            .Select(g => new WeeklyRequestsEntryDto
+            .ToDictionary(g => (g.Key.Week, g.Key.Year), g => new
             {
-                WeekNumber = g.Key.Week,
-                Year = g.Key.Year,
-                WeekStart = ISOWeek.ToDateTime(g.Key.Year, g.Key.Week, DayOfWeek.Monday),
                 Count = g.Count(),
-                SlaReachedCount = g.Count(x => x.DateCloture != null && x.DateCloture <= x.DeadlineResolution)
-            })
-            .OrderBy(x => x.WeekStart)
-            .ToList();
+                SlaReached = g.Count(x => x.DateCloture != null && x.DateCloture <= x.DeadlineResolution)
+            });
+
+        var startWeekStart = ISOWeek.ToDateTime(ISOWeek.GetYear(fromUtc), ISOWeek.GetWeekOfYear(fromUtc), DayOfWeek.Monday);
+        var endWeekStart = ISOWeek.ToDateTime(ISOWeek.GetYear(toUtc), ISOWeek.GetWeekOfYear(toUtc), DayOfWeek.Monday);
+
+        var entries = new List<WeeklyRequestsEntryDto>();
+        var current = startWeekStart;
+
+        while (current <= endWeekStart)
+        {
+            var weekNum = ISOWeek.GetWeekOfYear(current);
+            var year = ISOWeek.GetYear(current);
+            var weekStart = ISOWeek.ToDateTime(year, weekNum, DayOfWeek.Monday);
+
+            if (grouped.TryGetValue((weekNum, year), out var data))
+            {
+                entries.Add(new WeeklyRequestsEntryDto
+                {
+                    WeekNumber = weekNum,
+                    Year = year,
+                    WeekStart = weekStart,
+                    Count = data.Count,
+                    SlaReachedCount = data.SlaReached
+                });
+            }
+            else
+            {
+                entries.Add(new WeeklyRequestsEntryDto
+                {
+                    WeekNumber = weekNum,
+                    Year = year,
+                    WeekStart = weekStart,
+                    Count = 0,
+                    SlaReachedCount = 0
+                });
+            }
+
+            current = current.AddDays(7);
+        }
 
         var weeklyRequestsReport = new WeeklyRequestsReportDto
         {
