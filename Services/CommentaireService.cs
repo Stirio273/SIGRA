@@ -51,11 +51,11 @@ public class CommentaireService : ICommentaireService
             DateCreation = DateTime.UtcNow
         };
 
-        if (ticket.ExclureConnaissancesIa == false && commentaire.EstNoteResolution)
-        {
-            var embedding = await _embeddingService.EmbedAsync(_sanitizer.Sanitize(commentaire.Contenu), default);
-            commentaire.EmbeddingContenu = new Vector(embedding);
-        }
+        // if (ticket.ExclureConnaissancesIa == false && commentaire.EstNoteResolution)
+        // {
+        //     var embedding = await _embeddingService.EmbedAsync(_sanitizer.Sanitize(commentaire.Contenu), default);
+        //     commentaire.EmbeddingContenu = new Vector(embedding);
+        // }
 
         await _commentaireRepository.AddAsync(commentaire);
         return commentaire;

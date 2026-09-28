@@ -214,7 +214,7 @@ CREATE TABLE commentaires (
     -- sanitized_content   TEXT NOT NULL,
     -- Colonne générée pour la recherche plein texte (français)
     contenu_tsv         TSVECTOR GENERATED ALWAYS AS (to_tsvector('french', contenu)) STORED,
-    embedding_contenu   VECTOR(1536)
+    -- embedding_contenu   VECTOR(1536)
 );
 
 CREATE INDEX idx_commentaire_ticket ON commentaires(id_ticket);

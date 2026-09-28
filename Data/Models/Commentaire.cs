@@ -21,7 +21,7 @@ public partial class Commentaire
 
     public NpgsqlTsVector? ContenuTsv { get; set; }
 
-    public Vector? EmbeddingContenu { get; set; }
+    // public Vector? EmbeddingContenu { get; set; }
 
     public virtual Utilisateur IdAuteurNavigation { get; set; } = null!;
 

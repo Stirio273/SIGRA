@@ -37,14 +37,14 @@ public sealed class SemanticResolvedTicketRetriever : IResolvedTicketKnowledgeRe
             .Where(t => t.IdStatut == (int)TicketStatus.Closed)
             .Where(t => t.IdApplication == request.Application.IdApplication)
             .Where(t => !t.ExclureConnaissancesIa)
-            .Where(t => t.Commentaires.Any(c => c.EstNoteResolution && c.EmbeddingContenu != null));
+            .Where(t => t.Commentaires.Any(c => c.EstNoteResolution && c.Contenu != null));
 
         if (request.ExcludeTicketId != 0)
             query = query.Where(t => t.IdTicket != request.ExcludeTicketId);
 
         var candidates = await query
             .SelectMany(
-                t => t.Commentaires.Where(c => c.EstNoteResolution && c.EmbeddingContenu != null),
+                t => t.Commentaires.Where(c => c.EstNoteResolution && c.Contenu != null),
                 (t, c) => new
                 {
                     t.IdTicket,
