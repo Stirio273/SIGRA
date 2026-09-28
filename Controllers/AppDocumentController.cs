@@ -83,4 +83,11 @@ public class AppDocumentController : ControllerBase
 
         return Ok(documents);
     }
+
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var ok = await _appDocumentService.DeleteAsync(id);
+        return ok ? NoContent() : NotFound();
+    }
 }

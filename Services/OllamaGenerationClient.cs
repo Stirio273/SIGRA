@@ -42,10 +42,11 @@ public sealed class OllamaGenerationClient : ILlmClient
 
         try
         {
-            return JsonSerializer.Deserialize<TicketAnalysisResult>(
-                rawContent,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
-                ?? throw new InvalidOperationException("Model returned null result.");
+            // return JsonSerializer.Deserialize<TicketAnalysisResult>(
+            //     rawContent,
+            //     new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+            //     ?? throw new InvalidOperationException("Model returned null result.");
+            return rawContent;
         }
         catch (JsonException ex)
         {

@@ -32,7 +32,7 @@ public partial class Ticket
 
     public DateTime? DateChangementStatut { get; set; }
 
-    public string? CauseRacineIdentifie { get; set; } = null!;
+    public string? CauseRacineIdentifie { get; set; }
 
     public bool ExclureConnaissancesIa { get; set; }
 
