@@ -4,12 +4,6 @@ public class ReopenTicketRequest
     public string Reason { get; set; } = default!;
 }
 
-public class TicketRequest
-{
-
-}
-
-
 public class WeeklyRequestsReportDto
 {
     public DateTime From { get; set; }
@@ -118,4 +112,7 @@ public class WeeklyReportDto
     public MeanResolutionTimeDto MeanResolutionTime { get; set; } = default!;
     public LastTwoWeeksReportDto LastTwoWeeks { get; set; } = default!;
 }
+
+public record AppDocumentDto(int Id, string Titre, string NomFichier, int IdApplication, string ApplicationName, int ChunkCount);
+
 

@@ -36,7 +36,7 @@ public class FileSystemStorageService : IStorageService
 
         _logger.LogInformation("Fichier uploadé : {FilePath}", filePath);
 
-        return $"{_options.BaseUrl}/{folder}/{uniqueFileName}";
+        return $"{folder}/{uniqueFileName}";
     }
 
     public async Task<string> UploadAsync(IFormFile file, string folder)
@@ -52,12 +52,12 @@ public class FileSystemStorageService : IStorageService
 
         _logger.LogInformation("Fichier uploadé : {FilePath}", filePath);
 
-        return $"{_options.BaseUrl}/{folder}/{uniqueFileName}";
+        return $"{folder}/{uniqueFileName}";
     }
 
     public async Task DeleteAsync(string fileUrl)
     {
-        var relativePath = fileUrl.Replace(_options.BaseUrl, "");
+        var relativePath = fileUrl;
         var filePath = Path.Combine(_options.BasePath, relativePath);
 
         if (File.Exists(filePath))

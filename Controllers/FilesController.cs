@@ -11,16 +11,13 @@ namespace SIGRA.Controllers;
 public class FilesController : ControllerBase
 {
     private readonly IStorageService _storageService;
-    private readonly StorageOptions _storageOptions;
     private readonly IPiecesJointeRepository _piecesJointeRepository;
 
     public FilesController(
         IStorageService storageService,
-        IOptions<StorageOptions> storageOptions,
         IPiecesJointeRepository piecesJointeRepository)
     {
         _storageService = storageService;
-        _storageOptions = storageOptions.Value;
         _piecesJointeRepository = piecesJointeRepository;
     }
 
@@ -31,7 +28,7 @@ public class FilesController : ControllerBase
         if (pieceJointe == null)
             return NotFound();
 
-        var relativePath = pieceJointe.Chemin.Replace(_storageOptions.BaseUrl, "").TrimStart('/');
+        var relativePath = pieceJointe.Chemin.TrimStart('/');
         var stream = await _storageService.DownloadAsync(relativePath);
         var contentType = GetContentType(pieceJointe.NomFichier);
 

@@ -1,6 +1,7 @@
 using SIGRA.Data;
 using SIGRA.Data.Models;
 using SIGRA.Domain;
+using Microsoft.EntityFrameworkCore;
 
 namespace SIGRA.Services;
 
@@ -15,6 +16,30 @@ public class AppDocumentService
         _dbContext = dbContext;
         _indexer = indexer;
         _storageService = storageService;
+    }
+
+    public async Task<AppDocument?> GetByIdAsync(int idAppDocument, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.AppDocuments.FirstOrDefaultAsync(a => a.Id == idAppDocument);
+    }
+
+    public async Task<List<AppDocumentDto>> GetAllApplicationDocuments(int idApplication, CancellationToken cancellationToken = default)
+    {
+        var documents = await _dbContext.AppDocuments
+            .Where(d => d.IdApplication == idApplication)
+            .OrderByDescending(d => d.Id)
+            .Select(d => new AppDocumentDto
+            (
+                d.Id,
+                d.Titre,
+                d.NomFichier,
+                d.IdApplication ?? 0,
+                d.IdApplicationNavigation != null ? d.IdApplicationNavigation.Libelle : "",
+                d.AppDocumentChunks.Count
+            ))
+            .ToListAsync(cancellationToken);
+
+        return documents;
     }
 
     public async Task<Result> AddApplicationDocument(AppDocument document, CancellationToken cancellationToken = default)

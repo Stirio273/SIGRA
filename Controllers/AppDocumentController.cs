@@ -14,14 +14,13 @@ public class AppDocumentController : ControllerBase
     private readonly TextExtractionService _textExtractionService;
     private readonly AppDocumentService _appDocumentService;
     private readonly IStorageService _storageService;
-    private readonly AppDbContext _dbContext;
 
-    public AppDocumentController(TextExtractionService textExtractionService, AppDocumentService appDocumentService, IStorageService storageService, AppDbContext dbContext)
+
+    public AppDocumentController(TextExtractionService textExtractionService, AppDocumentService appDocumentService, IStorageService storageService)
     {
         _textExtractionService = textExtractionService;
         _appDocumentService = appDocumentService;
         _storageService = storageService;
-        _dbContext = dbContext;
     }
 
     [HttpPost]
@@ -66,20 +65,7 @@ public class AppDocumentController : ControllerBase
     [HttpGet("{idApplication:int}")]
     public async Task<IActionResult> GetAll(int idApplication, CancellationToken cancellationToken)
     {
-        var documents = await _dbContext.AppDocuments
-            .Where(d => d.IdApplication == idApplication)
-            .OrderByDescending(d => d.Id)
-            .Select(d => new
-            {
-                d.Id,
-                d.Titre,
-                d.NomFichier,
-                d.Chemin,
-                d.IdApplication,
-                ApplicationName = d.IdApplicationNavigation != null ? d.IdApplicationNavigation.Libelle : null,
-                ChunkCount = d.AppDocumentChunks.Count
-            })
-            .ToListAsync(cancellationToken);
+        var documents = _appDocumentService.GetAllApplicationDocuments(idApplication);
 
         return Ok(documents);
     }
@@ -89,5 +75,19 @@ public class AppDocumentController : ControllerBase
     {
         var ok = await _appDocumentService.DeleteAsync(id);
         return ok ? NoContent() : NotFound();
+    }
+
+    [HttpGet("download/{idAppDocument:int}")]
+    public async Task<IActionResult> GetFileAsync(int idAppDocument)
+    {
+        var appDocument = await _appDocumentService.GetByIdAsync(idAppDocument);
+        if (appDocument == null)
+            return NotFound();
+
+        var relativePath = appDocument.Chemin.TrimStart('/');
+        var stream = await _storageService.DownloadAsync(relativePath);
+        var contentType = GetContentType(appDocument.NomFichier);
+
+        return File(stream, contentType);
     }
 }
