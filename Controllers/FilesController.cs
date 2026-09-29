@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using SIGRA.Controllers.Helper;
 using SIGRA.Data.Repositories;
 using SIGRA.Domain.Options;
 using SIGRA.Services;
@@ -30,24 +31,9 @@ public class FilesController : ControllerBase
 
         var relativePath = pieceJointe.Chemin.TrimStart('/');
         var stream = await _storageService.DownloadAsync(relativePath);
-        var contentType = GetContentType(pieceJointe.NomFichier);
+        var contentType = FileHelper.GetContentType(pieceJointe.NomFichier);
 
         return File(stream, contentType);
     }
 
-    private string GetContentType(string filePath) =>
-        Path.GetExtension(filePath).ToLower() switch
-        {
-            ".pdf" => "application/pdf",
-            ".png" => "image/png",
-            ".jpg" => "image/jpeg",
-            ".jpeg" => "image/jpeg",
-            ".gif" => "image/gif",
-            ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            ".doc" => "application/msword",
-            ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            ".xls" => "application/vnd.ms-excel",
-            ".txt" => "text/plain",
-            _ => "application/octet-stream"
-        };
 }

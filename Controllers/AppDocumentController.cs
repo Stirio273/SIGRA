@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SIGRA.Controllers.Helper;
 using SIGRA.Data;
 using SIGRA.Data.Enums;
 using SIGRA.Data.Models;
@@ -65,7 +66,7 @@ public class AppDocumentController : ControllerBase
     [HttpGet("{idApplication:int}")]
     public async Task<IActionResult> GetAll(int idApplication, CancellationToken cancellationToken)
     {
-        var documents = _appDocumentService.GetAllApplicationDocuments(idApplication);
+        var documents = await _appDocumentService.GetAllApplicationDocuments(idApplication);
 
         return Ok(documents);
     }
@@ -86,7 +87,7 @@ public class AppDocumentController : ControllerBase
 
         var relativePath = appDocument.Chemin.TrimStart('/');
         var stream = await _storageService.DownloadAsync(relativePath);
-        var contentType = GetContentType(appDocument.NomFichier);
+        var contentType = FileHelper.GetContentType(appDocument.NomFichier);
 
         return File(stream, contentType);
     }

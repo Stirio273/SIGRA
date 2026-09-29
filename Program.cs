@@ -39,6 +39,8 @@ builder.Services.Configure<BusinessHoursOptions>(
     builder.Configuration.GetSection("BusinessHours"));
 builder.Services.Configure<EmbeddingServiceOptions>(
     builder.Configuration.GetSection("EmbeddingService"));
+builder.Services.Configure<MistralOptions>(
+    builder.Configuration.GetSection("MistralOptions"));
 
 builder.Services.AddSignalR();
 
@@ -102,10 +104,13 @@ builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 // builder.Services.AddScoped<IAISupportAssistant, PlaceholderAISupportAssistant>();
 builder.Services.AddScoped<IAIAssistantService, TicketAIAssistantService>();
 builder.Services.AddScoped<ITicketContextProvider, TicketContextProvider>();
-builder.Services.AddScoped<IDocumentationKnowledgeRetriever, KeywordDocumentRetriever>();
-builder.Services.AddScoped<IResolvedTicketKnowledgeRetriever, KeywordResolvedTicketRetriever>();
+// builder.Services.AddScoped<IDocumentationKnowledgeRetriever, KeywordDocumentRetriever>();
+// builder.Services.AddScoped<IResolvedTicketKnowledgeRetriever, KeywordResolvedTicketRetriever>();
+builder.Services.AddScoped<IDocumentationKnowledgeRetriever, SemanticDocumentRetriever>();
+builder.Services.AddScoped<IResolvedTicketKnowledgeRetriever, SemanticResolvedTicketRetriever>();
 builder.Services.AddScoped<IResolvedTicketRepository, ResolvedTicketRepository>();
-builder.Services.AddScoped<ILlmClient, MockLlmClient>();
+// builder.Services.AddScoped<ILlmClient, MockLlmClient>();
+builder.Services.AddScoped<ILlmClient, MistralGenerationClient>();
 builder.Services.AddScoped<IAISupportOrchestrator, AiSupportOrchestrator>();
 builder.Services.AddScoped<IPromptBuilder, TicketPromptBuilder>();
 builder.Services.AddScoped<IAIResponseParser, JsonAiResponseParser>();
