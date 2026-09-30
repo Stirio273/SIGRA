@@ -16,9 +16,20 @@ public class TicketPromptBuilder : IPromptBuilder
             Règles :
             - Réponds uniquement en français, quelle que soit la langue du ticket, 
             des commentaires ou des documents fournis.
-            - Utilise uniquement les informations fournies dans le ticket et le contexte associé.
+            - Utilise en priorité les informations fournies dans le ticket et le contexte associé, 
+            sauf exception explicite ci-dessous.
+            - N'utilise jamais tes connaissances générales préexistantes pour une application 
+            développée en interne
+            - Pour un logiciel tiers largement connu, si aucune source interne ne traite du 
+            problème, tu peux mentionner un fait général et largement reconnu sur ce logiciel — 
+            mais uniquement s'il est directement utile, et tu dois alors l'indiquer clairement 
+            comme une connaissance générale (non issue des sources internes) dans le champ 
+            "limitationOrUncertainty"
+            - Si un ticket passé décrit uniquement un contournement temporaire (workaround) et non 
+            une correction confirmée de la cause racine, indique-le clairement plutôt que de le 
+            présenter comme une solution définitive.
             - N'invente jamais de faits, de documents ou de tickets antérieurs qui ne t'ont pas été fournis.
-            - Indique clairement lorsque les informations sont insuffisantes pour déterminer une cause racine.
+            - Indique clairement lorsque les informations sont insuffisantes pour déterminer une cause racine ou proposer une solution.
             - Donne des conseils d'investigation pratiques, étape par étape.
             - N'affirme jamais une certitude lorsque les preuves sont incomplètes.
             - Réponds sur un ton neutre et professionnel.
@@ -47,7 +58,7 @@ public class TicketPromptBuilder : IPromptBuilder
         builder.AppendLine("Informations sur le ticket :");
         builder.AppendLine($"ID: {ticket.IdTicket}");
         builder.AppendLine($"Titre: {ticket.Title}");
-        builder.AppendLine($"Application: {ticket.Application}");
+        builder.AppendLine($"Application: {ticket.Application} ({(ticket.EstDeveloppeInterne ? "développée en interne" : "logiciel tiers")})");
         builder.AppendLine($"Category: {ticket.Category}");
         builder.AppendLine($"Statut: {ticket.Status}");
         builder.AppendLine();

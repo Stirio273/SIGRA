@@ -47,7 +47,8 @@ public sealed class MistralGenerationClient : ILlmClient
             },
             temperature = 0.1,
             stream = false,
-            response_format = new { type = "json_object" }
+            response_format = new { type = "json_object" },
+            max_tokens = 800
         };
 
         using var response = await _httpClient.PostAsJsonAsync(
@@ -72,6 +73,7 @@ public sealed class MistralGenerationClient : ILlmClient
     private sealed class MistralChoice
     {
         public MistralMessage Message { get; set; } = new();
+        public string FinishReason { get; set; } = string.Empty;
     }
 
     private sealed class MistralMessage

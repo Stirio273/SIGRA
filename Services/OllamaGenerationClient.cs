@@ -26,7 +26,8 @@ public sealed class OllamaGenerationClient : ILlmClient
                 new { role = "user", content = userPrompt }
             },
             format = "json",
-            stream = false
+            stream = false,
+            options = new { num_predict = 800 }
         };
 
         using var response = await _httpClient.PostAsJsonAsync(
