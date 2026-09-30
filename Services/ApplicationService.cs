@@ -19,6 +19,7 @@ public class ApplicationService : IApplicationService
         {
             Libelle = req.Libelle,
             Actif = req.Actif,
+            EstDeveloppeInterne = req.EstDeveloppeInterne,
             IdCs = req.IdCs
         };
 
@@ -43,6 +44,7 @@ public class ApplicationService : IApplicationService
 
         application.Libelle = req.Libelle;
         application.Actif = req.Actif;
+        application.EstDeveloppeInterne = req.EstDeveloppeInterne;
         application.IdCs = req.IdCs;
 
         await _applicationRepository.UpdateAsync(application);

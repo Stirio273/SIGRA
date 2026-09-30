@@ -13,6 +13,8 @@ public partial class Application
 
     public int IdCs { get; set; }
 
+    public bool EstDeveloppeInterne { get; set; }
+
     public virtual ICollection<AppDocument> AppDocuments { get; set; } = new List<AppDocument>();
 
     public virtual ClassesService IdCsNavigation { get; set; } = null!;

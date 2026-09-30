@@ -10,6 +10,8 @@ public sealed class TicketContext
 
     public string? Application { get; init; }
 
+    public bool EstDeveloppeInterne { get; init; }
+
     public string? Category { get; init; }
 
     public string? Priority { get; init; }

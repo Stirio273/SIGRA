@@ -51,5 +51,6 @@ public class ApplicationsController : ControllerBase
         a.IdApplication,
         a.Libelle,
         a.Actif,
+        a.EstDeveloppeInterne,
         a.IdCs);
 }

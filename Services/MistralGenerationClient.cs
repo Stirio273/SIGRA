@@ -48,7 +48,7 @@ public sealed class MistralGenerationClient : ILlmClient
             temperature = 0.1,
             stream = false,
             response_format = new { type = "json_object" },
-            max_tokens = 800
+            max_tokens = 2048
         };
 
         using var response = await _httpClient.PostAsJsonAsync(

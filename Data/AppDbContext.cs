@@ -157,6 +157,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Actif)
                 .HasDefaultValue(true)
                 .HasColumnName("actif");
+            entity.Property(e => e.EstDeveloppeInterne).HasColumnName("est_developpe_interne");
             entity.Property(e => e.IdCs).HasColumnName("id_cs");
             entity.Property(e => e.Libelle)
                 .HasMaxLength(150)

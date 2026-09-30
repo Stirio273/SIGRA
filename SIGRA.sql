@@ -59,7 +59,7 @@ CREATE TABLE classes_service (
 CREATE TABLE applications (
     id_application              SERIAL PRIMARY KEY,
     libelle                     VARCHAR(150) NOT NULL,
-    est_developpe_interne       BOOLEAN NOT NULL,
+    est_developpe_interne       BOOLEAN NOT NULL DEFAULT FALSE,
     actif                       BOOLEAN NOT NULL DEFAULT TRUE,
     id_cs                       INTEGER NOT NULL REFERENCES classes_service(id_cs)
 );

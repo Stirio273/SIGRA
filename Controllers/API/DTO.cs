@@ -16,9 +16,9 @@ public record CreateRoleRequest(string Libelle);
 public record UpdateRoleRequest(string Libelle);
 public record RoleResponse(int IdRole, string Libelle);
 
-public record CreateApplicationRequest(string Libelle, bool Actif, int IdCs);
-public record UpdateApplicationRequest(string Libelle, bool Actif, int IdCs);
-public record ApplicationResponse(int IdApplication, string Libelle, bool Actif, int IdCs);
+public record CreateApplicationRequest(string Libelle, bool Actif, bool EstDeveloppeInterne, int IdCs);
+public record UpdateApplicationRequest(string Libelle, bool Actif, bool EstDeveloppeInterne, int IdCs);
+public record ApplicationResponse(int IdApplication, string Libelle, bool Actif, bool EstDeveloppeInterne, int IdCs);
 
 public record CreateClassesServiceRequest(string Code, string? Libelle, decimal DureeSla);
 public record UpdateClassesServiceRequest(string Code, string? Libelle, decimal DureeSla, int IdCriticite);

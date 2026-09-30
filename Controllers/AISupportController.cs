@@ -28,8 +28,8 @@ public class AISupportController : ControllerBase
 
             var condensed = string.Join("\n\n",
                 response.TicketUnderstanding,
-                response.SuggestedSteps.Count > 0 ? "Suggested Steps:\n" + string.Join("\n", response.SuggestedSteps.Select(s => "- " + s)) : null,
-                response.PossibleCauses.Count > 0 ? "Possible Causes:\n" + string.Join("\n", response.PossibleCauses.Select(c => "- " + c)) : null,
+                response.SuggestedSteps.Count > 0 ? "Etapes suggerees:\n" + string.Join("\n", response.SuggestedSteps.Select(s => "- " + s)) : null,
+                response.PossibleCauses.Count > 0 ? "Causes possibles:\n" + string.Join("\n", response.PossibleCauses.Select(c => "- " + c)) : null,
                 response.RecommendedEscalation,
                 response.LimitationOrUncertainty
             );
