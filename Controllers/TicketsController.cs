@@ -141,7 +141,7 @@ public class TicketsController : ControllerBase
     [HttpPatch("{id:int}/close")]
     public async Task<IActionResult> Close(int id, CloseTicketRequest req)
     {
-        var result = await _ticketService.CloseAsync(id, req.RootCauseConfidence);
+        var result = await _ticketService.CloseAsync(id, req.ootCauseConfidence);
         return result.IsSuccess ? NoContent() : result.ToHttpResult();
     }
 

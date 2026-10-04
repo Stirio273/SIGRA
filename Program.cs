@@ -117,6 +117,7 @@ builder.Services.AddScoped<IAIResponseParser, JsonAiResponseParser>();
 builder.Services.AddScoped<ISourceAttacher, KnowledgeSourceAttacher>();
 builder.Services.AddScoped<IFileTextExtractor, PlainTextExtractor>();
 builder.Services.AddScoped<IFileTextExtractor, DocxTextExtractor>();
+builder.Services.AddScoped<IFileTextExtractor, RstTextExtractor>();
 builder.Services.AddScoped<TextExtractionService>();
 builder.Services.AddScoped<DocumentEmbeddingIndexer>();
 builder.Services.AddScoped<AppDocumentService>();

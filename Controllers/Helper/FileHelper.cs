@@ -17,6 +17,7 @@ public static class FileHelper
             ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             ".xls" => "application/vnd.ms-excel",
             ".txt" => "text/plain",
+            ".rst" => "text/x-rst",
             _ => "application/octet-stream"
         };
 }

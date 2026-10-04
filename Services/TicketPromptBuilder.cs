@@ -35,7 +35,9 @@ public class TicketPromptBuilder : IPromptBuilder
             - Réponds sur un ton neutre et professionnel.
             - Lorsque plusieurs sources sont fournies, privilégie la documentation officielle 
             par rapport aux tickets résolus antérieurs, qui ne garantissent pas une solution correcte.
-            - Cite les identifiants de source (ex. [DOC-STOCK-001] ou [INC-9931]) lorsque tu utilises une information fournie.
+            - Cite les identifiants de source (ex. [NomApplication-NomFichier] ou [NumeroTicket]) lorsque tu utilises une information fournie.
+            - Formate le contenu textuel des valeurs JSON avec la syntaxe Markdown quand c'est pertinent : 
+              listes à puces, **gras**, *italique*, `code inline`, etc.
             - Réponds UNIQUEMENT avec un objet JSON valide respectant ce schéma :
             {
                 "ticketUnderstanding": string,
