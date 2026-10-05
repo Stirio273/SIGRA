@@ -66,15 +66,18 @@ public class TicketsController : ControllerBase
     {
         try
         {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized();
+
+            var currentUser = await _userAuthenticationService.GetAuthorizedUserAsync(username);
+            if (currentUser == null)
+                return Unauthorized();
+
             var ticket = await _ticketService.GetFicheTicket(id);
 
-            if (ticket == null)
-            {
-                var result = Result.Failure("Ticket not found", ErrorType.NotFound);
-                return result.ToHttpResult();
-            }
-
-            var availableActions = _workflowService.GetAvailableActions(ticket);
+            var userRole = currentUser.IdRoleNavigation?.Libelle;
+            var availableActions = _workflowService.GetAvailableActions(ticket, userRole, currentUser.IdUtilisateur);
 
             return Ok(ToResponse(ticket, availableActions.Select(a => a.ToString()).ToList()));
         }

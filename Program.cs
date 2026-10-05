@@ -65,6 +65,7 @@ builder.Services.AddScoped<IServiceAccountTokenRepository, ServiceAccountTokenRe
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 builder.Services.AddScoped<IStatutRepository, StatutRepository>();
 builder.Services.AddScoped<ITokenEncryptionService, TokenEncryptionService>();
+builder.Services.AddScoped<TicketWorkflowService>();
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<ITicketExportService, TicketExportService>();
 builder.Services.AddScoped<ICommentaireRepository, CommentaireRepository>();

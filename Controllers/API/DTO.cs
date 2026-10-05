@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using SIGRA.Data.Enums;
 using SIGRA.Data.Models;
-using SIGRA.Data.Enums;
 using SIGRA.Domain;
 
 namespace SIGRA.Controllers;

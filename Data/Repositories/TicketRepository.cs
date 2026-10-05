@@ -29,11 +29,13 @@ public sealed class TicketRepository : ITicketRepository
             DateCreation = t.DateCreation,
             IdApplicationNavigation = t.IdApplicationNavigation,
             IdCriticiteNavigation = t.IdCriticiteNavigation,
+            IdStatut = t.IdStatut,
             IdStatutNavigation = new Statut
             {
                 IdStatut = t.IdStatut,
                 Libelle = t.IdStatutNavigation.Libelle
             },
+            IdTechnicienAssigne = t.IdTechnicienAssigne,
             IdTechnicienAssigneNavigation = t.IdTechnicienAssigneNavigation != null ? new Utilisateur
             {
                 Nom = t.IdTechnicienAssigneNavigation.Nom,
@@ -114,7 +116,8 @@ public sealed class TicketRepository : ITicketRepository
                 DateCloture: t.DateCloture,
                 DureeSla: t.DureeSla,
                 DeadlineResolution: t.DeadlineResolution,
-                EmailsSources: null
+                EmailsSources: null,
+                ActionsDisponibles: null
             ))
             .ToListAsync(ct);
 

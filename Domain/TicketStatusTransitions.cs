@@ -9,7 +9,7 @@ public record TransitionRule(
 
 public static class TicketStatusTransitions
 {
-    private static readonly Dictionary<TicketStatus, TransitionRule[]> ValidTransitions = new()
+    private static readonly Dictionary<TicketStatus, TransitionRule[]> StatusTransitions = new()
     {
         [TicketStatus.New] = new[] { new TransitionRule(TicketAction.Assign, TicketStatus.Opened), new TransitionRule(TicketAction.AskForReject, TicketStatus.PendingReject) },
         [TicketStatus.Opened] = new[] { new TransitionRule(TicketAction.ChangeStatus, TicketStatus.Pending), new TransitionRule(TicketAction.Transfer, TicketStatus.Redirected),
@@ -22,10 +22,10 @@ public static class TicketStatusTransitions
     };
 
     public static bool IsValidTransition(TicketStatus from, TicketStatus to) =>
-        ValidTransitions.TryGetValue(from, out var allowed) && allowed.Select(rule => rule.TargetStatus).Contains(to);
+        StatusTransitions.TryGetValue(from, out var allowed) && allowed.Select(rule => rule.TargetStatus).Contains(to);
 
     public static IReadOnlyList<TransitionRule> GetAllowedTransitions(TicketStatus from) =>
-        ValidTransitions.TryGetValue(from, out var allowed)
+        StatusTransitions.TryGetValue(from, out var allowed)
             ? allowed
             : Array.Empty<TransitionRule>();
 }

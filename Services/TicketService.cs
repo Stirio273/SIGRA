@@ -16,7 +16,6 @@ using SIGRA.Domain.Exceptions;
 using SIGRA.Services.Handlers;
 using Pgvector;
 using Pgvector.EntityFrameworkCore;
-using SIGRA.Data.Enums;
 
 namespace SIGRA.Services;
 

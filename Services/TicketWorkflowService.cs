@@ -6,15 +6,9 @@ namespace SIGRA.Services;
 
 public class TicketWorkflowService
 {
-    public IReadOnlyList<TicketAction> GetAvailableActions(Ticket ticket)
+    public IReadOnlyList<TicketAction> GetAvailableActions(Ticket ticket, string? userRole = null, int? userId = null)
     {
-        var transitions = TicketStatusTransitions.GetAllowedTransitions((TicketStatus)ticket.IdStatut);
-
-        return transitions
-            // .Where(t => user.IsInRole(t.RequiresRole))
-            // .Where(t => t.Condition is null || t.Condition(ticket))
-            .Select(t => t.Action)
-            .ToList();
+        return TicketActionPolicy.GetAvailableActions(ticket, userRole, userId);
     }
 
     // public Result ExecuteTransition(Ticket ticket, TicketAction action, ClaimsPrincipal user)
