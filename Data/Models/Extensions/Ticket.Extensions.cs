@@ -1,5 +1,5 @@
 using SIGRA.Data.Enums;
-using SIGRA.Date.Enums;
+using SIGRA.Data.Enums;
 using SIGRA.Domain;
 
 namespace SIGRA.Data.Models;

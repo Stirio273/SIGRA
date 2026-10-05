@@ -1,4 +1,4 @@
-namespace SIGRA.Date.Enums;
+namespace SIGRA.Data.Enums;
 
 public enum RootCauseConfidence
 {

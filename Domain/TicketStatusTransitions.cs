@@ -2,24 +2,30 @@ using SIGRA.Data.Enums;
 
 namespace SIGRA.Domain;
 
+public record TransitionRule(
+    TicketAction Action,
+    TicketStatus TargetStatus
+);
+
 public static class TicketStatusTransitions
 {
-    private static readonly Dictionary<TicketStatus, TicketStatus[]> ValidTransitions = new()
+    private static readonly Dictionary<TicketStatus, TransitionRule[]> ValidTransitions = new()
     {
-        [TicketStatus.New] = new[] { TicketStatus.Opened, TicketStatus.PendingReject },
-        [TicketStatus.Opened] = new[] { TicketStatus.Pending, TicketStatus.Redirected, TicketStatus.PendingReject, TicketStatus.Solved },
-        [TicketStatus.Pending] = new[] { TicketStatus.Redirected },
-        [TicketStatus.Redirected] = new[] { TicketStatus.Solved },
-        [TicketStatus.PendingReject] = new[] { TicketStatus.New, TicketStatus.Rejected },
-        [TicketStatus.Solved] = new[] { TicketStatus.Closed, TicketStatus.Opened },
-        [TicketStatus.Closed] = new[] { TicketStatus.Opened }
+        [TicketStatus.New] = new[] { new TransitionRule(TicketAction.Assign, TicketStatus.Opened), new TransitionRule(TicketAction.AskForReject, TicketStatus.PendingReject) },
+        [TicketStatus.Opened] = new[] { new TransitionRule(TicketAction.ChangeStatus, TicketStatus.Pending), new TransitionRule(TicketAction.Transfer, TicketStatus.Redirected),
+         new TransitionRule(TicketAction.AskForReject, TicketStatus.PendingReject), new TransitionRule(TicketAction.ChangeStatus, TicketStatus.Solved) },
+        [TicketStatus.Pending] = new[] { new TransitionRule(TicketAction.Transfer, TicketStatus.Redirected) },
+        [TicketStatus.Redirected] = new[] { new TransitionRule(TicketAction.ChangeStatus, TicketStatus.Solved) },
+        [TicketStatus.PendingReject] = new[] { new TransitionRule(TicketAction.ChangeStatus, TicketStatus.New), new TransitionRule(TicketAction.Reject, TicketStatus.Rejected) },
+        [TicketStatus.Solved] = new[] { new TransitionRule(TicketAction.Close, TicketStatus.Closed), new TransitionRule(TicketAction.ChangeStatus, TicketStatus.Opened) },
+        [TicketStatus.Closed] = new[] { new TransitionRule(TicketAction.ChangeStatus, TicketStatus.Opened) }
     };
 
     public static bool IsValidTransition(TicketStatus from, TicketStatus to) =>
-        ValidTransitions.TryGetValue(from, out var allowed) && allowed.Contains(to);
+        ValidTransitions.TryGetValue(from, out var allowed) && allowed.Select(rule => rule.TargetStatus).Contains(to);
 
-    public static IReadOnlyList<TicketStatus> GetAllowedTransitions(TicketStatus from) =>
+    public static IReadOnlyList<TransitionRule> GetAllowedTransitions(TicketStatus from) =>
         ValidTransitions.TryGetValue(from, out var allowed)
             ? allowed
-            : Array.Empty<TicketStatus>();
+            : Array.Empty<TransitionRule>();
 }

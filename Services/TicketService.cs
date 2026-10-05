@@ -16,7 +16,7 @@ using SIGRA.Domain.Exceptions;
 using SIGRA.Services.Handlers;
 using Pgvector;
 using Pgvector.EntityFrameworkCore;
-using SIGRA.Date.Enums;
+using SIGRA.Data.Enums;
 
 namespace SIGRA.Services;
 
@@ -138,7 +138,11 @@ public class TicketService : ITicketService
     public async Task<Ticket> GetFicheTicket(int idTicket)
     {
         var ticket = await _ticketRepository.GetFicheTicket(idTicket);
-        return ticket ?? throw new NotFoundException($"Le ticket dont l'id est {idTicket} est introuvable");
+        if (ticket == null)
+        {
+            throw new NotFoundException($"Le ticket dont l'id est {idTicket} est introuvable");
+        }
+        return ticket;
     }
 
     public async Task TransferAsync(int ticketId, int idEntiteExterne, int idAuteur, string explication, bool estDefinitif)
@@ -436,7 +440,7 @@ public class TicketService : ITicketService
 
         var idStatutOrigine = ticket.IdStatut;
         var allowedStatus = TicketStatusTransitions.GetAllowedTransitions((TicketStatus)idStatutOrigine);
-        return await _statutRepository.GetNextStatutsAsync(allowedStatus, cancellationToken);
+        return await _statutRepository.GetNextStatutsAsync(allowedStatus.Where(s => s.Action == TicketAction.ChangeStatus).Select(s => s.TargetStatus).ToList(), cancellationToken);
     }
 
     public async Task<Result> UpdateAsync(int id, UpdateTicketRequest req)

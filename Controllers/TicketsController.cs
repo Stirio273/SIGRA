@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using SIGRA.Controllers;
+using SIGRA.Data.Enums;
 using SIGRA.Data.Models;
 using SIGRA.Domain;
 using SIGRA.Domain.Exceptions;
@@ -15,14 +16,16 @@ namespace SIGRA.Controllers;
 [Route("api/tickets")]
 public class TicketsController : ControllerBase
 {
+    private readonly TicketWorkflowService _workflowService;
     private readonly ITicketService _ticketService;
     private readonly IUserAuthenticationService _userAuthenticationService;
     private readonly ITicketExportService _ticketExportService;
     private readonly ICommentaireService _commentaireService;
 
-    public TicketsController(ITicketService ticketService, IUserAuthenticationService userAuthenticationService, ITicketExportService ticketExportService, ICommentaireService commentaireService)
+    public TicketsController(ITicketService ticketService, TicketWorkflowService ticketWorkflowService, IUserAuthenticationService userAuthenticationService, ITicketExportService ticketExportService, ICommentaireService commentaireService)
     {
         _ticketService = ticketService;
+        _workflowService = ticketWorkflowService;
         _userAuthenticationService = userAuthenticationService;
         _ticketExportService = ticketExportService;
         _commentaireService = commentaireService;
@@ -61,15 +64,29 @@ public class TicketsController : ControllerBase
     [HttpGet("details/{id}")]
     public async Task<IActionResult> Get(int id)
     {
-        var ticket = await _ticketService.GetFicheTicket(id);
-
-        if (ticket == null)
+        try
         {
-            var result = Result.Failure("Ticket not found", ErrorType.NotFound);
-            return result.ToHttpResult();
-        }
+            var ticket = await _ticketService.GetFicheTicket(id);
 
-        return Ok(ToResponse(ticket));
+            if (ticket == null)
+            {
+                var result = Result.Failure("Ticket not found", ErrorType.NotFound);
+                return result.ToHttpResult();
+            }
+
+            var availableActions = _workflowService.GetAvailableActions(ticket);
+
+            return Ok(ToResponse(ticket, availableActions.Select(a => a.ToString()).ToList()));
+        }
+        catch (Exception e)
+        {
+            if (e.GetType() == typeof(NotFoundException))
+            {
+                var result = Result.Failure(e.Message, ErrorType.NotFound);
+                return result.ToHttpResult();
+            }
+            throw;
+        }
     }
 
     [HttpPost("{id}/transfer")]
@@ -141,7 +158,7 @@ public class TicketsController : ControllerBase
     [HttpPatch("{id:int}/close")]
     public async Task<IActionResult> Close(int id, CloseTicketRequest req)
     {
-        var result = await _ticketService.CloseAsync(id, req.ootCauseConfidence);
+        var result = await _ticketService.CloseAsync(id, req.RootCauseConfidence);
         return result.IsSuccess ? NoContent() : result.ToHttpResult();
     }
 
@@ -204,7 +221,7 @@ public class TicketsController : ControllerBase
     public async Task<IActionResult> GetByTechnician(Guid technicianUserGuid)
     {
         var items = await _ticketService.GetByTechnicianAsync(technicianUserGuid);
-        return Ok(items.Select(ToResponse));
+        return Ok(items.Select(i => ToResponse(i)));
     }
 
     [HttpPatch("assign")]
@@ -284,7 +301,7 @@ public class TicketsController : ControllerBase
         return ok ? NoContent() : NotFound();
     }
 
-    private static TicketResponse ToResponse(Ticket t) => new(
+    private static TicketResponse ToResponse(Ticket t, IReadOnlyList<string>? ActionsDisponibles = null) => new(
         t.IdTicket,
         t.NumeroTicket,
         t.DateCreation.ToLocalTime(),
@@ -310,7 +327,8 @@ public class TicketsController : ControllerBase
            item.CorpsEmail,
            item.DateReception,
            item.PiecesJointes
-     )).ToList() : null);
+        )
+     ).ToList() : null, ActionsDisponibles);
 
     private static CommentaireResponse ToCommentaireResponse(Commentaire c) => new(
         c.IdCommentaire,

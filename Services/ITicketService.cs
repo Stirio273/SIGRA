@@ -1,7 +1,7 @@
 using MimeKit;
 using SIGRA.Controllers;
 using SIGRA.Data.Models;
-using SIGRA.Date.Enums;
+using SIGRA.Data.Enums;
 using SIGRA.Domain;
 
 namespace SIGRA.Services;

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SIGRA.Data;
 using SIGRA.Data.Enums;
 using SIGRA.Domain.AIsupport;
-using SIGRA.Date.Enums;
+using SIGRA.Data.Enums;
 
 namespace SIGRA.Services;
 

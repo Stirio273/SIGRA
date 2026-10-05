@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using SIGRA.Data.Enums;
 using SIGRA.Data.Models;
-using SIGRA.Date.Enums;
+using SIGRA.Data.Enums;
 using SIGRA.Domain;
 
 namespace SIGRA.Controllers;
@@ -113,7 +113,8 @@ public record TicketResponse(
     DateTime? DateCloture,
     decimal DureeSla,
     DateTime? DeadlineResolution,
-    IReadOnlyList<EmailsSourceResponse>? EmailsSources);
+    IReadOnlyList<EmailsSourceResponse>? EmailsSources,
+    IReadOnlyList<string>? ActionsDisponibles);
 
 public record TicketSearchRequest(PagedRequest Pagination)
 {
