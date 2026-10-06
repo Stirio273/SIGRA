@@ -121,7 +121,7 @@ CREATE TABLE tickets (
     date_changement_statut          TIMESTAMPTZ,
     cause_racine_identifie          VARCHAR(30),
     exclure_connaissances_IA        BOOLEAN NOT NULL DEFAULT true,
-    description_embedding           VECTOR(1536),
+    description_embedding           VECTOR(1024),
     nombre_recurrence               INTEGER,
     id_ticket_lie_meme_cas          INTEGER REFERENCES tickets(id_ticket),
 

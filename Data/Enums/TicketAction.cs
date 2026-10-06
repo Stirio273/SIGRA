@@ -10,5 +10,6 @@ public enum TicketAction
     Close,
     // Reopen,
     AskForReject,
-    Reject
+    Reject,
+    ModifyApplication
 }

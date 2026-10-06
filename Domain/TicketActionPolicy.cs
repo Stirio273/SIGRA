@@ -31,12 +31,14 @@ public static class TicketActionPolicy
         var statusActions = TicketStatusTransitions.GetAllowedTransitions(from)
             .Select(r => r.Action);
 
-        var globalActions = new[] { TicketAction.Reassign };
+        var globalActions = new[] { TicketAction.Reassign, TicketAction.ModifyApplication };
 
         var candidates = statusActions.Concat(globalActions).Distinct().ToList();
 
         return candidates
             .Where(a => IsActionAvailable(a, ticket, userRole, userId))
+            .Where(a => a != TicketAction.Reassign || ((TicketStatus)ticket.IdStatut) is not (TicketStatus.Rejected or TicketStatus.Closed))
+            .Where(a => a != TicketAction.ModifyApplication || ticket.IdApplication == null)
             .ToList();
     }
 }

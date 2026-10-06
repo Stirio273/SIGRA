@@ -718,7 +718,7 @@ public partial class AppDbContext : DbContext
                 .HasMaxLength(255)
                 .HasColumnName("demandeur_email");
             entity.Property(e => e.DescriptionEmbedding)
-                .HasMaxLength(1536)
+                .HasMaxLength(1024)
                 .HasColumnName("description_embedding");
             entity.Property(e => e.DureeSla)
                 .HasPrecision(6, 2)
