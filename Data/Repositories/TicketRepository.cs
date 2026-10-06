@@ -27,6 +27,7 @@ public sealed class TicketRepository : ITicketRepository
             IdTicket = t.IdTicket,
             NumeroTicket = t.NumeroTicket,
             DateCreation = t.DateCreation,
+            IdApplication = t.IdApplication,
             IdApplicationNavigation = t.IdApplicationNavigation,
             IdCriticiteNavigation = t.IdCriticiteNavigation,
             IdStatut = t.IdStatut,
