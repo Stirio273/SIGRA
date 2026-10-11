@@ -73,6 +73,8 @@ public record RespondDenyRequest(
 
 public record UpdateTicketApplicationRequest(int? IdApplication);
 
+public record UpdateTicketConnaissancesIaRequest(bool ExclureConnaissancesIa);
+
 public record TransferTicketRequest(
     int idTicket,
     int idEntiteExterne,
@@ -113,7 +115,8 @@ public record TicketResponse(
     decimal DureeSla,
     DateTime? DeadlineResolution,
     IReadOnlyList<EmailsSourceResponse>? EmailsSources,
-    IReadOnlyList<string>? ActionsDisponibles);
+    IReadOnlyList<string>? ActionsDisponibles,
+    bool ExclureConnaissancesIa);
 
 public record TicketSearchRequest(PagedRequest Pagination)
 {
@@ -226,13 +229,15 @@ public record AskAIRequest(string Message);
 
 public sealed class AddAppDocumentForm
 {
-    public required IFormFile File { get; init; }
+    public required List<IFormFile> Files { get; init; }
     // public string? SourceId { get; init; }
     public string? Title { get; init; }
     public string? Module { get; init; }
     // public required KnowledgeSourceType SourceType { get; init; }
     public required int IdApplication { get; init; }
 }
+
+public record AddAppDocumentFileResult(int? Id, string NomFichier, bool Success, string? ErrorReason);
 
 public sealed class CloseTicketRequest
 {

@@ -55,7 +55,8 @@ public sealed class TicketRepository : ITicketRepository
                 CorpsEmail = e.CorpsEmail,
                 DateReception = e.DateReception,
                 PiecesJointes = e.PiecesJointes
-            }).ToList()
+            }).ToList(),
+            ExclureConnaissancesIa = t.ExclureConnaissancesIa
         }).FirstOrDefaultAsync();
     }
 
@@ -118,7 +119,8 @@ public sealed class TicketRepository : ITicketRepository
                 DureeSla: t.DureeSla,
                 DeadlineResolution: t.DeadlineResolution,
                 EmailsSources: null,
-                ActionsDisponibles: null
+                ActionsDisponibles: null,
+                ExclureConnaissancesIa: t.ExclureConnaissancesIa
             ))
             .ToListAsync(ct);
 

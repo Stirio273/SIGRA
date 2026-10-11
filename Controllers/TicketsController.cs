@@ -268,6 +268,13 @@ public class TicketsController : ControllerBase
         return result.IsSuccess ? NoContent() : result.ToHttpResult();
     }
 
+    [HttpPatch("{id:int}/exclure-connaissances-ia")]
+    public async Task<IActionResult> UpdateExclureConnaissancesIa(int id, [FromBody] UpdateTicketConnaissancesIaRequest req)
+    {
+        var result = await _ticketService.UpdateExclureConnaissancesIaAsync(id, req.ExclureConnaissancesIa);
+        return result.IsSuccess ? NoContent() : result.ToHttpResult();
+    }
+
     [HttpGet("{id:int}/next-statuts")]
     public async Task<IActionResult> GetNextStatuts(int id)
     {
@@ -331,7 +338,7 @@ public class TicketsController : ControllerBase
            item.DateReception,
            item.PiecesJointes
         )
-     ).ToList() : null, ActionsDisponibles);
+     ).ToList() : null, ActionsDisponibles, t.ExclureConnaissancesIa);
 
     private static CommentaireResponse ToCommentaireResponse(Commentaire c) => new(
         c.IdCommentaire,

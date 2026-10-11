@@ -5,10 +5,19 @@ namespace SIGRA.Services;
 
 public sealed class JsonAiResponseParser : IAIResponseParser
 {
+
+    private readonly ILogger<JsonAiResponseParser> _logger;
+
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
             PropertyNameCaseInsensitive = true
         };
+
+        public JsonAiResponseParser(
+        ILogger<JsonAiResponseParser> logger)
+    {
+        _logger = logger;
+    }
 
     public AISupportResponse Parse(string rawLlmResponse)
     {
@@ -45,6 +54,7 @@ public sealed class JsonAiResponseParser : IAIResponseParser
         }
         catch (JsonException ex)
         {
+            _logger.LogWarning($"JSON parsing failed for response: {rawLlmResponse}");
             return Fallback($"JSON parsing failed: {ex.Message}");
         }
     }

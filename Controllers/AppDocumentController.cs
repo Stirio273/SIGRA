@@ -25,42 +25,58 @@ public class AppDocumentController : ControllerBase
     }
 
     [HttpPost]
-    [RequestSizeLimit(20_000_000)]
+    [RequestSizeLimit(100_000_000)]
     public async Task<IActionResult> AddDocument(
     [FromForm] AddAppDocumentForm form,
     CancellationToken cancellationToken)
     {
-        if (form.File is null || form.File.Length == 0)
-            return BadRequest("A file is required.");
+        if (form.Files is null || form.Files.Count == 0)
+            return BadRequest("At least one file is required.");
 
-        var extractionResult = await _textExtractionService.ExtractAsync(
-            form.File, cancellationToken);
+        var uploads = new List<AddAppDocumentFileResult>(form.Files.Count);
 
-        if (!extractionResult.Success)
+        foreach (var file in form.Files)
         {
-            return UnprocessableEntity(new
+            if (file is null || file.Length == 0)
             {
-                error = "Could not extract text from this file.",
-                reason = extractionResult.FailureReason
-            });
+                uploads.Add(new AddAppDocumentFileResult(null, file?.FileName ?? string.Empty, false, "A file is required."));
+                continue;
+            }
+
+            var extractionResult = await _textExtractionService.ExtractAsync(
+                file, cancellationToken);
+
+            if (!extractionResult.Success)
+            {
+                uploads.Add(new AddAppDocumentFileResult(
+                    null, file.FileName, false, extractionResult.FailureReason));
+                continue;
+            }
+
+            var fileUrl = await _storageService.UploadAsync(file, "application-documents");
+
+            var document = new AppDocument
+            {
+                Titre = string.IsNullOrWhiteSpace(form.Title) || form.Files.Count > 1
+                ? Path.GetFileNameWithoutExtension(file.FileName)
+                : form.Title,
+                Contenu = extractionResult.PlainText!,
+                NomFichier = file.FileName,
+                Chemin = fileUrl,
+                IdApplication = form.IdApplication,
+            };
+
+            await _appDocumentService.AddApplicationDocument(document, cancellationToken);
+
+            uploads.Add(new AddAppDocumentFileResult(document.Id, file.FileName, true, null));
         }
 
-        var fileUrl = await _storageService.UploadAsync(form.File, "application-documents");
-
-        var document = new AppDocument
+        return Ok(new
         {
-            Titre = string.IsNullOrWhiteSpace(form.Title)
-            ? Path.GetFileNameWithoutExtension(form.File.FileName)
-            : form.Title,
-            Contenu = extractionResult.PlainText!,
-            NomFichier = form.File.FileName,
-            Chemin = fileUrl,
-            IdApplication = form.IdApplication,
-        };
-
-        await _appDocumentService.AddApplicationDocument(document);
-
-        return Ok(new { document.Id });
+            Uploaded = uploads.Count(u => u.Success),
+            Failed = uploads.Count(u => !u.Success),
+            Files = uploads
+        });
     }
 
     [HttpGet("{idApplication:int}")]

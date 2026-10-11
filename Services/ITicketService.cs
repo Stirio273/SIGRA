@@ -31,6 +31,7 @@ public interface ITicketService
     Task<bool> RespondRejectDemandAsync(int ticketId, int idValidateur, bool isRejected);
     Task TransferAsync(int ticketId, int idEntiteExterne, int idAuteur, string explication, bool estDefinitif);
     Task<Result> UpdateApplicationAsync(int ticketId, int? idApplication);
+    Task<Result> UpdateExclureConnaissancesIaAsync(int ticketId, bool exclureConnaissancesIa);
     Task ReopenTicketAsync(ReopenTicketRequest request, int idAuteur);
     Task<IReadOnlyList<Statut>> GetListStatus();
 }

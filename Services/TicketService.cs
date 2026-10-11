@@ -631,6 +631,18 @@ public class TicketService : ITicketService
         return Result.Success();
     }
 
+    public async Task<Result> UpdateExclureConnaissancesIaAsync(int ticketId, bool exclureConnaissancesIa)
+    {
+        var ticket = await _context.Tickets.FindAsync(ticketId);
+        if (ticket == null)
+            return Result.Failure("Ticket not found", ErrorType.NotFound);
+
+        ticket.ExclureConnaissancesIa = exclureConnaissancesIa;
+
+        await _context.SaveChangesAsync();
+        return Result.Success();
+    }
+
     public async Task<Result> AssignAsync(IEnumerable<int> ticketIds, Guid? technicianUserGuid, string currentUserEmail)
     {
         var currentUser = await _userAuthenticationService.GetAuthorizedUserAsync(currentUserEmail);

@@ -105,7 +105,7 @@ public sealed class ReportRepository : IReportRepository
             .AsNoTracking()
             .CountAsync(x => x.DateCreation >= from.ToUniversalTime() && x.DateCreation <= to.ToUniversalTime());
 
-        var entries = await _context.Tickets
+        var entries = await _context.RealTickets
             .AsNoTracking()
             .Where(x => x.DateCreation >= from.ToUniversalTime() && x.DateCreation <= to.ToUniversalTime() && x.IdApplication != null)
             .GroupBy(x => new
