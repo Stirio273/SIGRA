@@ -80,9 +80,14 @@ public class AppDocumentController : ControllerBase
     }
 
     [HttpGet("{idApplication:int}")]
-    public async Task<IActionResult> GetAll(int idApplication, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll(
+        int idApplication,
+        [FromQuery] PagedRequest pagination,
+        [FromQuery] string? search,
+        CancellationToken cancellationToken)
     {
-        var documents = await _appDocumentService.GetAllApplicationDocuments(idApplication);
+        var documents = await _appDocumentService.GetAllApplicationDocuments(
+            idApplication, pagination, search, cancellationToken);
 
         return Ok(documents);
     }

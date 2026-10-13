@@ -1,3 +1,4 @@
+using SIGRA.Controllers;
 using SIGRA.Data;
 using SIGRA.Data.Models;
 using SIGRA.Domain;
@@ -23,11 +24,27 @@ public class AppDocumentService
         return await _dbContext.AppDocuments.FirstOrDefaultAsync(a => a.Id == idAppDocument);
     }
 
-    public async Task<List<AppDocumentDto>> GetAllApplicationDocuments(int idApplication, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<AppDocumentDto>> GetAllApplicationDocuments(
+        int idApplication,
+        PagedRequest pagination,
+        string? search = null,
+        CancellationToken cancellationToken = default)
     {
-        var documents = await _dbContext.AppDocuments
-            .Where(d => d.IdApplication == idApplication)
+        var query = _dbContext.AppDocuments
+            .Where(d => d.IdApplication == idApplication);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim().ToLower();
+            query = query.Where(d => d.NomFichier.ToLower().Contains(term));
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var documents = await query
             .OrderByDescending(d => d.Id)
+            .Skip((pagination.PageNumber - 1) * pagination.PageSize)
+            .Take(pagination.PageSize)
             .Select(d => new AppDocumentDto
             (
                 d.Id,
@@ -39,7 +56,13 @@ public class AppDocumentService
             ))
             .ToListAsync(cancellationToken);
 
-        return documents;
+        return new PagedResult<AppDocumentDto>
+        {
+            Items = documents,
+            PageNumber = pagination.PageNumber,
+            PageSize = pagination.PageSize,
+            TotalCount = totalCount
+        };
     }
 
     public async Task<Result> AddApplicationDocument(AppDocument document, CancellationToken cancellationToken = default)
